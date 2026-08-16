@@ -1,0 +1,128 @@
+:root {
+  --ink: #f5f7f8;
+  --muted: #8e969e;
+  --green: #b7ff3c;
+  --green-deep: #73b800;
+  --green-soft: rgba(183, 255, 60, .10);
+  --cream: #080a0c;
+  --paper: #0c0f12;
+  --surface: #111417;
+  --surface-high: #181c20;
+  --line: #292e33;
+  --orange: #d9e2c6;
+}
+
+/* Level Up color layer — loaded after app.css so the original stylesheet stays untouched. */
+html,
+body,
+.auth-gate {
+  background: var(--cream);
+}
+
+.app {
+  background: var(--paper);
+}
+
+.auth-panel,
+.auth-divider span,
+.custom-workout-library {
+  background: #0f1215;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline-color: rgba(183, 255, 60, .38);
+}
+
+.profile-photo,
+.profile-photo-button,
+.home-gym-card button,
+.avatar,
+.home-rank-card button,
+.day-badge,
+.custom-plan-actions button {
+  background-color: #171b1f;
+}
+
+.gym-pin {
+  border-color: var(--green);
+}
+
+.gym-catalog,
+.focus-shell,
+.set-card {
+  background-color: #0d1013;
+}
+
+.gym-choice:active {
+  color: #080a0c;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.gym-confirm,
+.sync-status.local,
+.set-save-notice.success {
+  background: #15191d;
+}
+
+.library-program,
+.builder-setup {
+  background: #101316;
+}
+
+.program-day.today {
+  box-shadow: inset 3px 0 0 var(--green);
+}
+
+.custom-workout-library .text-button,
+.custom-plan-actions button:first-child,
+.builder-add-button,
+.builder-order {
+  color: #080a0c;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.builder-selected-card.drag-over {
+  border-color: var(--green);
+  background: #1a2018;
+  box-shadow: 0 0 0 1px rgba(183, 255, 60, .28);
+}
+
+.builder-field input,
+.builder-field select {
+  background: var(--paper);
+}
+
+.plan-guidance {
+  border-left-color: var(--green);
+  background: var(--surface);
+}
+
+.volume-column i {
+  background: linear-gradient(180deg, var(--green), var(--green-deep));
+}
+
+.history-mark {
+  background: var(--green);
+}
+
+.rest-timer {
+  color: #080a0c;
+  background: var(--green);
+}
+
+.end-workout-section progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--green-deep), var(--green));
+}
+
+.end-workout-section progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--green-deep), var(--green));
+}
+
+.tabs .active {
+  color: #080a0c;
+  background: var(--green);
+}
