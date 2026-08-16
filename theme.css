@@ -35,6 +35,23 @@ select:focus-visible {
   outline-color: rgba(183, 255, 60, .38);
 }
 
+/* Keep all three sign-in choices visually consistent. */
+.provider-button.active-provider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  padding: .8rem 1rem;
+  color: #f3f3f3;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .08);
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+
 .profile-photo,
 .profile-photo-button,
 .home-gym-card button,
