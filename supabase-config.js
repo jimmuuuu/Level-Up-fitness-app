@@ -65,6 +65,13 @@ window.LEVEL_UP_SUPABASE = {
 
   // Load optional helpers only after the main app has finished loading.
   window.addEventListener('load', () => {
+    if (!document.querySelector('script[data-auth-session-fix]')) {
+      const authSessionFix = document.createElement('script');
+      authSessionFix.src = 'auth-session-fix.js?v=1';
+      authSessionFix.dataset.authSessionFix = 'true';
+      document.body.appendChild(authSessionFix);
+    }
+
     if (!document.querySelector('script[data-navigation-simplify]')) {
       const navigation = document.createElement('script');
       navigation.src = 'navigation-simplify.js?v=2';
