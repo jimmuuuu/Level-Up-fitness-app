@@ -12,6 +12,7 @@ window.LEVEL_UP_SUPABASE = {
       #home, .tabs button[data-page="home"] { display: none !important; }
       .tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
       #workout > .back, #progress > .back, #profile > .back { display: none !important; }
+      .sync-status { display: none !important; }
     `;
     document.head.appendChild(criticalNavigation);
   }
