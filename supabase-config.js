@@ -8,7 +8,7 @@ window.LEVEL_UP_SUPABASE = {
   if (!document.querySelector('link[data-level-up-theme]')) {
     const theme = document.createElement('link');
     theme.rel = 'stylesheet';
-    theme.href = 'theme.css?v=1';
+    theme.href = 'theme.css?v=2';
     theme.dataset.levelUpTheme = 'lime';
     document.head.appendChild(theme);
   }
