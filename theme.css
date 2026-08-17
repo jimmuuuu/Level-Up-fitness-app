@@ -52,6 +52,11 @@ select:focus-visible {
   letter-spacing: -.02em;
 }
 
+/* Hide the routine Google sync-pending banner; syncing still runs in the background. */
+.sync-status:not(.local) {
+  display: none !important;
+}
+
 .profile-photo,
 .profile-photo-button,
 .home-gym-card button,
