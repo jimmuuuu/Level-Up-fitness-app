@@ -1,15 +1,15 @@
 :root {
   --ink: #f5f7f8;
   --muted: #8e969e;
-  --green: #b7ff3c;
-  --green-deep: #73b800;
-  --green-soft: rgba(183, 255, 60, .10);
+  --green: #ff4d57;
+  --green-deep: #c81f32;
+  --green-soft: rgba(255, 77, 87, .12);
   --cream: #080a0c;
   --paper: #0c0f12;
   --surface: #111417;
   --surface-high: #181c20;
   --line: #292e33;
-  --orange: #d9e2c6;
+  --orange: #ffd9dd;
 }
 
 /* Level Up color layer — loaded after app.css so the original stylesheet stays untouched. */
@@ -32,7 +32,7 @@ body,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline-color: rgba(183, 255, 60, .38);
+  outline-color: rgba(255, 77, 87, .42);
 }
 
 /* Keep all three sign-in choices visually consistent. */
@@ -52,8 +52,8 @@ select:focus-visible {
   letter-spacing: -.02em;
 }
 
-/* Hide the routine Google sync-pending banner; syncing still runs in the background. */
-.sync-status:not(.local) {
+/* Hide routine sync-status banners; syncing still runs in the background. */
+.sync-status {
   display: none !important;
 }
 
@@ -84,7 +84,6 @@ select:focus-visible {
 }
 
 .gym-confirm,
-.sync-status.local,
 .set-save-notice.success {
   background: #15191d;
 }
@@ -109,8 +108,8 @@ select:focus-visible {
 
 .builder-selected-card.drag-over {
   border-color: var(--green);
-  background: #1a2018;
-  box-shadow: 0 0 0 1px rgba(183, 255, 60, .28);
+  background: #211417;
+  box-shadow: 0 0 0 1px rgba(255, 77, 87, .30);
 }
 
 .builder-field input,
