@@ -1,0 +1,133 @@
+.training-details-card {
+  margin-top: 16px;
+}
+
+.training-details-copy {
+  margin: 8px 0 16px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.training-details-form {
+  display: grid;
+  gap: 12px;
+}
+
+.training-details-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.height-inputs,
+.weight-input-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.weight-input-wrap {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-high);
+  padding-right: 14px;
+}
+
+.training-details-form input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-high);
+  color: var(--ink);
+  padding: 13px 14px;
+  font: inherit;
+}
+
+.weight-input-wrap input {
+  border: 0;
+  background: transparent;
+}
+
+.weight-input-wrap b {
+  color: var(--muted);
+}
+
+.training-details-status {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.training-details-status[data-tone="success"] { color: var(--green); }
+.training-details-status[data-tone="error"] { color: #ff8a96; }
+.training-details-status[data-tone="warn"] { color: #f0c36a; }
+
+.weight-recommendation {
+  margin: 12px 0 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(183, 255, 60, .24);
+  border-radius: 14px;
+  background: rgba(183, 255, 60, .055);
+}
+
+.weight-rec-main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 4px 12px;
+}
+
+.weight-rec-kicker {
+  grid-column: 1 / -1;
+  color: var(--green);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.weight-rec-main strong {
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.15;
+}
+
+.weight-rec-main strong small {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.weight-rec-main em {
+  color: var(--muted);
+  font-size: .72rem;
+  font-style: normal;
+  text-align: right;
+}
+
+.weight-recommendation p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.weight-recommendation[data-confidence="high"] {
+  border-color: rgba(183, 255, 60, .38);
+}
+
+@media (max-width: 520px) {
+  .weight-rec-main {
+    grid-template-columns: 1fr;
+  }
+  .weight-rec-main em {
+    text-align: left;
+  }
+}
