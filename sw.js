@@ -1,6 +1,8 @@
-const CACHE = 'level-up-fitness-03058eb7e793';
+const CACHE = 'level-up-fitness-20260817-navfix';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
+  './theme.css', './navigation-simplify.css', './navigation-simplify.js',
+  './set-history.css', './set-history.js', './workout-summary.css', './workout-summary.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -15,8 +17,8 @@ const CORE = [
   './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 6);
-const ASSETS = CORE.slice(6);
+const SHELL = CORE.slice(0, 13);
+const ASSETS = CORE.slice(13);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
@@ -55,7 +57,8 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       try {
-        const response = await fetch(request);
+        const freshRequest = new Request(request, { cache: 'reload' });
+        const response = await fetch(freshRequest);
         if (response.ok) {
           const cache = await caches.open(CACHE);
           await cache.put(scopedUrl('./index.html'), response.clone());
@@ -85,7 +88,8 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     try {
-      const response = await fetch(request);
+      const freshRequest = new Request(request, { cache: 'reload' });
+      const response = await fetch(freshRequest);
       if (response.ok) {
         const cache = await caches.open(CACHE);
         await cache.put(request, response.clone());
