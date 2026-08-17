@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-navfix';
+const CACHE = 'level-up-fitness-20260817-indexfix';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
