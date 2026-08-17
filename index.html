@@ -12,14 +12,25 @@
   <link rel="apple-touch-icon" href="assets/app-icon-180.png">
   <script>
     try {
-      const rememberedPage = sessionStorage.getItem('levelUpFitnessLastPage');
-      const validPages = ['home', 'workout', 'progress', 'profile', 'builder', 'active'];
-      if (validPages.includes(rememberedPage) && rememberedPage !== 'home') {
-        document.documentElement.setAttribute('data-restoring-page', rememberedPage);
-      }
-    } catch {}
+      const lastPageKey = 'levelUpFitnessLastPage';
+      const rememberedPage = sessionStorage.getItem(lastPageKey);
+      const validPages = ['workout', 'progress', 'profile', 'builder', 'active'];
+      const destination = validPages.includes(rememberedPage) ? rememberedPage : 'workout';
+      sessionStorage.setItem(lastPageKey, destination);
+      document.documentElement.setAttribute('data-restoring-page', destination);
+    } catch {
+      document.documentElement.setAttribute('data-restoring-page', 'workout');
+    }
   </script>
-  <style>html[data-restoring-page] #appShell { visibility: hidden; }</style>
+  <style>
+    html[data-restoring-page] #appShell { visibility: hidden; }
+    #home,
+    .tabs button[data-page="home"],
+    #workout > .back,
+    #progress > .back,
+    #profile > .back { display: none !important; }
+    .tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  </style>
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -58,7 +69,7 @@
   </section>
 
   <main id="appShell" class="app">
-    <section id="home" class="page">
+    <section id="home" class="page hidden">
       <header class="home-top">
         <div>
           <div class="over">YOUR TRAINING</div>
@@ -108,7 +119,7 @@
       <button id="browse" class="primary">Browse all workouts</button>
     </section>
 
-    <section id="workout" class="page hidden">
+    <section id="workout" class="page">
       <button class="back" data-page="home">Back</button>
       <div class="over">YOUR WORKOUTS</div>
       <h1>Workout library</h1>
@@ -374,8 +385,7 @@
     </section>
 
     <nav class="tabs" aria-label="Main navigation">
-      <button class="active" data-page="home">Home</button>
-      <button data-page="workout">Workout</button>
+      <button class="active" data-page="workout">Workout</button>
       <button data-page="progress">Progress</button>
       <button data-page="profile">Profile</button>
     </nav>
