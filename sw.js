@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-weightrecs';
+const CACHE = 'level-up-fitness-20260817-syncstatushide';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
