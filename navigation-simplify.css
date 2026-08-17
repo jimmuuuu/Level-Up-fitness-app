@@ -1,0 +1,67 @@
+/* Three-section app shell: Workout, Progress, Profile. */
+#home,
+.tabs button[data-page="home"] {
+  display: none !important;
+}
+
+.tabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* These are now top-level destinations, so they do not need a Home back button. */
+#workout > .back,
+#progress > .back,
+#profile > .back {
+  display: none !important;
+}
+
+.profile-settings-shortcut {
+  width: 100%;
+  min-height: 46px;
+  margin: 10px 0 4px;
+  padding: 0 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.profile-settings-shortcut::after {
+  float: right;
+  color: var(--muted);
+  content: '›';
+}
+
+.profile-settings-panel {
+  margin: 30px 0 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.profile-settings-panel .over {
+  margin-bottom: 4px;
+}
+
+.profile-settings-panel h2 {
+  margin: 0 0 6px;
+}
+
+.profile-settings-panel p.profile-settings-copy {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.profile-settings-panel #signOut {
+  width: 100%;
+}
+
+.profile-settings-panel .signout-note {
+  margin-bottom: 0;
+}
