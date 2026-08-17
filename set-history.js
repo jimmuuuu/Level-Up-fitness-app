@@ -2,6 +2,14 @@
   const HISTORY_KEY = 'levelUpFitnessWorkoutHistory';
   const SET_LIST_ID = 'setList';
 
+  if (!document.querySelector('link[data-set-history-style]')) {
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = 'set-history.css?v=1';
+    style.dataset.setHistoryStyle = 'true';
+    document.head.appendChild(style);
+  }
+
   function readHistory() {
     try {
       const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
