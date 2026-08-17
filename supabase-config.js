@@ -16,12 +16,20 @@ window.LEVEL_UP_SUPABASE = {
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
 
-  // Load optional workout-history helpers only after the main app has finished loading.
+  // Load optional workout helpers only after the main app has finished loading.
   window.addEventListener('load', () => {
-    if (document.querySelector('script[data-set-history-feature]')) return;
-    const feature = document.createElement('script');
-    feature.src = 'set-history.js?v=1';
-    feature.dataset.setHistoryFeature = 'true';
-    document.body.appendChild(feature);
+    if (!document.querySelector('script[data-set-history-feature]')) {
+      const setHistory = document.createElement('script');
+      setHistory.src = 'set-history.js?v=1';
+      setHistory.dataset.setHistoryFeature = 'true';
+      document.body.appendChild(setHistory);
+    }
+
+    if (!document.querySelector('script[data-workout-summary-feature]')) {
+      const workoutSummary = document.createElement('script');
+      workoutSummary.src = 'workout-summary.js?v=1';
+      workoutSummary.dataset.workoutSummaryFeature = 'true';
+      document.body.appendChild(workoutSummary);
+    }
   }, { once: true });
 })();
