@@ -32,6 +32,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(navigationStyle);
   }
 
+  if (!document.querySelector('link[data-weight-recommendations-style]')) {
+    const weightRecommendationsStyle = document.createElement('link');
+    weightRecommendationsStyle.rel = 'stylesheet';
+    weightRecommendationsStyle.href = 'weight-recommendations.css?v=1';
+    weightRecommendationsStyle.dataset.weightRecommendationsStyle = 'true';
+    document.head.appendChild(weightRecommendationsStyle);
+  }
+
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
 
@@ -91,6 +99,13 @@ window.LEVEL_UP_SUPABASE = {
       workoutSummary.src = 'workout-summary.js?v=1';
       workoutSummary.dataset.workoutSummaryFeature = 'true';
       document.body.appendChild(workoutSummary);
+    }
+
+    if (!document.querySelector('script[data-weight-recommendations]')) {
+      const weightRecommendations = document.createElement('script');
+      weightRecommendations.src = 'weight-recommendations.js?v=1';
+      weightRecommendations.dataset.weightRecommendations = 'true';
+      document.body.appendChild(weightRecommendations);
     }
   }, { once: true });
 })();
