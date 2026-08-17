@@ -15,4 +15,13 @@ window.LEVEL_UP_SUPABASE = {
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
+
+  // Load optional workout-history helpers only after the main app has finished loading.
+  window.addEventListener('load', () => {
+    if (document.querySelector('script[data-set-history-feature]')) return;
+    const feature = document.createElement('script');
+    feature.src = 'set-history.js?v=1';
+    feature.dataset.setHistoryFeature = 'true';
+    document.body.appendChild(feature);
+  }, { once: true });
 })();
