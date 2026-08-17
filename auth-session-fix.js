@@ -11,26 +11,36 @@
     return null;
   }
 
+  async function startGoogleSignIn(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }
+
+    const client = getClient();
+    const notice = document.getElementById('authNotice');
+    if (!client) {
+      if (notice) notice.textContent = 'Google sign-in is not ready yet.';
+      return;
+    }
+
+    if (notice) notice.textContent = 'Opening Google sign-in...';
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: redirectUrl() }
+    });
+    if (error && notice) notice.textContent = error.message || 'Google sign-in could not start.';
+  }
+
   function bindGoogleSignIn() {
     const button = document.getElementById('googleSignIn');
     if (!button || button.dataset.authRedirectFixed === 'true') return;
 
     button.dataset.authRedirectFixed = 'true';
-    button.onclick = async () => {
-      const client = getClient();
-      const notice = document.getElementById('authNotice');
-      if (!client) {
-        if (notice) notice.textContent = 'Google sign-in is not ready yet.';
-        return;
-      }
-
-      if (notice) notice.textContent = 'Opening Google sign-in...';
-      const { error } = await client.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: redirectUrl() }
-      });
-      if (error && notice) notice.textContent = error.message || 'Google sign-in could not start.';
-    };
+    // Capture-phase listener runs before the legacy onclick in app.js, so the
+    // old `${location.origin}/` redirect can no longer win the click.
+    button.addEventListener('click', startGoogleSignIn, true);
   }
 
   function keepSignedInNoticeClean() {
@@ -52,4 +62,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
   window.addEventListener('pageshow', start);
+  window.addEventListener('load', () => setTimeout(start, 0), { once: true });
 })();
