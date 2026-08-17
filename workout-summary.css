@@ -1,0 +1,245 @@
+body.workout-summary-open { overflow: hidden; }
+
+.workout-summary-overlay {
+  position: fixed;
+  z-index: 250;
+  inset: 0;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, .78);
+  backdrop-filter: blur(12px);
+}
+
+.workout-summary-overlay.hidden { display: none !important; }
+
+.ws-sheet {
+  width: min(480px, 100%);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: calc(24px + env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  color: #f5f7f8;
+  background: #0c0f12;
+  box-shadow: 0 0 70px rgba(0, 0, 0, .6);
+}
+
+.ws-header,
+.ws-section-title,
+.ws-exercise-head,
+.ws-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ws-header { align-items: flex-start; margin-bottom: 18px; }
+.ws-header h2 { margin: 4px 0 3px; font-size: 28px; line-height: 1.1; }
+.ws-header p { margin: 0; color: #8e969e; font-size: 13px; }
+.ws-kicker,
+.ws-section-title span {
+  color: #b7ff3c;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 1.4px;
+}
+
+.ws-close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  color: #f5f7f8;
+  border: 1px solid #292e33;
+  border-radius: 13px;
+  background: #171b1f;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.ws-hero-stats,
+.ws-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ws-hero-stats article,
+.ws-progress-grid article {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #292e33;
+  border-radius: 16px;
+  background: #111417;
+}
+
+.ws-hero-stats span,
+.ws-progress-grid span {
+  display: block;
+  color: #8e969e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .9px;
+  text-transform: uppercase;
+}
+
+.ws-hero-stats strong,
+.ws-progress-grid strong {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #f5f7f8;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.ws-progress-card,
+.ws-section {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #292e33;
+  border-radius: 20px;
+  background: #0f1215;
+}
+
+.ws-progress-card { border-color: rgba(183, 255, 60, .28); }
+.ws-progress-grid { margin-top: 13px; }
+.ws-progress-grid article.good strong { color: #b7ff3c; }
+.ws-progress-grid article:last-child strong { font-size: 15px; }
+.ws-section-title { align-items: flex-end; }
+.ws-section-title h3 { margin: 2px 0 0; font-size: 17px; }
+.ws-section-title small { color: #8e969e; font-size: 11px; }
+.ws-volume-change { margin: 12px 2px 0; color: #cdd4c1; font-size: 12px; }
+
+.ws-exercises { display: grid; gap: 10px; margin-top: 13px; }
+.ws-exercise {
+  padding: 13px;
+  border: 1px solid #292e33;
+  border-radius: 15px;
+  background: #111417;
+}
+.ws-exercise-head strong { font-size: 14px; }
+.ws-exercise-head span { color: #8e969e; font-size: 11px; }
+.ws-set-list { display: grid; gap: 7px; margin-top: 10px; }
+.ws-set-chip {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  background: #181c20;
+}
+.ws-set-chip b { color: #8e969e; font-size: 11px; }
+.ws-set-chip > span:not(.ws-set-change) { font-size: 13px; font-weight: 700; }
+.ws-set-change {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+}
+.ws-set-change.up { color: #080a0c; background: #b7ff3c; }
+.ws-set-change.same { color: #d8dce0; background: #292e33; }
+.ws-set-change.down { color: #ffc5c5; background: #472428; }
+.ws-set-change.baseline { color: #d9e2c6; background: #26301e; font-size: 9px; }
+
+#wsNotes {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 118px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  resize: vertical;
+  color: #f5f7f8;
+  border: 1px solid #292e33;
+  border-radius: 14px;
+  outline: none;
+  background: #111417;
+  font: inherit;
+  line-height: 1.45;
+}
+#wsNotes:focus { border-color: rgba(183, 255, 60, .55); }
+
+.ws-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.ws-photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #292e33;
+  border-radius: 13px;
+  background: #111417;
+}
+.ws-photo img { width: 100%; height: 100%; object-fit: cover; }
+.ws-photo button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 9px;
+  background: rgba(0,0,0,.65);
+  font-size: 18px;
+}
+.ws-photo-empty {
+  grid-column: 1 / -1;
+  padding: 18px;
+  color: #8e969e;
+  border: 1px dashed #30363b;
+  border-radius: 13px;
+  text-align: center;
+  font-size: 12px;
+}
+.ws-secondary,
+.ws-primary {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 13px;
+  font-weight: 800;
+}
+.ws-secondary {
+  margin-top: 10px;
+  color: #f5f7f8;
+  border: 1px solid #343a3f;
+  background: #171b1f;
+}
+.ws-secondary:disabled { opacity: .55; }
+.ws-device-note { margin: 9px 2px 0; color: #6f777e; font-size: 10px; line-height: 1.45; }
+
+.ws-save-row { align-items: center; margin-top: 16px; }
+.ws-save-row > span { flex: 1; color: #8e969e; font-size: 11px; }
+.ws-primary {
+  width: auto;
+  min-width: 170px;
+  padding: 0 16px;
+  color: #080a0c;
+  border: 1px solid #b7ff3c;
+  background: #b7ff3c;
+}
+
+.ws-view-summary {
+  min-height: 34px;
+  padding: 0 10px;
+  color: #dce3d1;
+  border: 1px solid #343a3f;
+  border-radius: 10px;
+  background: #171b1f;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+@media (max-width: 390px) {
+  .ws-sheet { padding-left: 14px; padding-right: 14px; }
+  .ws-hero-stats, .ws-progress-grid { gap: 7px; }
+  .ws-hero-stats article, .ws-progress-grid article { padding: 12px; }
+  .ws-save-row { align-items: stretch; flex-direction: column; }
+  .ws-primary { width: 100%; }
+}
