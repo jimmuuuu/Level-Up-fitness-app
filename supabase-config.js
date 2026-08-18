@@ -191,18 +191,27 @@ window.LEVEL_UP_SUPABASE = {
       document.body.appendChild(weeklyOnboardingInteractions);
     }
 
-    if (!document.querySelector('script[data-weekly-plan-personalization]')) {
-      const weeklyPlanPersonalization = document.createElement('script');
-      weeklyPlanPersonalization.src = 'weekly-plan-personalization-v3.js?v=1';
-      weeklyPlanPersonalization.dataset.weeklyPlanPersonalization = 'true';
-      document.body.appendChild(weeklyPlanPersonalization);
-    }
-
-    if (!document.querySelector('script[data-weekly-preview-editor]')) {
+    const loadWeeklyPreviewEditor = () => {
+      if (document.querySelector('script[data-weekly-preview-editor]')) return;
       const weeklyPreviewEditor = document.createElement('script');
       weeklyPreviewEditor.src = 'weekly-preview-editor.js?v=1';
       weeklyPreviewEditor.dataset.weeklyPreviewEditor = 'true';
       document.body.appendChild(weeklyPreviewEditor);
+    };
+
+    const existingPersonalization = document.querySelector('script[data-weekly-plan-personalization]');
+    if (!existingPersonalization) {
+      const weeklyPlanPersonalization = document.createElement('script');
+      weeklyPlanPersonalization.src = 'weekly-plan-personalization-v3.js?v=1';
+      weeklyPlanPersonalization.dataset.weeklyPlanPersonalization = 'true';
+      weeklyPlanPersonalization.addEventListener('load', loadWeeklyPreviewEditor, { once: true });
+      document.body.appendChild(weeklyPlanPersonalization);
+    } else if (existingPersonalization.dataset.loaded === 'true') {
+      loadWeeklyPreviewEditor();
+    } else {
+      existingPersonalization.addEventListener('load', loadWeeklyPreviewEditor, { once: true });
+      // If the existing script already finished before this listener was attached, load the editor on the next task.
+      window.setTimeout(loadWeeklyPreviewEditor, 300);
     }
   }, { once: true });
 })();
