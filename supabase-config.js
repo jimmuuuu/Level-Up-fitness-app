@@ -176,5 +176,12 @@ window.LEVEL_UP_SUPABASE = {
       weeklyPlanOnboarding.dataset.weeklyPlanOnboarding = 'true';
       document.body.appendChild(weeklyPlanOnboarding);
     }
+
+    if (!document.querySelector('script[data-gym-category-labels]')) {
+      const gymCategoryLabels = document.createElement('script');
+      gymCategoryLabels.src = 'gym-category-labels.js?v=1';
+      gymCategoryLabels.dataset.gymCategoryLabels = 'true';
+      document.body.appendChild(gymCategoryLabels);
+    }
   }, { once: true });
 })();
