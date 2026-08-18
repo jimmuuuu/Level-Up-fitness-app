@@ -92,6 +92,14 @@
     loadFeature('data-field-notes-final-style', 'field-notes-final.css?v=1', 'data-field-notes-final', 'field-notes-final.js?v=1');
   }
 
+  function loadFiveDayPlan() {
+    loadScript('data-five-day-plan', 'five-day-plan.js?v=1');
+  }
+
+  function loadRestTimerV3() {
+    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=1', 'data-rest-timer-v3', 'rest-timer-v3.js?v=1');
+  }
+
   function start() {
     try {
       const remembered = sessionStorage.getItem(LAST_PAGE_KEY) || '';
@@ -105,6 +113,8 @@
     loadGymSessionFixes();
     loadLegDayStartFix();
     loadFinalFieldNotes();
+    loadFiveDayPlan();
+    loadRestTimerV3();
     redirectHomeToWorkout();
 
     const home = document.getElementById('home');
