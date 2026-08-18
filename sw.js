@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-set-grid-alignment-v1';
+const CACHE = 'level-up-fitness-20260817-startup-recovery-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
