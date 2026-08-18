@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-plan-scoped-set-history-v1';
+const CACHE = 'level-up-fitness-20260817-set-grid-alignment-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -92,7 +92,7 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     try {
       const freshRequest = new Request(request, { cache: 'reload' });
-      const response = await fetch(request);
+      const response = await fetch(freshRequest);
       if (response.ok) {
         const cache = await caches.open(CACHE);
         await cache.put(request, response.clone());
