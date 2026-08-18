@@ -49,6 +49,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(weeklyWorkoutReviewStyle);
   }
 
+  if (!document.querySelector('link[data-workout-summary-style]')) {
+    const workoutSummaryStyle = document.createElement('link');
+    workoutSummaryStyle.rel = 'stylesheet';
+    workoutSummaryStyle.href = 'workout-summary.css?v=2';
+    workoutSummaryStyle.dataset.workoutSummaryStyle = 'true';
+    document.head.appendChild(workoutSummaryStyle);
+  }
+
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
 
@@ -105,9 +113,16 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-workout-summary-feature]')) {
       const workoutSummary = document.createElement('script');
-      workoutSummary.src = 'workout-summary.js?v=1';
+      workoutSummary.src = 'workout-summary.js?v=2';
       workoutSummary.dataset.workoutSummaryFeature = 'true';
       document.body.appendChild(workoutSummary);
+    }
+
+    if (!document.querySelector('script[data-post-workout-auto-summary]')) {
+      const postWorkoutAutoSummary = document.createElement('script');
+      postWorkoutAutoSummary.src = 'post-workout-auto-summary.js?v=1';
+      postWorkoutAutoSummary.dataset.postWorkoutAutoSummary = 'true';
+      document.body.appendChild(postWorkoutAutoSummary);
     }
 
     if (!document.querySelector('script[data-weight-recommendations]')) {
