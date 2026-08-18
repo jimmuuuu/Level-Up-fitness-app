@@ -44,6 +44,22 @@
     else profile.querySelector('.profile-email')?.insertAdjacentElement('afterend', shortcut);
   }
 
+  function loadScanFeature() {
+    if (!document.querySelector('link[data-scan-feature-style]')) {
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.href = 'scan-feature.css?v=1';
+      style.dataset.scanFeatureStyle = 'true';
+      document.head.appendChild(style);
+    }
+    if (!document.querySelector('script[data-scan-feature]')) {
+      const script = document.createElement('script');
+      script.src = 'scan-feature.js?v=1';
+      script.dataset.scanFeature = 'true';
+      document.body.appendChild(script);
+    }
+  }
+
   function start() {
     try {
       const remembered = sessionStorage.getItem(LAST_PAGE_KEY) || '';
@@ -51,6 +67,7 @@
     } catch {}
 
     setupProfileSettings();
+    loadScanFeature();
     redirectHomeToWorkout();
 
     const home = document.getElementById('home');
