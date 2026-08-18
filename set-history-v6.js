@@ -15,6 +15,9 @@
     previous: new Map()
   };
 
+  let rendering = false;
+  let renderQueued = false;
+
   function client() {
     try { return typeof getSupabaseClient === 'function' ? getSupabaseClient() : null; }
     catch { return null; }
@@ -103,6 +106,10 @@
     return ['down', 'Different from last time', `Previous ${previousText(previous)} | Today ${weight > 0 ? `${formatWeight(weight)} lb x ` : ''}${reps}`];
   }
 
+  function setText(node, value) {
+    if (node && node.textContent !== value) node.textContent = value;
+  }
+
   function accountIndicator() {
     const title = document.getElementById('activeTitle');
     if (!title) return;
@@ -115,47 +122,62 @@
       node.style.fontSize = '.78rem';
       title.insertAdjacentElement('afterend', node);
     }
-    node.textContent = state.email ? `Signed in as ${state.email}` : (state.ready ? 'Local profile' : 'Checking signed-in account…');
+    setText(node, state.email ? `Signed in as ${state.email}` : (state.ready ? 'Local profile' : 'Checking signed-in account…'));
   }
 
   function renderBox(box, exercise, setNumber, weightInput, repsInput) {
     const [tone, summary, detail] = resultFor(state.previous.get(setKey(exercise, setNumber)) || null, weightInput, repsInput);
-    box.dataset.tone = tone;
-    box.querySelector('.set-history-kicker').textContent = `SET ${setNumber} HISTORY`;
-    box.querySelector('.set-history-summary').textContent = summary;
-    box.querySelector('.set-history-detail').textContent = detail;
+    if (box.dataset.tone !== tone) box.dataset.tone = tone;
+    setText(box.querySelector('.set-history-kicker'), `SET ${setNumber} HISTORY`);
+    setText(box.querySelector('.set-history-summary'), summary);
+    setText(box.querySelector('.set-history-detail'), detail);
   }
 
   function render() {
+    if (rendering) return;
     const list = document.getElementById(SET_LIST_ID);
     if (!list) return;
-    accountIndicator();
+    rendering = true;
+    try {
+      accountIndicator();
 
-    // Remove every older history implementation so only V6 can write these cards.
-    list.querySelectorAll('.set-history-compare:not([data-history-v6="true"])').forEach(node => node.remove());
+      // Remove every older history implementation so only V6 can write these cards.
+      list.querySelectorAll('.set-history-compare:not([data-history-v6="true"])').forEach(node => node.remove());
 
-    list.querySelectorAll('.set-row').forEach(row => {
-      const exercise = row.querySelector('.exercise-heading h3')?.textContent?.trim() || '';
-      if (!exercise) return;
-      row.querySelectorAll('button[data-log]').forEach(button => {
-        const [exerciseIndex, setNumber] = String(button.dataset.log || '').split('-').map(Number);
-        if (!Number.isInteger(exerciseIndex) || !Number.isInteger(setNumber)) return;
-        const weightInput = document.getElementById(`w-${exerciseIndex}-${setNumber}`);
-        const repsInput = document.getElementById(`r-${exerciseIndex}-${setNumber}`);
-        if (!weightInput || !repsInput) return;
+      list.querySelectorAll('.set-row').forEach(row => {
+        const exercise = row.querySelector('.exercise-heading h3')?.textContent?.trim() || '';
+        if (!exercise) return;
+        row.querySelectorAll('button[data-log]').forEach(button => {
+          const [exerciseIndex, setNumber] = String(button.dataset.log || '').split('-').map(Number);
+          if (!Number.isInteger(exerciseIndex) || !Number.isInteger(setNumber)) return;
+          const weightInput = document.getElementById(`w-${exerciseIndex}-${setNumber}`);
+          const repsInput = document.getElementById(`r-${exerciseIndex}-${setNumber}`);
+          if (!weightInput || !repsInput) return;
 
-        let box = button.nextElementSibling;
-        if (!box?.classList?.contains('set-history-compare') || box.dataset.historyV6 !== 'true') {
-          box = document.createElement('div');
-          box.className = 'set-history-compare';
-          box.dataset.historyV6 = 'true';
-          box.innerHTML = '<span class="set-history-kicker"></span><strong class="set-history-summary"></strong><span class="set-history-detail"></span>';
-          button.insertAdjacentElement('afterend', box);
-          weightInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
-          repsInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
-        }
-        renderBox(box, exercise, setNumber, weightInput, repsInput);
+          let box = button.nextElementSibling;
+          if (!box?.classList?.contains('set-history-compare') || box.dataset.historyV6 !== 'true') {
+            box = document.createElement('div');
+            box.className = 'set-history-compare';
+            box.dataset.historyV6 = 'true';
+            box.innerHTML = '<span class="set-history-kicker"></span><strong class="set-history-summary"></strong><span class="set-history-detail"></span>';
+            button.insertAdjacentElement('afterend', box);
+            weightInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
+            repsInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
+          }
+          renderBox(box, exercise, setNumber, weightInput, repsInput);
+        });
       });
+    } finally {
+      rendering = false;
+    }
+  }
+
+  function queueRender() {
+    if (renderQueued) return;
+    renderQueued = true;
+    window.requestAnimationFrame(() => {
+      renderQueued = false;
+      render();
     });
   }
 
@@ -190,7 +212,7 @@
     const user = authSession?.user || null;
     const plan = currentPlan(user?.id || '');
     const nextKey = `${user?.id || 'local'}|${plan.id}|${plan.name}|${plan.baseline}`;
-    if (!force && state.ready && state.key === nextKey) return render();
+    if (!force && state.ready && state.key === nextKey) return queueRender();
 
     state.loading = true;
     state.ready = false;
@@ -201,17 +223,17 @@
     state.planName = plan.name;
     state.baseline = plan.baseline;
     state.previous = new Map();
-    render();
+    queueRender();
 
     try {
       if (!user?.id || !supabase) {
         state.previous = localPrevious(plan);
         state.ready = true;
-        return render();
+        return queueRender();
       }
       if (!plan.id && !plan.name) {
         state.ready = true;
-        return render();
+        return queueRender();
       }
 
       let query = supabase
@@ -229,7 +251,7 @@
       const safeSessions = Array.isArray(sessions) ? sessions : [];
       if (!safeSessions.length) {
         state.ready = true;
-        return render();
+        return queueRender();
       }
 
       const completed = new Map(safeSessions.map(item => [item.id, Date.parse(item.completed_at || '') || 0]));
@@ -250,12 +272,12 @@
         });
       state.previous = previous;
       state.ready = true;
-      render();
+      queueRender();
     } catch {
       // Never substitute shared browser history for unverified cloud history.
       state.previous = new Map();
       state.ready = true;
-      render();
+      queueRender();
     } finally {
       state.loading = false;
     }
@@ -263,7 +285,9 @@
 
   function start() {
     const list = document.getElementById(SET_LIST_ID);
-    if (list) new MutationObserver(render).observe(list, { childList: true, subtree: true });
+    // Only watch direct children. Watching the entire subtree caused the history
+    // cards to observe their own text updates and re-render forever, blocking clicks.
+    if (list) new MutationObserver(queueRender).observe(list, { childList: true });
 
     const supabase = client();
     if (supabase) {
@@ -277,10 +301,8 @@
       if (key !== lastPlanKey) {
         lastPlanKey = key;
         void reload(true);
-      } else {
-        render();
       }
-    }, 250);
+    }, 500);
 
     window.addEventListener('levelup:history-v5-ready', () => void reload(true));
     void reload(true);
