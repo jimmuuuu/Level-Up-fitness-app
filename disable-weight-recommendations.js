@@ -1,22 +1,15 @@
 (() => {
-  function removeRecommendations() {
+  // CSS is the permanent fail-safe. This script only removes any legacy cards
+  // that were already in the DOM when the page loaded; it does not observe or
+  // continuously mutate the page.
+  function removeLegacyRecommendations() {
     document.querySelectorAll('#setList .weight-recommendation').forEach(card => card.remove());
     document.getElementById('trainingDetailsCard')?.remove();
   }
 
-  function start() {
-    removeRecommendations();
-    const setList = document.getElementById('setList');
-    if (setList) {
-      new MutationObserver(removeRecommendations).observe(setList, { childList: true, subtree: true });
-    }
-    const profile = document.getElementById('profile');
-    if (profile) {
-      new MutationObserver(removeRecommendations).observe(profile, { childList: true, subtree: true });
-    }
-    window.setInterval(removeRecommendations, 1200);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', removeLegacyRecommendations, { once: true });
+  } else {
+    removeLegacyRecommendations();
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
-  else start();
 })();
