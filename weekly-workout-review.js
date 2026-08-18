@@ -16,7 +16,7 @@
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
+      .replace(/\"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
 
@@ -112,7 +112,7 @@
     card.innerHTML = `
       <div class="weekly-review-top">
         <div>
-          <span class="weekly-review-kicker">COMPLETED THIS WEEK</span>
+          <span class="weekly-review-kicker">VIEW WORKOUT</span>
           <strong>${escapeHtml(dateLabel(session.completedAt))}</strong>
           <small>${exerciseCount} exercise${exerciseCount === 1 ? '' : 's'} · ${setCount} set${setCount === 1 ? '' : 's'} · ${escapeHtml(durationLabel(session))}</small>
         </div>
