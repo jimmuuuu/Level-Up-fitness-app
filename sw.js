@@ -1,8 +1,8 @@
-const CACHE = 'level-up-fitness-20260817-history-v5';
+const CACHE = 'level-up-fitness-20260817-history-v6';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
-  './set-history.css', './set-history.js', './set-history-v5.js', './cloud-history-v5.js', './workout-summary.css', './workout-summary.js',
+  './set-history.css', './set-history.js', './set-history-v6.js', './cloud-history-v5.js', './workout-summary.css', './workout-summary.js',
   './summary-red-override.css', './post-workout-auto-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
