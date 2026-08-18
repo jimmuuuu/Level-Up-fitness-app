@@ -123,5 +123,12 @@ window.LEVEL_UP_SUPABASE = {
       weeklyWorkoutReview.dataset.weeklyWorkoutReview = 'true';
       document.body.appendChild(weeklyWorkoutReview);
     }
+
+    if (!document.querySelector('script[data-rank-threshold]')) {
+      const rankThreshold = document.createElement('script');
+      rankThreshold.src = 'rank-threshold.js?v=1';
+      rankThreshold.dataset.rankThreshold = 'true';
+      document.body.appendChild(rankThreshold);
+    }
   }, { once: true });
 })();
