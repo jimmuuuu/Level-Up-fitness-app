@@ -100,6 +100,15 @@
     loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=3');
   }
 
+  function loadPersistentPause() {
+    loadFeature(
+      'data-rest-timer-pause-visible-style',
+      'rest-timer-pause-visible.css?v=1',
+      'data-rest-timer-pause-visible',
+      'rest-timer-pause-visible.js?v=1'
+    );
+  }
+
   function disableWeightRecommendations() {
     loadFeature(
       'data-disable-weight-recommendations-style',
@@ -124,6 +133,7 @@
     loadFinalFieldNotes();
     loadFiveDayPlan();
     loadRestTimerV3();
+    loadPersistentPause();
     disableWeightRecommendations();
     redirectHomeToWorkout();
 
