@@ -193,7 +193,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-weekly-plan-personalization]')) {
       const weeklyPlanPersonalization = document.createElement('script');
-      weeklyPlanPersonalization.src = 'weekly-plan-personalization.js?v=1';
+      weeklyPlanPersonalization.src = 'weekly-plan-personalization-v3.js?v=1';
       weeklyPlanPersonalization.dataset.weeklyPlanPersonalization = 'true';
       document.body.appendChild(weeklyPlanPersonalization);
     }
