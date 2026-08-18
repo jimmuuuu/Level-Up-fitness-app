@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-weekly-preview-editor-v1';
+const CACHE = 'level-up-fitness-20260817-weekly-preview-editor-v2';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
