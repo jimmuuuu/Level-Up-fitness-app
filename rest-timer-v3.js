@@ -5,6 +5,7 @@
   let interval = null;
   let activeKey = '';
   let lastCompleteKey = '';
+  let lastAutoStartAt = 0;
 
   const byId = id => document.getElementById(id);
 
@@ -152,6 +153,11 @@
 
   function startTimer(seconds = DEFAULT_SECONDS, source = 'manual') {
     if (!activeWorkoutExists()) return;
+    if (source === 'saved-set') {
+      const now = Date.now();
+      if (now - lastAutoStartAt < 500) return;
+      lastAutoStartAt = now;
+    }
     const duration = Math.max(15, Math.min(600, Number(seconds) || DEFAULT_SECONDS));
     const endAt = Date.now() + duration * 1000;
     writeState(endAt, duration);
@@ -225,6 +231,18 @@
     updateAlertsButton();
   }
 
+  function installCoreHook() {
+    try {
+      if (typeof startRestTimer === 'function' && !startRestTimer.__restTimerV3) {
+        const replacement = function(seconds = DEFAULT_SECONDS) {
+          startTimer(seconds, 'saved-set');
+        };
+        replacement.__restTimerV3 = true;
+        startRestTimer = replacement;
+      }
+    } catch {}
+  }
+
   function bind() {
     if (document.body.dataset.restTimerV3Bound === 'true') return;
     document.body.dataset.restTimerV3Bound = 'true';
@@ -258,16 +276,26 @@
       }, 120);
     }, true);
 
-    window.addEventListener('pageshow', render);
-    document.addEventListener('visibilitychange', render);
+    window.addEventListener('pageshow', () => {
+      installCoreHook();
+      render();
+    });
+    document.addEventListener('visibilitychange', () => {
+      installCoreHook();
+      render();
+    });
   }
 
   function start() {
     ensureUi();
+    installCoreHook();
     bind();
     render();
     if (interval) clearInterval(interval);
-    interval = setInterval(render, 500);
+    interval = setInterval(() => {
+      installCoreHook();
+      render();
+    }, 500);
   }
 
   window.LevelUpRestTimerV3 = {
