@@ -1,7 +1,17 @@
 (() => {
   const HISTORY_KEY = 'levelUpFitnessWorkoutHistory';
+  const CLOUD_HISTORY_PREFIX = 'levelUpFitnessCloudWorkoutHistory:';
+  const HISTORY_OWNER_KEY = 'levelUpFitnessWorkoutHistoryOwner';
+  const ACCOUNT_GRACE_MS = 5 * 60 * 1000;
   const SET_LIST_ID = 'setList';
   const AUTO_WEEKLY_PREFIX = 'custom-auto-weekly-';
+
+  if (!document.querySelector('script[data-account-history-isolation]')) {
+    const isolation = document.createElement('script');
+    isolation.src = 'account-history-isolation.js?v=1';
+    isolation.dataset.accountHistoryIsolation = 'true';
+    document.body.appendChild(isolation);
+  }
 
   if (!document.querySelector('link[data-set-history-style]')) {
     const style = document.createElement('link');
@@ -11,19 +21,58 @@
     document.head.appendChild(style);
   }
 
+  function storedArray(key) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function accountCreationTime() {
+    try {
+      const parsed = Date.parse(cloudUser?.created_at || '');
+      return Number.isFinite(parsed) ? parsed : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function possibleForCurrentCloudAccount(session) {
+    const createdAt = accountCreationTime();
+    if (!createdAt) return true;
+    const completedAt = Number(session?.completedAt) || 0;
+    const startedAt = Number(session?.startedAt) || completedAt;
+    const timestamp = completedAt || startedAt;
+    return !timestamp || timestamp >= createdAt - ACCOUNT_GRACE_MS;
+  }
+
   function readHistory() {
+    try {
+      if (cloudUser?.id) {
+        return storedArray(`${CLOUD_HISTORY_PREFIX}${cloudUser.id}`)
+          .filter(possibleForCurrentCloudAccount);
+      }
+    } catch {}
+
+    try {
+      if (userProfile) {
+        const accountKey = String(userProfile.accountKey || '').trim();
+        const email = String(userProfile.email || '').trim().toLowerCase();
+        const scope = accountKey || email ? `local:${accountKey || email}` : '';
+        const owner = localStorage.getItem(HISTORY_OWNER_KEY) || '';
+        if (scope && owner && owner !== scope) return [];
+      }
+    } catch {}
+
     try {
       if (typeof workoutHistory !== 'undefined' && Array.isArray(workoutHistory)) {
         return workoutHistory;
       }
     } catch {}
 
-    try {
-      const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    return storedArray(HISTORY_KEY);
   }
 
   function currentWorkoutContext() {
