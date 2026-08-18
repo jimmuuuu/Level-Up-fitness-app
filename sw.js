@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260818-field-test-fixes-v7';
+const CACHE = 'level-up-fitness-20260818-field-test-fixes-v8';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
