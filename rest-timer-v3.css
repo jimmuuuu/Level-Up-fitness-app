@@ -1,0 +1,110 @@
+/* Rest timer V3: always visible during active workouts. */
+#active #restTimer,
+#active #fieldRestAlerts {
+  display: none !important;
+}
+
+.rest-timer-v3 {
+  width: 100%;
+  margin: 10px 0 16px;
+  padding: 14px;
+  border: 1px solid #2d3338;
+  border-radius: 17px;
+  background: #111417;
+  box-shadow: 0 10px 26px rgba(0,0,0,.18);
+}
+
+.rest-timer-v3-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rest-timer-v3-label {
+  color: #8f989f;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rest-timer-v3-time {
+  margin-top: 4px;
+  color: #f7f8f9;
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rest-timer-v3.running .rest-timer-v3-time {
+  color: #ff4d57;
+}
+
+.rest-timer-v3-status {
+  max-width: 180px;
+  color: #9ba4ab;
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.rest-timer-v3.running .rest-timer-v3-status {
+  color: #e9edef;
+  font-weight: 750;
+}
+
+.rest-timer-v3-presets,
+.rest-timer-v3-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.rest-timer-v3 button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 8px;
+  border: 1px solid #343a40;
+  border-radius: 11px;
+  color: #f3f5f6;
+  background: #1a1e22;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.rest-timer-v3 button.primary {
+  color: #080a0c;
+  border-color: #ff4d57;
+  background: #ff4d57;
+}
+
+.rest-timer-v3-alerts {
+  width: 100%;
+  margin-top: 9px;
+  color: #aab2b8 !important;
+  background: transparent !important;
+}
+
+.rest-timer-v3-alerts.enabled {
+  color: #f5f7f8 !important;
+  border-color: rgba(255,77,87,.45) !important;
+}
+
+.rest-timer-v3-complete {
+  animation: rest-v3-pulse .7s ease 2;
+}
+
+@keyframes rest-v3-pulse {
+  50% { border-color: #ff4d57; box-shadow: 0 0 0 3px rgba(255,77,87,.09); }
+}
+
+@media (max-width: 390px) {
+  .rest-timer-v3 { padding: 12px; }
+  .rest-timer-v3-time { font-size: 28px; }
+  .rest-timer-v3-status { max-width: 145px; }
+  .rest-timer-v3 button { min-height: 40px; font-size: 10px; }
+}
