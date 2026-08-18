@@ -5,6 +5,20 @@
   const SET_LIST_ID = 'setList';
   const AUTO_WEEKLY_PREFIX = 'custom-auto-weekly-';
 
+  if (!document.querySelector('script[data-account-history-truth]')) {
+    const truth = document.createElement('script');
+    truth.src = 'account-history-truth.js?v=1';
+    truth.dataset.accountHistoryTruth = 'true';
+    document.body.appendChild(truth);
+  }
+
+  if (!document.querySelector('script[data-account-history-isolation]')) {
+    const isolation = document.createElement('script');
+    isolation.src = 'account-history-isolation.js?v=2';
+    isolation.dataset.accountHistoryIsolation = 'true';
+    document.body.appendChild(isolation);
+  }
+
   if (!document.querySelector('link[data-set-history-style]')) {
     const style = document.createElement('link');
     style.rel = 'stylesheet';
@@ -48,8 +62,6 @@
     const userId = cloudUserId();
     if (userId) {
       const truth = window.LevelUpAccountHistoryTruth;
-      // Never show browser history for a signed-in account until that account's
-      // completed sessions have been checked against Supabase.
       if (!truth?.ready || truth.userId !== userId) return [];
       return storedArray(`${CLOUD_HISTORY_PREFIX}${userId}`).filter(possibleForCurrentCloudAccount);
     }
@@ -95,7 +107,6 @@
       ? sessionPlanId === context.planId || (!sessionPlanId && context.planName && sessionPlanName === context.planName)
       : Boolean(context.planName && sessionPlanName === context.planName);
     if (!sameWorkout) return false;
-
     const completedAt = Number(session.completedAt) || 0;
     if (context.baseline && completedAt && completedAt < context.baseline) return false;
     return true;
@@ -104,11 +115,9 @@
   function previousSetFor(exerciseName, setNumber) {
     const context = currentWorkoutContext();
     if (!context.planId && !context.planName) return null;
-
     const history = readHistory()
       .filter(session => session && Array.isArray(session.logs) && belongsToCurrentWorkout(session, context))
       .sort((a, b) => (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0));
-
     for (const session of history) {
       const match = session.logs.find(log => log && log.exercise === exerciseName && Number(log.set) === Number(setNumber));
       if (match) {
@@ -141,44 +150,21 @@
   }
 
   function comparisonFor(previous, weightInput, repsInput) {
-    if (!previous) {
-      return {
-        tone: 'baseline',
-        summary: 'First time in this workout',
-        detail: 'Save this set to create this workout history.'
-      };
-    }
+    if (!previous) return { tone: 'baseline', summary: 'First time in this workout', detail: 'Save this set to create this workout history.' };
 
     const weightText = weightInput.value.trim();
     const repsText = repsInput.value.trim();
-    if (!weightText || !repsText) {
-      return {
-        tone: 'neutral',
-        summary: `Last time: ${previousLabel(previous)}`,
-        detail: "Enter today's weight and reps to compare."
-      };
-    }
+    if (!weightText || !repsText) return { tone: 'neutral', summary: `Last time: ${previousLabel(previous)}`, detail: "Enter today's weight and reps to compare." };
 
     const weight = Number(weightText);
     const reps = Number(repsText);
-    if (!Number.isFinite(weight) || !Number.isFinite(reps) || reps < 1 || weight < 0) {
-      return {
-        tone: 'neutral',
-        summary: `Last time: ${previousLabel(previous)}`,
-        detail: 'Enter valid numbers to compare.'
-      };
-    }
+    if (!Number.isFinite(weight) || !Number.isFinite(reps) || reps < 1 || weight < 0) return { tone: 'neutral', summary: `Last time: ${previousLabel(previous)}`, detail: 'Enter valid numbers to compare.' };
 
     const weightDelta = weight - previous.weight;
     const repsDelta = reps - previous.reps;
-
     if (previous.weight === 0 && weight === 0) {
       const tone = repsDelta > 0 ? 'up' : repsDelta < 0 ? 'down' : 'same';
-      const summary = repsDelta > 0
-        ? `Improved by ${repsDelta} rep${repsDelta === 1 ? '' : 's'}`
-        : repsDelta < 0
-          ? `${Math.abs(repsDelta)} fewer rep${Math.abs(repsDelta) === 1 ? '' : 's'}`
-          : 'Matched last time';
+      const summary = repsDelta > 0 ? `Improved by ${repsDelta} rep${repsDelta === 1 ? '' : 's'}` : repsDelta < 0 ? `${Math.abs(repsDelta)} fewer rep${Math.abs(repsDelta) === 1 ? '' : 's'}` : 'Matched last time';
       return { tone, summary, detail: `Previous ${previous.reps} reps | Today ${reps} reps` };
     }
 
@@ -186,7 +172,6 @@
     const currentVolume = weight * reps;
     const volumeDelta = currentVolume - previousVolume;
     const volumePercent = previousVolume > 0 ? (volumeDelta / previousVolume) * 100 : 0;
-
     let tone = 'same';
     let summary = 'Matched last time';
     if (weightDelta > 0 && repsDelta >= 0) {
@@ -202,37 +187,26 @@
       tone = 'down';
       summary = previousVolume > 0 ? `Below last time: ${Math.abs(Math.round(volumePercent))}% less volume` : 'Below last time';
     }
-
-    return {
-      tone,
-      summary,
-      detail: `Weight ${signed(weightDelta, ' lb')} | Reps ${signed(repsDelta)} | Previous ${previousLabel(previous)}`
-    };
+    return { tone, summary, detail: `Weight ${signed(weightDelta, ' lb')} | Reps ${signed(repsDelta)} | Previous ${previousLabel(previous)}` };
   }
 
   function makeComparison(exerciseName, setNumber, weightInput, repsInput) {
     const box = document.createElement('div');
     box.className = 'set-history-compare';
-
     const kicker = document.createElement('span');
     kicker.className = 'set-history-kicker';
     kicker.textContent = `SET ${setNumber} HISTORY`;
-
     const summary = document.createElement('strong');
     summary.className = 'set-history-summary';
-
     const detail = document.createElement('span');
     detail.className = 'set-history-detail';
     box.append(kicker, summary, detail);
-
     const refresh = () => {
-      const previous = previousSetFor(exerciseName, setNumber);
-      const result = comparisonFor(previous, weightInput, repsInput);
+      const result = comparisonFor(previousSetFor(exerciseName, setNumber), weightInput, repsInput);
       box.dataset.tone = result.tone;
       summary.textContent = result.summary;
       detail.textContent = result.detail;
     };
-
     weightInput.addEventListener('input', refresh);
     repsInput.addEventListener('input', refresh);
     refresh();
@@ -242,12 +216,10 @@
   function decorateSetRows() {
     const setList = document.getElementById(SET_LIST_ID);
     if (!setList) return;
-
     setList.querySelectorAll('.set-row').forEach(row => {
       if (row.dataset.historyComparisonReady === 'true') return;
       const exerciseName = row.querySelector('.exercise-heading h3')?.textContent?.trim();
       if (!exerciseName) return;
-
       [...row.querySelectorAll('button[data-log]')].forEach(button => {
         const [exerciseIndex, setNumber] = String(button.dataset.log || '').split('-').map(Number);
         if (!Number.isInteger(exerciseIndex) || !Number.isInteger(setNumber)) return;
@@ -256,7 +228,6 @@
         if (!weightInput || !repsInput) return;
         button.insertAdjacentElement('afterend', makeComparison(exerciseName, setNumber, weightInput, repsInput));
       });
-
       row.dataset.historyComparisonReady = 'true';
     });
   }
@@ -283,7 +254,6 @@
     };
     new MutationObserver(scheduleDecorate).observe(setList, { childList: true, subtree: true });
     scheduleDecorate();
-
     let lastTruthStamp = 0;
     window.setInterval(() => {
       const stamp = Number(window.LevelUpAccountHistoryTruth?.verifiedAt) || 0;
