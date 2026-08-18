@@ -2,6 +2,7 @@
   const SET_LIST_ID = 'setList';
   const AUTO_PREFIX = 'custom-auto-weekly-';
   const CONFIG_PREFIX = 'levelUpFitnessWeeklyPlan:';
+  const BASELINE_PREFIX = 'levelUpFitnessSetHistoryBaselineV6:';
 
   const state = {
     loading: false,
@@ -51,20 +52,52 @@
     return 0;
   }
 
+  function activeWorkoutStart() {
+    try {
+      const started = Number(activeStartedAt) || 0;
+      if (started > 0) return started;
+    } catch {}
+    try {
+      if (typeof loadActiveWorkoutDraft === 'function') {
+        const started = Number(loadActiveWorkoutDraft()?.startedAt) || 0;
+        if (started > 0) return started;
+      }
+    } catch {}
+    return 0;
+  }
+
+  function persistentGeneratedBaseline(planId, accountId) {
+    if (!planId.startsWith(AUTO_PREFIX)) return 0;
+    const owner = accountId || 'local';
+    const key = `${BASELINE_PREFIX}${owner}:${planId}`;
+    let saved = 0;
+    try { saved = Number(localStorage.getItem(key)) || 0; } catch {}
+
+    if (!saved) {
+      const started = activeWorkoutStart();
+      if (started > 0) {
+        saved = started;
+        try { localStorage.setItem(key, String(saved)); } catch {}
+      }
+    }
+    return saved;
+  }
+
   function currentPlan(accountId = '') {
     try {
       if (typeof activePlan === 'undefined' || !activePlan) return { id: '', name: '', baseline: 0 };
       const id = idFor(activePlan);
       let baseline = configBaseline(id, accountId);
-      if (!baseline && id.startsWith(AUTO_PREFIX)) {
+      if (id.startsWith(AUTO_PREFIX)) {
         try {
           const storedPlan = typeof customPlansForCurrentUser === 'function'
             ? customPlansForCurrentUser().find(plan => idFor(plan) === id)
             : null;
-          baseline = Number(storedPlan?.updatedAt) || Number(activePlan.updatedAt) || 0;
+          baseline = Math.max(baseline, Number(storedPlan?.updatedAt) || Number(activePlan.updatedAt) || 0);
         } catch {
-          baseline = Number(activePlan.updatedAt) || 0;
+          baseline = Math.max(baseline, Number(activePlan.updatedAt) || 0);
         }
+        baseline = Math.max(baseline, persistentGeneratedBaseline(id, accountId));
       }
       return { id, name: String(activePlan.name || ''), baseline };
     } catch {
@@ -85,9 +118,6 @@
   }
 
   function resultFor(previous, weightInput, repsInput) {
-    if (!state.ready) return ['baseline', 'Checking your history', 'Only this account and this version of the workout are being checked.'];
-    if (!previous) return ['baseline', 'First time in this workout', 'Save this set to create this workout history.'];
-
     const weightText = String(weightInput.value || '').trim();
     const repsText = String(repsInput.value || '').trim();
     if (!weightText || !repsText) return ['neutral', `Last time: ${previousText(previous)}`, "Enter today's weight and reps to compare."];
@@ -125,8 +155,8 @@
     setText(node, state.email ? `Signed in as ${state.email}` : (state.ready ? 'Local profile' : 'Checking signed-in account…'));
   }
 
-  function renderBox(box, exercise, setNumber, weightInput, repsInput) {
-    const [tone, summary, detail] = resultFor(state.previous.get(setKey(exercise, setNumber)) || null, weightInput, repsInput);
+  function renderBox(box, previous, weightInput, repsInput, setNumber) {
+    const [tone, summary, detail] = resultFor(previous, weightInput, repsInput);
     if (box.dataset.tone !== tone) box.dataset.tone = tone;
     setText(box.querySelector('.set-history-kicker'), `SET ${setNumber} HISTORY`);
     setText(box.querySelector('.set-history-summary'), summary);
@@ -141,7 +171,7 @@
     try {
       accountIndicator();
 
-      // Remove every older history implementation so only V6 can write these cards.
+      // Legacy history cards are never allowed to remain in the active workout.
       list.querySelectorAll('.set-history-compare:not([data-history-v6="true"])').forEach(node => node.remove());
 
       list.querySelectorAll('.set-row').forEach(row => {
@@ -155,16 +185,26 @@
           if (!weightInput || !repsInput) return;
 
           let box = button.nextElementSibling;
-          if (!box?.classList?.contains('set-history-compare') || box.dataset.historyV6 !== 'true') {
+          const isV6Box = box?.classList?.contains('set-history-compare') && box.dataset.historyV6 === 'true';
+          const previous = state.ready ? (state.previous.get(setKey(exercise, setNumber)) || null) : null;
+
+          // A first-time workout should not show a Set History card at all.
+          // History appears only after this exact workout has a verified prior set.
+          if (!previous) {
+            if (isV6Box) box.remove();
+            return;
+          }
+
+          if (!isV6Box) {
             box = document.createElement('div');
             box.className = 'set-history-compare';
             box.dataset.historyV6 = 'true';
             box.innerHTML = '<span class="set-history-kicker"></span><strong class="set-history-summary"></strong><span class="set-history-detail"></span>';
             button.insertAdjacentElement('afterend', box);
-            weightInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
-            repsInput.addEventListener('input', () => renderBox(box, exercise, setNumber, weightInput, repsInput));
+            weightInput.addEventListener('input', queueRender);
+            repsInput.addEventListener('input', queueRender);
           }
-          renderBox(box, exercise, setNumber, weightInput, repsInput);
+          renderBox(box, previous, weightInput, repsInput, setNumber);
         });
       });
     } finally {
@@ -285,9 +325,24 @@
 
   function start() {
     const list = document.getElementById(SET_LIST_ID);
-    // Only watch direct children. Watching the entire subtree caused the history
-    // cards to observe their own text updates and re-render forever, blocking clicks.
-    if (list) new MutationObserver(queueRender).observe(list, { childList: true });
+    if (list) {
+      new MutationObserver(mutations => {
+        let relevant = false;
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType !== 1) continue;
+            const element = node;
+            if (element.matches?.('.set-row, .set-history-compare:not([data-history-v6="true"])')
+              || element.querySelector?.('.set-row, .set-history-compare:not([data-history-v6="true"])')) {
+              relevant = true;
+              break;
+            }
+          }
+          if (relevant) break;
+        }
+        if (relevant) queueRender();
+      }).observe(list, { childList: true, subtree: true });
+    }
 
     const supabase = client();
     if (supabase) {
