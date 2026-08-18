@@ -1,0 +1,5 @@
+/* Recommended starting weights are disabled after real gym testing showed they were not reliable enough. */
+#setList .weight-recommendation,
+#trainingDetailsCard {
+  display: none !important;
+}
