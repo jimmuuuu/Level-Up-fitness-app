@@ -44,6 +44,14 @@
         if (detail) detail.textContent = 'Mostly bodyweight and simple equipment';
       }
 
+      const longWorkout = overlay.querySelector('[data-weekly-choice="75"]');
+      if (longWorkout) {
+        const heading = longWorkout.querySelector('b');
+        const detail = longWorkout.querySelector('small');
+        if (heading) heading.textContent = '75+ minutes';
+        if (detail) detail.textContent = 'Longer session with more exercises and accessories';
+      }
+
       const previewCopy = overlay.querySelector('.weekly-preview-summary p');
       if (previewCopy) {
         previewCopy.textContent = previewCopy.textContent
@@ -51,6 +59,13 @@
           .replace(/Full gym/g, 'Free weight')
           .replace(/Full free-weight gym/g, 'Free weight')
           .replace(/Home gym \/ dumbbells/g, 'Home gym');
+      }
+
+      const previewTiming = overlay.querySelector('.weekly-preview-summary strong');
+      if (previewTiming) {
+        previewTiming.textContent = previewTiming.textContent
+          .replace(/about 75 min each/gi, '75+ min each')
+          .replace(/75 min each/gi, '75+ min each');
       }
     }
 
@@ -62,6 +77,13 @@
         .replace(/Full gym/g, 'Free weight')
         .replace(/Full free-weight gym/g, 'Free weight')
         .replace(/Home gym \/ dumbbells/g, 'Home gym');
+    }
+
+    const planToolbar = planSection?.querySelector('.weekly-plan-toolbar strong');
+    if (planToolbar) {
+      planToolbar.textContent = planToolbar.textContent
+        .replace(/about 75 min\/workout/gi, '75+ min/workout')
+        .replace(/75 min\/workout/gi, '75+ min/workout');
     }
   }
 
