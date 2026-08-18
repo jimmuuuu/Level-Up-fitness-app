@@ -1,11 +1,11 @@
-/* Three-section app shell: Workout, Progress, Profile. */
+/* Four-section app shell: Workout, Progress, Scan, Profile. */
 #home,
 .tabs button[data-page="home"] {
   display: none !important;
 }
 
 .tabs {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
 /* These are now top-level destinations, so they do not need a Home back button. */
