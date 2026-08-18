@@ -129,6 +129,77 @@
     }
   }
 
+  function activePlanId() {
+    try {
+      if (typeof activePlan === 'undefined' || !activePlan) return '';
+      return typeof planIdFor === 'function' ? String(planIdFor(activePlan) || '') : String(activePlan.id || '');
+    } catch {
+      return '';
+    }
+  }
+
+  function mostLikelyWeeklyPlanOwner() {
+    const planId = activePlanId();
+    if (!planId.startsWith('custom-auto-weekly-')) return '';
+
+    let bestOwner = '';
+    let bestUpdatedAt = 0;
+    try {
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index) || '';
+        const prefix = 'levelUpFitnessWeeklyPlan:';
+        if (!key.startsWith(prefix)) continue;
+        let config = null;
+        try { config = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+        if (!config || !Array.isArray(config.planIds) || !config.planIds.includes(planId)) continue;
+        const updatedAt = Number(config.updatedAt) || 0;
+        if (updatedAt >= bestUpdatedAt) {
+          bestUpdatedAt = updatedAt;
+          bestOwner = key.slice(prefix.length);
+        }
+      }
+    } catch {}
+    return bestOwner;
+  }
+
+  function authoritativeHistoryIsEmpty() {
+    try {
+      const source = window.LevelUpAuthoritativeHistory;
+      if (source?.cloud && source.ready) {
+        const history = source.getHistory?.();
+        if (Array.isArray(history) && history.length === 0) return true;
+      }
+    } catch {}
+
+    try {
+      const truth = window.LevelUpAccountHistoryTruth;
+      if (truth?.ready && Number(truth.completedCount) === 0) return true;
+    } catch {}
+    return false;
+  }
+
+  function generatedPlanBelongsToDifferentAccount(authUserId) {
+    if (!authUserId) return false;
+    const owner = mostLikelyWeeklyPlanOwner();
+    if (!owner) return false;
+    // Cloud-generated weekly plans use the Supabase user id as the storage scope.
+    // If the newest matching weekly plan belongs to another id, never borrow the
+    // current Supabase session's workout history for this active workout.
+    if (/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(owner)) return owner !== authUserId;
+    return false;
+  }
+
+  function shouldSuppressHistory() {
+    if (identityMismatch) return true;
+    if (authoritativeHistoryIsEmpty()) return true;
+
+    try {
+      const authId = String(window.LevelUpAuthoritativeHistory?.userId || cloudUser?.id || '');
+      if (generatedPlanBelongsToDifferentAccount(authId)) return true;
+    } catch {}
+    return false;
+  }
+
   async function verifyAccountIdentity() {
     if (identityCheckRunning) return;
     identityCheckRunning = true;
@@ -152,11 +223,12 @@
       const emailMismatch = Boolean(profile.email && authEmail && profile.email !== authEmail);
       const idMismatch = Boolean(profile.cloudUserId && profile.cloudUserId !== authUser.id);
       const localProfileWithCloudSession = Boolean(profile.provider && !profileIsGoogle);
+      const weeklyOwnerMismatch = generatedPlanBelongsToDifferentAccount(authUser.id);
 
-      identityMismatch = emailMismatch || idMismatch || localProfileWithCloudSession;
-      if (identityMismatch) enforceIdentitySafeHistory();
+      identityMismatch = emailMismatch || idMismatch || localProfileWithCloudSession || weeklyOwnerMismatch;
+      if (shouldSuppressHistory()) enforceIdentitySafeHistory();
     } catch {
-      // If identity cannot be verified, do not invent or rewrite history.
+      // If identity cannot be verified, leave existing data untouched until the next check.
     } finally {
       identityCheckRunning = false;
     }
@@ -183,7 +255,7 @@
   }
 
   function keepIdentityHistorySafe() {
-    if (identityMismatch) enforceIdentitySafeHistory();
+    if (shouldSuppressHistory()) enforceIdentitySafeHistory();
   }
 
   document.addEventListener('click', event => {
@@ -193,9 +265,15 @@
     window.setTimeout(() => { void verifyAccountIdentity(); }, 0);
   });
 
+  window.addEventListener('levelup:authoritative-history-ready', () => {
+    void verifyAccountIdentity();
+    keepIdentityHistorySafe();
+  });
+
   window.addEventListener('pageshow', () => {
     if (activeWorkoutExists()) ensureSessionTimer();
     void verifyAccountIdentity();
+    keepIdentityHistorySafe();
   });
 
   window.addEventListener('load', () => {
@@ -203,6 +281,6 @@
     window.setInterval(() => {
       void verifyAccountIdentity();
       keepIdentityHistorySafe();
-    }, 500);
+    }, 250);
   }, { once: true });
 })();
