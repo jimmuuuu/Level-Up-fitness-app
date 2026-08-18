@@ -36,7 +36,7 @@ window.LEVEL_UP_SUPABASE = {
   if (!document.querySelector('link[data-set-history-style]')) {
     const setHistoryStyle = document.createElement('link');
     setHistoryStyle.rel = 'stylesheet';
-    setHistoryStyle.href = 'set-history.css?v=2';
+    setHistoryStyle.href = 'set-history.css?v=3';
     setHistoryStyle.dataset.setHistoryStyle = 'true';
     document.head.appendChild(setHistoryStyle);
   }
@@ -92,7 +92,6 @@ window.LEVEL_UP_SUPABASE = {
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
 
-  // Workout is the app's main landing section. Keep active/builder destinations intact.
   try {
     const key = 'levelUpFitnessLastPage';
     const remembered = sessionStorage.getItem(key) || '';
@@ -114,11 +113,6 @@ window.LEVEL_UP_SUPABASE = {
     }
   };
 
-  // The HTML briefly hides the app shell while the remembered page is restored.
-  // Cloud profile/history hydration can take longer than expected, so never let
-  // that temporary state turn into a permanent black screen. If startup has not
-  // finished quickly, render the cached/local UI immediately while cloud sync
-  // continues in the background.
   const recoverLocalStartup = () => {
     if (!document.documentElement.hasAttribute('data-restoring-page')) return;
 
@@ -161,9 +155,7 @@ window.LEVEL_UP_SUPABASE = {
         const discard = document.getElementById('discardWorkout');
         if (discard && typeof discardWorkout === 'function') discard.onclick = discardWorkout;
       }
-    } catch {
-      // Even if one optional renderer fails, reveal the base Workout page.
-    }
+    } catch {}
 
     document.documentElement.removeAttribute('data-restoring-page');
     const shell = document.getElementById('appShell');
@@ -183,13 +175,12 @@ window.LEVEL_UP_SUPABASE = {
     forceWorkoutIfHome();
   }
 
-  // Load optional helpers only after the main app has finished loading.
   window.addEventListener('load', () => {
     scheduleStartupRecovery(700);
 
     if (!document.querySelector('script[data-auth-session-fix]')) {
       const authSessionFix = document.createElement('script');
-      authSessionFix.src = 'auth-session-fix.js?v=2';
+      authSessionFix.src = 'auth-session-fix.js?v=3';
       authSessionFix.dataset.authSessionFix = 'true';
       document.body.appendChild(authSessionFix);
     }
@@ -201,9 +192,16 @@ window.LEVEL_UP_SUPABASE = {
       document.body.appendChild(navigation);
     }
 
+    if (!document.querySelector('script[data-cloud-history-v5]')) {
+      const cloudHistory = document.createElement('script');
+      cloudHistory.src = 'cloud-history-v5.js?v=1';
+      cloudHistory.dataset.cloudHistoryV5 = 'true';
+      document.body.appendChild(cloudHistory);
+    }
+
     if (!document.querySelector('script[data-set-history-feature]')) {
       const setHistory = document.createElement('script');
-      setHistory.src = 'set-history.js?v=2';
+      setHistory.src = 'set-history-v5.js?v=1';
       setHistory.dataset.setHistoryFeature = 'true';
       document.body.appendChild(setHistory);
     }
@@ -224,7 +222,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-weight-recommendations]')) {
       const weightRecommendations = document.createElement('script');
-      weightRecommendations.src = 'weight-recommendations.js?v=1';
+      weightRecommendations.src = 'weight-recommendations.js?v=2';
       weightRecommendations.dataset.weightRecommendations = 'true';
       document.body.appendChild(weightRecommendations);
     }
@@ -266,7 +264,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-start-workout-navigation-fix]')) {
       const startWorkoutNavigationFix = document.createElement('script');
-      startWorkoutNavigationFix.src = 'start-workout-navigation-fix.js?v=1';
+      startWorkoutNavigationFix.src = 'start-workout-navigation-fix.js?v=5';
       startWorkoutNavigationFix.dataset.startWorkoutNavigationFix = 'true';
       document.body.appendChild(startWorkoutNavigationFix);
     }
@@ -290,7 +288,6 @@ window.LEVEL_UP_SUPABASE = {
       loadWeeklyPreviewEditor();
     } else {
       existingPersonalization.addEventListener('load', loadWeeklyPreviewEditor, { once: true });
-      // If the existing script already finished before this listener was attached, load the editor on the next task.
       window.setTimeout(loadWeeklyPreviewEditor, 300);
     }
   }, { once: true });
