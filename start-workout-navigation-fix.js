@@ -2,6 +2,13 @@
   let forcing = false;
   let timerWatchdog = null;
 
+  if (!document.querySelector('script[data-authoritative-history-sync]')) {
+    const sync = document.createElement('script');
+    sync.src = 'authoritative-history-sync.js?v=1';
+    sync.dataset.authoritativeHistorySync = 'true';
+    document.body.appendChild(sync);
+  }
+
   function activeWorkoutExists() {
     try {
       if (typeof activePlan !== 'undefined' && activePlan) return true;
