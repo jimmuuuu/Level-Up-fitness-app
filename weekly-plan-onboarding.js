@@ -4,36 +4,32 @@
   const AUTO_PLAN_PREFIX = 'custom-auto-weekly-';
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const MAX_CUSTOM_WORKOUTS_ALLOWED = 12;
+  const QUESTION_COUNT = 6;
 
   let currentConfig = null;
   let cloudLoadedFor = '';
   let renderQueued = false;
   let wizardDraft = null;
+  let wizardStep = 0;
   let autoOpenTimer = 0;
 
   const escapeHtml = value => String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\"/g, '&quot;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 
   function accountId() {
     return cloudUser?.id || userProfile?.accountKey || userProfile?.email?.trim().toLowerCase() || 'local';
   }
 
-  function configKey() {
-    return `${CONFIG_PREFIX}${accountId()}`;
-  }
-
-  function seenKey() {
-    return `${SEEN_PREFIX}${accountId()}`;
-  }
+  function configKey() { return `${CONFIG_PREFIX}${accountId()}`; }
+  function seenKey() { return `${SEEN_PREFIX}${accountId()}`; }
 
   function readLocalConfig() {
     try {
-      const value = JSON.parse(localStorage.getItem(configKey()) || 'null');
-      return normalizeConfig(value);
+      return normalizeConfig(JSON.parse(localStorage.getItem(configKey()) || 'null'));
     } catch {
       return null;
     }
@@ -51,7 +47,7 @@
 
   function hasBuiltInProgram() {
     try {
-      return Boolean(personalProgramForCurrentUser());
+      return typeof personalProgramForCurrentUser === 'function' && Boolean(personalProgramForCurrentUser());
     } catch {
       return false;
     }
@@ -59,22 +55,26 @@
 
   function recommendedDays(count) {
     const map = {
+      1: ['Wednesday'],
       2: ['Monday', 'Thursday'],
       3: ['Monday', 'Wednesday', 'Friday'],
       4: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
       5: ['Monday', 'Tuesday', 'Wednesday', 'Friday', 'Saturday'],
-      6: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+      6: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      7: [...DAYS]
     };
     return [...(map[count] || map[4])];
   }
 
   function splitNames(count) {
     const map = {
+      1: ['Full Body A'],
       2: ['Full Body A', 'Full Body B'],
       3: ['Full Body A', 'Full Body B', 'Full Body C'],
       4: ['Upper Body A', 'Lower Body A', 'Upper Body B', 'Lower Body B'],
       5: ['Push', 'Pull', 'Legs', 'Upper Body', 'Lower Body'],
-      6: ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B']
+      6: ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B'],
+      7: ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B', 'Recovery & Core']
     };
     return [...(map[count] || map[4])];
   }
@@ -82,7 +82,7 @@
   function normalizeAnswers(value) {
     const goal = ['muscle', 'strength', 'fitness', 'endurance'].includes(value?.goal) ? value.goal : 'muscle';
     const experience = ['new', 'beginner', 'intermediate'].includes(value?.experience) ? value.experience : 'beginner';
-    const days = Math.min(6, Math.max(2, Number(value?.days) || 4));
+    const days = Math.min(7, Math.max(1, Number(value?.days) || 4));
     const location = ['planet', 'full', 'home', 'minimal'].includes(value?.location) ? value.location : 'full';
     const duration = [30, 45, 60, 75].includes(Number(value?.duration)) ? Number(value.duration) : 60;
     const selected = Array.isArray(value?.trainingDays)
@@ -111,13 +111,7 @@
           rest: typeof item.rest === 'string' ? item.rest.slice(0, 120) : ''
         }))
       : [];
-    return {
-      version: 1,
-      answers,
-      planIds,
-      schedule,
-      updatedAt: Number(value.updatedAt) || Date.now()
-    };
+    return { version: 1, answers, planIds, schedule, updatedAt: Number(value.updatedAt) || Date.now() };
   }
 
   async function loadCloudConfig() {
@@ -148,8 +142,10 @@
     const id = cloudUser?.id || '';
     const client = getSupabaseClient?.();
     if (!id || !client) return;
-    const payload = { weekly_plan: config, updated_at: new Date().toISOString() };
-    const { error } = await client.from('profiles').update(payload).eq('id', id);
+    const { error } = await client.from('profiles').update({
+      weekly_plan: config,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
     if (error) throw error;
   }
 
@@ -162,7 +158,7 @@
   }
 
   function locationLabel(value) {
-    return ({ planet: 'Planet Fitness', full: 'Full gym', home: 'Home gym', minimal: 'Minimal equipment' })[value] || 'Full gym';
+    return ({ planet: 'Planet Fitness', full: 'Full gym', home: 'Home gym / dumbbells', minimal: 'Minimal equipment' })[value] || 'Full gym';
   }
 
   function goalRanges(goal) {
@@ -172,15 +168,17 @@
     return { main: [8, 12], accessory: [10, 15] };
   }
 
-  function exerciseCountFor(answers) {
+  function exerciseCountFor(answers, light = false) {
+    if (light) return Math.min(4, ({ 30: 3, 45: 4, 60: 4, 75: 4 })[answers.duration] || 4);
     let count = ({ 30: 4, 45: 5, 60: 6, 75: 7 })[answers.duration] || 6;
     if (answers.experience === 'new') count = Math.min(count, 5);
     return count;
   }
 
-  function setsFor(answers, role = 'main') {
+  function setsFor(answers, role = 'main', light = false) {
+    if (light) return 2;
     if (answers.experience === 'new') return 2;
-    if (answers.experience === 'intermediate') return role === 'main' ? 3 : 3;
+    if (answers.experience === 'intermediate') return 3;
     return role === 'main' ? 3 : 2;
   }
 
@@ -307,14 +305,15 @@
     'Legs A': ['squat', 'hamstring', 'quad', 'calf', 'core'],
     'Push B': ['inclineChest', 'shoulder', 'chest', 'lateral', 'triceps', 'core'],
     'Pull B': ['row', 'pull', 'rearDelt', 'biceps', 'core'],
-    'Legs B': ['hinge', 'lunge', 'quad', 'glute', 'calf', 'core']
+    'Legs B': ['hinge', 'lunge', 'quad', 'glute', 'calf', 'core'],
+    'Recovery & Core': ['core', 'rearDelt', 'calf', 'glute']
   };
 
   function catalogByName(name) {
     return exerciseCatalog.find(item => item.name === name) || null;
   }
 
-  function makeExercise(key, answers, index) {
+  function makeExercise(key, answers, index, light = false) {
     const names = candidates[key]?.[answers.location] || [];
     const catalog = names.map(catalogByName).find(Boolean);
     if (!catalog) return null;
@@ -330,8 +329,8 @@
       muscle: catalog.primary[0],
       primary: [...catalog.primary],
       assists: [...catalog.assists],
-      sets: setsFor(answers, role),
-      repRange: [...ranges[role]]
+      sets: setsFor(answers, role, light),
+      repRange: light ? [10, 15] : [...ranges[role]]
     };
   }
 
@@ -342,12 +341,13 @@
   }
 
   function buildWorkout(name, index, answers, existingRevision = 0) {
-    const targetCount = exerciseCountFor(answers);
-    const keys = [...(splitKeys[name] || splitKeys['Full Body A']), ...fallbackKeysFor(answers.location)];
+    const light = name === 'Recovery & Core';
+    const targetCount = exerciseCountFor(answers, light);
+    const keys = [...(splitKeys[name] || splitKeys['Full Body A']), ...(light ? [] : fallbackKeysFor(answers.location))];
     const used = new Set();
     const exercises = [];
     for (const key of keys) {
-      const exercise = makeExercise(key, answers, exercises.length);
+      const exercise = makeExercise(key, answers, exercises.length, light);
       if (!exercise || used.has(exercise.name)) continue;
       used.add(exercise.name);
       exercises.push(exercise);
@@ -367,8 +367,15 @@
 
   function buildPreview(answers) {
     const names = splitNames(answers.days);
-    const existing = new Map(customPlansForCurrentUser().filter(plan => plan.id.startsWith(AUTO_PLAN_PREFIX)).map(plan => [plan.id, plan]));
-    const built = names.map((name, index) => buildWorkout(name, index, answers, Number(existing.get(`${AUTO_PLAN_PREFIX}${index + 1}`)?.revision) || 0)).filter(Boolean);
+    const existing = new Map(customPlansForCurrentUser()
+      .filter(plan => plan.id.startsWith(AUTO_PLAN_PREFIX))
+      .map(plan => [plan.id, plan]));
+    const built = names.map((name, index) => buildWorkout(
+      name,
+      index,
+      answers,
+      Number(existing.get(`${AUTO_PLAN_PREFIX}${index + 1}`)?.revision) || 0
+    )).filter(Boolean);
     const selectedDays = DAYS.filter(day => answers.trainingDays.includes(day));
     const schedule = DAYS.map(day => {
       const workoutIndex = selectedDays.indexOf(day);
@@ -429,7 +436,7 @@
       if (cloudReady) await saveCloudProfile();
       await saveCloudConfig(config);
     } catch {
-      // The local plan is complete. Existing sync systems can retry profile data later.
+      // Local plan is already usable; normal profile sync can retry later.
     }
 
     renderPlans();
@@ -467,7 +474,7 @@
       <div>
         <span>PERSONALIZED SCHEDULE</span>
         <h3>Build your weekly plan</h3>
-        <p>Get a workout schedule based on your goal, experience, equipment, available days, and workout length.</p>
+        <p>Answer one question at a time and get a schedule based on your goals, experience, equipment, available days, and workout length.</p>
       </div>
       <button class="primary" type="button" data-weekly-plan-create>Create my plan</button>
     </article>`;
@@ -521,7 +528,7 @@
     }
     list.dataset.weeklyGeneratedSignature = signature;
 
-    if (intro) intro.textContent = `${currentConfig.answers.days} training days · ${goalLabel(currentConfig.answers.goal)} · ${locationLabel(currentConfig.answers.location)}`;
+    if (intro) intro.textContent = `${currentConfig.answers.days} training day${currentConfig.answers.days === 1 ? '' : 's'} · ${goalLabel(currentConfig.answers.goal)} · ${locationLabel(currentConfig.answers.location)}`;
     list.innerHTML = `<div class="weekly-plan-toolbar">
         <div><span>YOUR PLAN</span><strong>${experienceLabel(currentConfig.answers.experience)} · about ${currentConfig.answers.duration} min/workout</strong></div>
         <button type="button" data-weekly-plan-edit-setup>Edit weekly plan</button>
@@ -533,23 +540,15 @@
           <li>Use controlled repetitions and stop sets while your technique is still clean.</li>
           <li>Start conservatively on unfamiliar movements or machines.</li>
           <li>When you reach the top of your rep range comfortably with good form, add a small amount of weight next time.</li>
-          <li>Rest days are part of the plan; you do not need to make them up.</li>
+          <li>If you train most or all days of the week, keep some sessions lighter and take recovery when you need it.</li>
         </ul>
       </details>`;
     document.getElementById('libraryTitle').textContent = 'Other premade workouts';
 
     list.querySelector('[data-weekly-plan-edit-setup]')?.addEventListener('click', () => openWizard(currentConfig.answers));
-    list.querySelectorAll('[data-weekly-view]').forEach(button => {
-      button.onclick = () => detail(button.dataset.weeklyView);
-    });
-    list.querySelectorAll('[data-weekly-edit]').forEach(button => {
-      button.onclick = () => openWorkoutBuilder(button.dataset.weeklyEdit);
-    });
+    list.querySelectorAll('[data-weekly-view]').forEach(button => { button.onclick = () => detail(button.dataset.weeklyView); });
+    list.querySelectorAll('[data-weekly-edit]').forEach(button => { button.onclick = () => openWorkoutBuilder(button.dataset.weeklyEdit); });
     hideGeneratedCustomCards();
-  }
-
-  function dayButtonsMarkup(selected) {
-    return DAYS.map(day => `<button type="button" class="weekly-day-choice ${selected.includes(day) ? 'selected' : ''}" data-day-choice="${day}" aria-pressed="${selected.includes(day) ? 'true' : 'false'}">${day.slice(0, 3)}</button>`).join('');
   }
 
   function ensureWizard() {
@@ -574,110 +573,206 @@
   }
 
   function openWizard(seed = null) {
-    const overlay = ensureWizard();
     wizardDraft = normalizeAnswers(seed || currentConfig?.answers || {
       goal: 'muscle', experience: 'beginner', days: 4, location: 'full', duration: 60
     });
-    renderWizardQuestions();
+    wizardStep = 0;
+    const overlay = ensureWizard();
     overlay.classList.remove('hidden');
     document.body.classList.add('weekly-plan-wizard-open');
+    renderWizardStep();
   }
 
-  function renderWizardQuestions() {
-    const overlay = ensureWizard();
-    overlay.innerHTML = `<div class="weekly-wizard-sheet">
-      <header class="weekly-wizard-header">
-        <div><span>LEVEL UP SETUP</span><h2 id="weeklyWizardTitle">Build your weekly plan</h2><p>Answer a few questions and Level Up will build a schedule you can edit later.</p></div>
-        <button type="button" class="weekly-wizard-close" aria-label="Close">×</button>
-      </header>
+  function progressMarkup(step) {
+    return Array.from({ length: QUESTION_COUNT }, (_, index) => `<i class="${index < step ? 'done' : index === step ? 'active' : ''}"></i>`).join('');
+  }
 
-      <div class="weekly-wizard-grid">
-        <label><span>Main goal</span><select id="weeklyGoal">
-          <option value="muscle" ${wizardDraft.goal === 'muscle' ? 'selected' : ''}>Build muscle</option>
-          <option value="strength" ${wizardDraft.goal === 'strength' ? 'selected' : ''}>Get stronger</option>
-          <option value="fitness" ${wizardDraft.goal === 'fitness' ? 'selected' : ''}>General fitness</option>
-          <option value="endurance" ${wizardDraft.goal === 'endurance' ? 'selected' : ''}>Improve endurance</option>
-        </select></label>
-        <label><span>Experience</span><select id="weeklyExperience">
-          <option value="new" ${wizardDraft.experience === 'new' ? 'selected' : ''}>Brand new</option>
-          <option value="beginner" ${wizardDraft.experience === 'beginner' ? 'selected' : ''}>Beginner</option>
-          <option value="intermediate" ${wizardDraft.experience === 'intermediate' ? 'selected' : ''}>Intermediate</option>
-        </select></label>
-        <label><span>Training days per week</span><select id="weeklyDays">
-          ${[2,3,4,5,6].map(value => `<option value="${value}" ${wizardDraft.days === value ? 'selected' : ''}>${value} days</option>`).join('')}
-        </select></label>
-        <label><span>Where do you train?</span><select id="weeklyLocation">
-          <option value="planet" ${wizardDraft.location === 'planet' ? 'selected' : ''}>Planet Fitness</option>
-          <option value="full" ${wizardDraft.location === 'full' ? 'selected' : ''}>Full gym</option>
-          <option value="home" ${wizardDraft.location === 'home' ? 'selected' : ''}>Home gym / dumbbells</option>
-          <option value="minimal" ${wizardDraft.location === 'minimal' ? 'selected' : ''}>Minimal equipment</option>
-        </select></label>
-        <label><span>Workout length</span><select id="weeklyDuration">
-          ${[30,45,60,75].map(value => `<option value="${value}" ${wizardDraft.duration === value ? 'selected' : ''}>About ${value} minutes</option>`).join('')}
-        </select></label>
+  function shellMarkup(inner, { preview = false } = {}) {
+    return `<div class="weekly-slide-shell">
+      <div class="weekly-slide-topbar">
+        <button type="button" class="weekly-slide-back" ${wizardStep === 0 && !preview ? 'disabled' : ''} aria-label="Back">←</button>
+        <div class="weekly-slide-progress" aria-label="Setup progress">${progressMarkup(preview ? QUESTION_COUNT : wizardStep)}</div>
+        <button type="button" class="weekly-slide-close" aria-label="Close">×</button>
       </div>
-
-      <section class="weekly-day-picker">
-        <div><span>TRAINING DAYS</span><strong>Pick exactly ${wizardDraft.days}</strong></div>
-        <div id="weeklyDayChoices" class="weekly-day-choices">${dayButtonsMarkup(wizardDraft.trainingDays)}</div>
-        <p id="weeklyDayStatus">Rest days will fill in automatically.</p>
-      </section>
-
-      <div class="weekly-wizard-actions">
-        <button type="button" class="weekly-secondary" data-weekly-cancel>Cancel</button>
-        <button type="button" class="weekly-primary" data-weekly-preview>Preview my plan</button>
-      </div>
+      ${inner}
     </div>`;
+  }
 
-    overlay.querySelector('.weekly-wizard-close').onclick = closeWizard;
-    overlay.querySelector('[data-weekly-cancel]').onclick = closeWizard;
+  function choiceButton(value, title, subtitle, selected = false) {
+    return `<button type="button" class="weekly-choice ${selected ? 'selected' : ''}" data-weekly-choice="${escapeHtml(value)}">
+      <span><b>${escapeHtml(title)}</b>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ''}</span>
+      <span class="weekly-choice-mark" aria-hidden="true">✓</span>
+    </button>`;
+  }
 
-    const updateAnswers = () => {
-      const nextDays = Number(document.getElementById('weeklyDays').value);
-      const dayChanged = nextDays !== wizardDraft.days;
-      wizardDraft = normalizeAnswers({
-        goal: document.getElementById('weeklyGoal').value,
-        experience: document.getElementById('weeklyExperience').value,
-        days: nextDays,
-        location: document.getElementById('weeklyLocation').value,
-        duration: Number(document.getElementById('weeklyDuration').value),
-        trainingDays: dayChanged ? recommendedDays(nextDays) : wizardDraft.trainingDays
+  function nextStep() {
+    wizardStep = Math.min(QUESTION_COUNT, wizardStep + 1);
+    renderWizardStep();
+  }
+
+  function previousStep() {
+    if (wizardStep <= 0) return;
+    wizardStep -= 1;
+    renderWizardStep();
+  }
+
+  function singleChoiceScreen({ kicker, title, copy, choices, field }) {
+    const overlay = ensureWizard();
+    const buttons = choices.map(item => choiceButton(item.value, item.title, item.subtitle, wizardDraft[field] === item.value)).join('');
+    overlay.innerHTML = shellMarkup(`<main class="weekly-slide-content">
+      <span class="weekly-slide-kicker">${escapeHtml(kicker)}</span>
+      <h2 id="weeklyWizardTitle">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(copy)}</p>
+      <div class="weekly-choice-list">${buttons}</div>
+    </main>`);
+    bindShell();
+    overlay.querySelectorAll('[data-weekly-choice]').forEach(button => {
+      button.onclick = () => {
+        const raw = button.dataset.weeklyChoice;
+        wizardDraft[field] = field === 'duration' || field === 'days' ? Number(raw) : raw;
+        overlay.querySelectorAll('[data-weekly-choice]').forEach(item => item.classList.toggle('selected', item === button));
+        if (field === 'days') wizardDraft.trainingDays = recommendedDays(wizardDraft.days);
+        window.setTimeout(nextStep, 130);
+      };
+    });
+  }
+
+  function renderGoalStep() {
+    singleChoiceScreen({
+      kicker: '1 OF 6 · YOUR GOAL',
+      title: 'What are you training for?',
+      copy: 'This changes the exercise balance and rep ranges in your plan.',
+      field: 'goal',
+      choices: [
+        { value: 'muscle', title: 'Build muscle', subtitle: 'Balanced strength and muscle-building work' },
+        { value: 'strength', title: 'Get stronger', subtitle: 'More focus on your main movements' },
+        { value: 'fitness', title: 'General fitness', subtitle: 'A balanced mix for overall training' },
+        { value: 'endurance', title: 'Improve endurance', subtitle: 'More moderate-load, higher-rep work' }
+      ]
+    });
+  }
+
+  function renderExperienceStep() {
+    singleChoiceScreen({
+      kicker: '2 OF 6 · EXPERIENCE',
+      title: 'How experienced are you?',
+      copy: 'We use this to keep the starting workload appropriate and easy to follow.',
+      field: 'experience',
+      choices: [
+        { value: 'new', title: 'Brand new', subtitle: 'I am just getting started' },
+        { value: 'beginner', title: 'Beginner', subtitle: 'I know the basics but I am still learning' },
+        { value: 'intermediate', title: 'Intermediate', subtitle: 'I have been training consistently' }
+      ]
+    });
+  }
+
+  function renderDaysCountStep() {
+    const overlay = ensureWizard();
+    const choices = [1,2,3,4,5,6,7].map(value => `<button type="button" class="weekly-choice ${wizardDraft.days === value ? 'selected' : ''}" data-weekly-choice="${value}">
+      <span><b>${value}</b><small>${value === 1 ? 'day' : 'days'}</small></span>
+    </button>`).join('');
+    overlay.innerHTML = shellMarkup(`<main class="weekly-slide-content">
+      <span class="weekly-slide-kicker">3 OF 6 · FREQUENCY</span>
+      <h2 id="weeklyWizardTitle">How many days do you want to train?</h2>
+      <p>You can choose anywhere from 1 to 7. If you choose most or all days, the plan keeps one of the sessions lighter.</p>
+      <div class="weekly-number-grid">${choices}</div>
+    </main>`);
+    bindShell();
+    overlay.querySelectorAll('[data-weekly-choice]').forEach(button => {
+      button.onclick = () => {
+        wizardDraft.days = Number(button.dataset.weeklyChoice);
+        wizardDraft.trainingDays = recommendedDays(wizardDraft.days);
+        overlay.querySelectorAll('[data-weekly-choice]').forEach(item => item.classList.toggle('selected', item === button));
+        window.setTimeout(nextStep, 130);
+      };
+    });
+  }
+
+  function renderTrainingDaysStep() {
+    const overlay = ensureWizard();
+    const buttons = DAYS.map(day => choiceButton(day, day, '', wizardDraft.trainingDays.includes(day))).join('');
+    overlay.innerHTML = shellMarkup(`<main class="weekly-slide-content">
+      <span class="weekly-slide-kicker">4 OF 6 · YOUR WEEK</span>
+      <h2 id="weeklyWizardTitle">Which days work for you?</h2>
+      <p>Choose exactly ${wizardDraft.days} day${wizardDraft.days === 1 ? '' : 's'}. You can change this later.</p>
+      <div class="weekly-day-grid">${buttons}</div>
+      <p id="weeklyDayStatus" class="weekly-slide-status"></p>
+    </main>
+    <div class="weekly-slide-footer">
+      <button type="button" class="weekly-slide-primary" data-weekly-continue>Continue</button>
+    </div>`);
+    bindShell();
+
+    const update = () => {
+      overlay.querySelectorAll('[data-weekly-choice]').forEach(button => {
+        const on = wizardDraft.trainingDays.includes(button.dataset.weeklyChoice);
+        button.classList.toggle('selected', on);
       });
-      if (dayChanged) renderWizardQuestions();
+      const remaining = wizardDraft.days - wizardDraft.trainingDays.length;
+      const status = document.getElementById('weeklyDayStatus');
+      status.textContent = remaining > 0 ? `Choose ${remaining} more day${remaining === 1 ? '' : 's'}.` : 'Your training days are set.';
+      overlay.querySelector('[data-weekly-continue]').disabled = remaining !== 0;
     };
 
-    ['weeklyGoal', 'weeklyExperience', 'weeklyLocation', 'weeklyDuration'].forEach(id => {
-      document.getElementById(id).onchange = updateAnswers;
-    });
-    document.getElementById('weeklyDays').onchange = updateAnswers;
-
-    overlay.querySelectorAll('[data-day-choice]').forEach(button => {
+    overlay.querySelectorAll('[data-weekly-choice]').forEach(button => {
       button.onclick = () => {
-        const day = button.dataset.dayChoice;
+        const day = button.dataset.weeklyChoice;
         const selected = new Set(wizardDraft.trainingDays);
         if (selected.has(day)) selected.delete(day);
         else if (selected.size < wizardDraft.days) selected.add(day);
         wizardDraft.trainingDays = DAYS.filter(item => selected.has(item));
-        overlay.querySelectorAll('[data-day-choice]').forEach(choice => {
-          const on = wizardDraft.trainingDays.includes(choice.dataset.dayChoice);
-          choice.classList.toggle('selected', on);
-          choice.setAttribute('aria-pressed', on ? 'true' : 'false');
-        });
-        const status = document.getElementById('weeklyDayStatus');
-        status.textContent = wizardDraft.trainingDays.length === wizardDraft.days
-          ? 'Rest days will fill in automatically.'
-          : `Choose ${wizardDraft.days - wizardDraft.trainingDays.length} more day${wizardDraft.days - wizardDraft.trainingDays.length === 1 ? '' : 's'}.`;
+        update();
       };
     });
+    overlay.querySelector('[data-weekly-continue]').onclick = nextStep;
+    update();
+  }
 
-    overlay.querySelector('[data-weekly-preview]').onclick = () => {
-      updateAnswers();
-      if (wizardDraft.trainingDays.length !== wizardDraft.days) {
-        document.getElementById('weeklyDayStatus').textContent = `Pick exactly ${wizardDraft.days} training days before continuing.`;
-        return;
-      }
-      renderWizardPreview();
-    };
+  function renderLocationStep() {
+    singleChoiceScreen({
+      kicker: '5 OF 6 · EQUIPMENT',
+      title: 'Where do you usually train?',
+      copy: 'We only build workouts around equipment you are likely to have access to.',
+      field: 'location',
+      choices: [
+        { value: 'planet', title: 'Planet Fitness', subtitle: 'Machines, cables, Smith machines and dumbbells' },
+        { value: 'full', title: 'Full gym', subtitle: 'Barbells, machines, cables and free weights' },
+        { value: 'home', title: 'Home gym / dumbbells', subtitle: 'Dumbbells and basic home equipment' },
+        { value: 'minimal', title: 'Minimal equipment', subtitle: 'Mostly bodyweight and simple movements' }
+      ]
+    });
+  }
+
+  function renderDurationStep() {
+    singleChoiceScreen({
+      kicker: '6 OF 6 · WORKOUT LENGTH',
+      title: 'How long should each workout be?',
+      copy: 'Shorter sessions use fewer exercises; longer sessions include more work.',
+      field: 'duration',
+      choices: [
+        { value: 30, title: 'About 30 minutes', subtitle: 'Quick and focused' },
+        { value: 45, title: 'About 45 minutes', subtitle: 'A compact full session' },
+        { value: 60, title: 'About 60 minutes', subtitle: 'Balanced amount of training' },
+        { value: 75, title: 'About 75 minutes', subtitle: 'More exercises and accessories' }
+      ]
+    });
+  }
+
+  function bindShell() {
+    const overlay = ensureWizard();
+    overlay.querySelector('.weekly-slide-close')?.addEventListener('click', closeWizard);
+    overlay.querySelector('.weekly-slide-back')?.addEventListener('click', previousStep);
+  }
+
+  function renderWizardStep() {
+    wizardDraft = normalizeAnswers(wizardDraft || {});
+    if (wizardStep === 0) return renderGoalStep();
+    if (wizardStep === 1) return renderExperienceStep();
+    if (wizardStep === 2) return renderDaysCountStep();
+    if (wizardStep === 3) return renderTrainingDaysStep();
+    if (wizardStep === 4) return renderLocationStep();
+    if (wizardStep === 5) return renderDurationStep();
+    return renderWizardPreview();
   }
 
   function renderWizardPreview() {
@@ -692,22 +787,27 @@
       </article>`;
     }).join('');
 
-    overlay.innerHTML = `<div class="weekly-wizard-sheet">
-      <header class="weekly-wizard-header">
-        <div><span>YOUR PLAN</span><h2 id="weeklyWizardTitle">Here’s your week</h2><p>${goalLabel(wizardDraft.goal)} · ${experienceLabel(wizardDraft.experience)} · ${locationLabel(wizardDraft.location)}</p></div>
-        <button type="button" class="weekly-wizard-close" aria-label="Close">×</button>
-      </header>
+    overlay.innerHTML = shellMarkup(`<main class="weekly-slide-content weekly-preview-scroll">
+      <span class="weekly-slide-kicker">YOUR WEEKLY PLAN</span>
+      <h2 id="weeklyWizardTitle">Your week is ready.</h2>
+      <p>Review it before saving. Every workout can still be edited later.</p>
+      <section class="weekly-preview-summary">
+        <span>PERSONALIZED FOR YOU</span>
+        <strong>${wizardDraft.days} training day${wizardDraft.days === 1 ? '' : 's'} · about ${wizardDraft.duration} min each</strong>
+        <p>${goalLabel(wizardDraft.goal)} · ${experienceLabel(wizardDraft.experience)} · ${locationLabel(wizardDraft.location)}</p>
+      </section>
       <div class="weekly-preview-list">${schedule}</div>
-      <p class="weekly-preview-note">This is a starting plan, not a test of your limits. You can edit individual workouts after saving it.</p>
-      <p id="weeklyApplyStatus" class="weekly-apply-status" role="status"></p>
-      <div class="weekly-wizard-actions">
-        <button type="button" class="weekly-secondary" data-weekly-back>Back</button>
-        <button type="button" class="weekly-primary" data-weekly-use>Use this plan</button>
-      </div>
-    </div>`;
+      <p class="weekly-preview-note">This is a starting plan, not a test of your limits. If you schedule most or all days, keep some sessions light and take recovery when needed.</p>
+      <p id="weeklyApplyStatus" class="weekly-slide-status" role="status"></p>
+    </main>
+    <div class="weekly-slide-footer">
+      <button type="button" class="weekly-slide-secondary" data-weekly-edit-answers>Edit answers</button>
+      <button type="button" class="weekly-slide-primary" data-weekly-use>Use this plan</button>
+    </div>`, { preview: true });
 
-    overlay.querySelector('.weekly-wizard-close').onclick = closeWizard;
-    overlay.querySelector('[data-weekly-back]').onclick = renderWizardQuestions;
+    overlay.querySelector('.weekly-slide-close').onclick = closeWizard;
+    overlay.querySelector('.weekly-slide-back').onclick = () => { wizardStep = QUESTION_COUNT - 1; renderWizardStep(); };
+    overlay.querySelector('[data-weekly-edit-answers]').onclick = () => { wizardStep = 0; renderWizardStep(); };
     overlay.querySelector('[data-weekly-use]').onclick = async event => {
       const button = event.currentTarget;
       const status = document.getElementById('weeklyApplyStatus');
@@ -733,7 +833,7 @@
       autoOpenTimer = 0;
       const workout = document.getElementById('workout');
       if (workout && !workout.classList.contains('hidden') && !currentConfig && !hasBuiltInProgram()) openWizard();
-    }, 900);
+    }, 700);
   }
 
   function queueRender() {
@@ -778,7 +878,9 @@
         void loadCloudConfig();
         queueRender();
         if (attempts > 12) clearInterval(readiness);
-      } else if (attempts > 30) clearInterval(readiness);
+      } else if (attempts > 30) {
+        clearInterval(readiness);
+      }
     }, 400);
   }
 
