@@ -103,9 +103,9 @@
   function disableWeightRecommendations() {
     loadFeature(
       'data-disable-weight-recommendations-style',
-      'disable-weight-recommendations.css?v=1',
+      'disable-weight-recommendations.css?v=2',
       'data-disable-weight-recommendations',
-      'disable-weight-recommendations.js?v=1'
+      'disable-weight-recommendations.js?v=2'
     );
   }
 
