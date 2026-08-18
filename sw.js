@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-weekly-onboarding-v1';
+const CACHE = 'level-up-fitness-20260817-weekly-onboarding-slides-v2';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -6,7 +6,7 @@ const CORE = [
   './summary-red-override.css', './post-workout-auto-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
-  './weekly-plan-onboarding.css', './weekly-plan-onboarding.js',
+  './weekly-plan-onboarding-v2.css', './weekly-plan-onboarding.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
