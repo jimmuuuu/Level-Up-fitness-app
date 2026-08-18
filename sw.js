@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-identity-history-guard-v1';
+const CACHE = 'level-up-fitness-20260817-identity-history-guard-v2';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
