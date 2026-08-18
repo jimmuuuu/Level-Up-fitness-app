@@ -88,6 +88,10 @@
     loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=1');
   }
 
+  function loadFinalFieldNotes() {
+    loadFeature('data-field-notes-final-style', 'field-notes-final.css?v=1', 'data-field-notes-final', 'field-notes-final.js?v=1');
+  }
+
   function start() {
     try {
       const remembered = sessionStorage.getItem(LAST_PAGE_KEY) || '';
@@ -100,6 +104,7 @@
     loadGymPasses();
     loadGymSessionFixes();
     loadLegDayStartFix();
+    loadFinalFieldNotes();
     redirectHomeToWorkout();
 
     const home = document.getElementById('home');
