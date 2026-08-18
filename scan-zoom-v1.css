@@ -1,0 +1,62 @@
+/* Camera zoom controls for Scan. */
+.scan-zoom-control {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 104px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(280px, calc(100% - 72px));
+  min-height: 42px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(8,10,12,.82);
+  transform: translateX(-50%);
+  backdrop-filter: blur(14px);
+}
+
+.scan-zoom-control.hidden { display: none !important; }
+
+.scan-zoom-control button {
+  flex: 0 0 auto;
+  min-width: 38px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  color: #f5f7f8;
+  background: #20252a;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.scan-zoom-control output {
+  min-width: 32px;
+  color: #f5f7f8;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.scan-zoom-control input[type="range"] {
+  width: 100%;
+  min-width: 0;
+  accent-color: #ff4d57;
+}
+
+#scanCamera.scan-digital-zoom {
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* Preserve the iPhone's system swipe gesture at the top edge. */
+#scan .scan-shell {
+  touch-action: pan-y;
+}
+
+#scanCamera {
+  touch-action: pan-y pinch-zoom;
+}
