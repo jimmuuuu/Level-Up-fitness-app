@@ -52,7 +52,7 @@ window.LEVEL_UP_SUPABASE = {
   if (!document.querySelector('link[data-weekly-plan-onboarding-style]')) {
     const weeklyPlanOnboardingStyle = document.createElement('link');
     weeklyPlanOnboardingStyle.rel = 'stylesheet';
-    weeklyPlanOnboardingStyle.href = 'weekly-plan-onboarding.css?v=1';
+    weeklyPlanOnboardingStyle.href = 'weekly-plan-onboarding-v2.css?v=1';
     weeklyPlanOnboardingStyle.dataset.weeklyPlanOnboardingStyle = 'true';
     document.head.appendChild(weeklyPlanOnboardingStyle);
   }
@@ -164,7 +164,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-weekly-plan-onboarding]')) {
       const weeklyPlanOnboarding = document.createElement('script');
-      weeklyPlanOnboarding.src = 'weekly-plan-onboarding.js?v=1';
+      weeklyPlanOnboarding.src = 'weekly-plan-onboarding.js?v=2';
       weeklyPlanOnboarding.dataset.weeklyPlanOnboarding = 'true';
       document.body.appendChild(weeklyPlanOnboarding);
     }
