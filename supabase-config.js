@@ -179,7 +179,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-gym-category-labels]')) {
       const gymCategoryLabels = document.createElement('script');
-      gymCategoryLabels.src = 'gym-category-labels.js?v=1';
+      gymCategoryLabels.src = 'gym-category-labels.js?v=2';
       gymCategoryLabels.dataset.gymCategoryLabels = 'true';
       document.body.appendChild(gymCategoryLabels);
     }
