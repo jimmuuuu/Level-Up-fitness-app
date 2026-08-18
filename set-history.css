@@ -1,6 +1,6 @@
 .set-history-compare {
   grid-column: 1 / -1;
-  display: grid;
+  display: none !important;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 2px 10px;
   align-items: center;
@@ -9,6 +9,12 @@
   border: 1px solid #292e33;
   border-radius: 11px;
   background: #0c0f12;
+}
+
+/* Only V6 is allowed to show Set History. Any older cached implementation is
+   hidden even if it manages to insert a legacy history card into the workout. */
+.set-history-compare[data-history-v6="true"] {
+  display: grid !important;
 }
 
 /* The set grid has five data columns but only four visible headings.
@@ -63,7 +69,7 @@
 }
 
 @media (max-width: 390px) {
-  .set-history-compare {
+  .set-history-compare[data-history-v6="true"] {
     grid-template-columns: 1fr;
     gap: 2px;
     padding: 8px 9px;
