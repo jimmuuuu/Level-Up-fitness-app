@@ -2,21 +2,13 @@
   const HISTORY_KEY = 'levelUpFitnessWorkoutHistory';
   const CLOUD_HISTORY_PREFIX = 'levelUpFitnessCloudWorkoutHistory:';
   const HISTORY_OWNER_KEY = 'levelUpFitnessWorkoutHistoryOwner';
-  const ACCOUNT_GRACE_MS = 5 * 60 * 1000;
   const SET_LIST_ID = 'setList';
   const AUTO_WEEKLY_PREFIX = 'custom-auto-weekly-';
-
-  if (!document.querySelector('script[data-account-history-isolation]')) {
-    const isolation = document.createElement('script');
-    isolation.src = 'account-history-isolation.js?v=1';
-    isolation.dataset.accountHistoryIsolation = 'true';
-    document.body.appendChild(isolation);
-  }
 
   if (!document.querySelector('link[data-set-history-style]')) {
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'set-history.css?v=1';
+    style.href = 'set-history.css?v=2';
     style.dataset.setHistoryStyle = 'true';
     document.head.appendChild(style);
   }
@@ -28,6 +20,10 @@
     } catch {
       return [];
     }
+  }
+
+  function cloudUserId() {
+    try { return cloudUser?.id || ''; } catch { return ''; }
   }
 
   function accountCreationTime() {
@@ -45,42 +41,42 @@
     const completedAt = Number(session?.completedAt) || 0;
     const startedAt = Number(session?.startedAt) || completedAt;
     const timestamp = completedAt || startedAt;
-    return !timestamp || timestamp >= createdAt - ACCOUNT_GRACE_MS;
+    return !timestamp || timestamp >= createdAt - 5 * 60 * 1000;
   }
 
   function readHistory() {
-    try {
-      if (cloudUser?.id) {
-        return storedArray(`${CLOUD_HISTORY_PREFIX}${cloudUser.id}`)
-          .filter(possibleForCurrentCloudAccount);
-      }
-    } catch {}
+    const userId = cloudUserId();
+    if (userId) {
+      const truth = window.LevelUpAccountHistoryTruth;
+      // Never show browser history for a signed-in account until that account's
+      // completed sessions have been checked against Supabase.
+      if (!truth?.ready || truth.userId !== userId) return [];
+      return storedArray(`${CLOUD_HISTORY_PREFIX}${userId}`).filter(possibleForCurrentCloudAccount);
+    }
 
     try {
       if (userProfile) {
         const accountKey = String(userProfile.accountKey || '').trim();
         const email = String(userProfile.email || '').trim().toLowerCase();
-        const scope = accountKey || email ? `local:${accountKey || email}` : '';
-        const owner = localStorage.getItem(HISTORY_OWNER_KEY) || '';
-        if (scope && owner && owner !== scope) return [];
+        const identity = accountKey || email;
+        if (identity) {
+          const expectedOwner = `local:${identity}`;
+          const owner = localStorage.getItem(HISTORY_OWNER_KEY) || '';
+          if (owner !== expectedOwner) return [];
+        }
       }
     } catch {}
 
     try {
-      if (typeof workoutHistory !== 'undefined' && Array.isArray(workoutHistory)) {
-        return workoutHistory;
-      }
+      if (typeof workoutHistory !== 'undefined' && Array.isArray(workoutHistory)) return workoutHistory;
     } catch {}
-
     return storedArray(HISTORY_KEY);
   }
 
   function currentWorkoutContext() {
     try {
       if (typeof activePlan !== 'undefined' && activePlan) {
-        const id = typeof planIdFor === 'function'
-          ? planIdFor(activePlan)
-          : String(activePlan.id || '');
+        const id = typeof planIdFor === 'function' ? planIdFor(activePlan) : String(activePlan.id || '');
         return {
           planId: id,
           planName: String(activePlan.name || ''),
@@ -95,7 +91,6 @@
     if (!session || !context) return false;
     const sessionPlanId = String(session.planId || '');
     const sessionPlanName = String(session.plan || '');
-
     const sameWorkout = context.planId
       ? sessionPlanId === context.planId || (!sessionPlanId && context.planName && sessionPlanName === context.planName)
       : Boolean(context.planName && sessionPlanName === context.planName);
@@ -115,11 +110,7 @@
       .sort((a, b) => (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0));
 
     for (const session of history) {
-      const match = session.logs.find(log =>
-        log &&
-        log.exercise === exerciseName &&
-        Number(log.set) === Number(setNumber)
-      );
+      const match = session.logs.find(log => log && log.exercise === exerciseName && Number(log.set) === Number(setNumber));
       if (match) {
         return {
           weight: Number(match.weight) || 0,
@@ -139,16 +130,14 @@
   function previousLabel(previous) {
     if (!previous) return '';
     if (previous.weight === 0) return `${previous.reps} reps`;
-    return `${formatWeight(previous.weight)} lb × ${previous.reps}`;
+    return `${formatWeight(previous.weight)} lb x ${previous.reps}`;
   }
 
   function signed(value, suffix = '') {
     const rounded = Math.abs(value) < 0.05 ? 0 : value;
-    const formatted = Number.isInteger(rounded)
-      ? String(Math.abs(rounded))
-      : Math.abs(rounded).toFixed(1).replace(/\.0$/, '');
+    const formatted = Number.isInteger(rounded) ? String(Math.abs(rounded)) : Math.abs(rounded).toFixed(1).replace(/\.0$/, '');
     if (rounded === 0) return `0${suffix}`;
-    return `${rounded > 0 ? '+' : '−'}${formatted}${suffix}`;
+    return `${rounded > 0 ? '+' : '-'}${formatted}${suffix}`;
   }
 
   function comparisonFor(previous, weightInput, repsInput) {
@@ -156,7 +145,7 @@
       return {
         tone: 'baseline',
         summary: 'First time in this workout',
-        detail: 'Save this set to create this workout’s history.'
+        detail: 'Save this set to create this workout history.'
       };
     }
 
@@ -166,7 +155,7 @@
       return {
         tone: 'neutral',
         summary: `Last time: ${previousLabel(previous)}`,
-        detail: 'Enter today’s weight and reps to compare.'
+        detail: "Enter today's weight and reps to compare."
       };
     }
 
@@ -190,11 +179,7 @@
         : repsDelta < 0
           ? `${Math.abs(repsDelta)} fewer rep${Math.abs(repsDelta) === 1 ? '' : 's'}`
           : 'Matched last time';
-      return {
-        tone,
-        summary,
-        detail: `Previous ${previous.reps} reps • Today ${reps} reps`
-      };
+      return { tone, summary, detail: `Previous ${previous.reps} reps | Today ${reps} reps` };
     }
 
     const previousVolume = previous.weight * previous.reps;
@@ -213,25 +198,19 @@
     } else if (volumeDelta > 0) {
       tone = 'up';
       summary = `More total work: +${Math.round(volumePercent)}% volume`;
-    } else if (weightDelta === 0 && repsDelta === 0) {
-      tone = 'same';
-      summary = 'Matched last time';
-    } else {
+    } else if (weightDelta !== 0 || repsDelta !== 0) {
       tone = 'down';
-      summary = previousVolume > 0
-        ? `Below last time: ${Math.abs(Math.round(volumePercent))}% less volume`
-        : 'Below last time';
+      summary = previousVolume > 0 ? `Below last time: ${Math.abs(Math.round(volumePercent))}% less volume` : 'Below last time';
     }
 
     return {
       tone,
       summary,
-      detail: `Weight ${signed(weightDelta, ' lb')} • Reps ${signed(repsDelta)} • Previous ${previousLabel(previous)}`
+      detail: `Weight ${signed(weightDelta, ' lb')} | Reps ${signed(repsDelta)} | Previous ${previousLabel(previous)}`
     };
   }
 
   function makeComparison(exerciseName, setNumber, weightInput, repsInput) {
-    const previous = previousSetFor(exerciseName, setNumber);
     const box = document.createElement('div');
     box.className = 'set-history-compare';
 
@@ -244,10 +223,10 @@
 
     const detail = document.createElement('span');
     detail.className = 'set-history-detail';
-
     box.append(kicker, summary, detail);
 
     const refresh = () => {
+      const previous = previousSetFor(exerciseName, setNumber);
       const result = comparisonFor(previous, weightInput, repsInput);
       box.dataset.tone = result.tone;
       summary.textContent = result.summary;
@@ -269,29 +248,30 @@
       const exerciseName = row.querySelector('.exercise-heading h3')?.textContent?.trim();
       if (!exerciseName) return;
 
-      const buttons = [...row.querySelectorAll('button[data-log]')];
-      buttons.forEach(button => {
-        const parts = String(button.dataset.log || '').split('-');
-        const exerciseIndex = Number(parts[0]);
-        const setNumber = Number(parts[1]);
+      [...row.querySelectorAll('button[data-log]')].forEach(button => {
+        const [exerciseIndex, setNumber] = String(button.dataset.log || '').split('-').map(Number);
         if (!Number.isInteger(exerciseIndex) || !Number.isInteger(setNumber)) return;
-
         const weightInput = document.getElementById(`w-${exerciseIndex}-${setNumber}`);
         const repsInput = document.getElementById(`r-${exerciseIndex}-${setNumber}`);
         if (!weightInput || !repsInput) return;
-
-        const comparison = makeComparison(exerciseName, setNumber, weightInput, repsInput);
-        button.insertAdjacentElement('afterend', comparison);
+        button.insertAdjacentElement('afterend', makeComparison(exerciseName, setNumber, weightInput, repsInput));
       });
 
       row.dataset.historyComparisonReady = 'true';
     });
   }
 
+  function resetAndDecorate() {
+    const setList = document.getElementById(SET_LIST_ID);
+    if (!setList) return;
+    setList.querySelectorAll('.set-history-compare').forEach(node => node.remove());
+    setList.querySelectorAll('.set-row').forEach(row => { delete row.dataset.historyComparisonReady; });
+    requestAnimationFrame(decorateSetRows);
+  }
+
   function start() {
     const setList = document.getElementById(SET_LIST_ID);
     if (!setList) return;
-
     let scheduled = false;
     const scheduleDecorate = () => {
       if (scheduled) return;
@@ -301,15 +281,19 @@
         decorateSetRows();
       });
     };
-
-    const observer = new MutationObserver(scheduleDecorate);
-    observer.observe(setList, { childList: true, subtree: true });
+    new MutationObserver(scheduleDecorate).observe(setList, { childList: true, subtree: true });
     scheduleDecorate();
+
+    let lastTruthStamp = 0;
+    window.setInterval(() => {
+      const stamp = Number(window.LevelUpAccountHistoryTruth?.verifiedAt) || 0;
+      if (stamp && stamp !== lastTruthStamp) {
+        lastTruthStamp = stamp;
+        resetAndDecorate();
+      }
+    }, 350);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start, { once: true });
-  } else {
-    start();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
