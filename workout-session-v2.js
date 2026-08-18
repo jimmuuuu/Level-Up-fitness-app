@@ -49,6 +49,11 @@
       : `${minutes}:${String(seconds).padStart(2, '0')}`;
   }
 
+  function alertsEnabled() {
+    try { return localStorage.getItem(REST_ALERT_KEY) === 'true'; }
+    catch { return false; }
+  }
+
   function ensureStatusCard() {
     const active = byId('active');
     if (!active || byId('workoutSessionStatus')) return;
@@ -58,10 +63,33 @@
     card.innerHTML = `
       <strong id="workoutSessionName">Active workout</strong>
       <span id="workoutSessionTime" class="workout-session-time">0:00</span>
-      <div id="workoutSessionRest" class="workout-session-rest">Save a set to start the rest timer.</div>`;
+      <div id="workoutSessionRest" class="workout-session-rest">Save a set to start the rest timer.</div>
+      <button id="workoutSessionAlerts" class="workout-session-alerts" type="button">Lock-screen rest alerts</button>`;
     const clock = active.querySelector('.active-session-clock');
     if (clock) clock.insertAdjacentElement('afterend', card);
     else active.insertBefore(card, active.firstChild);
+
+    const alerts = byId('workoutSessionAlerts');
+    if (alerts) {
+      if (!('Notification' in window)) {
+        alerts.hidden = true;
+      } else {
+        updateAlertButton();
+        alerts.onclick = async () => {
+          const enabled = await enableAlerts();
+          updateAlertButton();
+          if (enabled) alerts.textContent = 'Lock-screen alerts on';
+        };
+      }
+    }
+  }
+
+  function updateAlertButton() {
+    const button = byId('workoutSessionAlerts');
+    if (!button) return;
+    const enabled = alertsEnabled() && 'Notification' in window && Notification.permission === 'granted';
+    button.classList.toggle('enabled', enabled);
+    button.textContent = enabled ? 'Lock-screen alerts on' : 'Lock-screen rest alerts';
   }
 
   function currentExerciseLabel() {
@@ -174,7 +202,8 @@
     if (!setList) return;
     Object.entries(recovery.values || {}).forEach(([key, value]) => {
       if (key.startsWith('type:')) {
-        const select = setList.querySelector(`[data-type-log="${CSS.escape(key.slice(5))}"]`);
+        const raw = key.slice(5).replace(/[^0-9-]/g, '');
+        const select = setList.querySelector(`[data-type-log="${raw}"]`);
         if (select && !select.disabled) select.value = value;
         return;
       }
@@ -189,16 +218,12 @@
     lastRecoverySignature = '';
   }
 
-  function alertsEnabled() {
-    try { return localStorage.getItem(REST_ALERT_KEY) === 'true'; }
-    catch { return false; }
-  }
-
   async function maybeShowRestAlert(end, nextExercise) {
     if (!alertsEnabled() || !('Notification' in window) || Notification.permission !== 'granted') return;
     const seconds = Math.max(0, Math.ceil((end - Date.now()) / 1000));
     if (!seconds) return;
-    const body = `${seconds}s rest${nextExercise ? ` · Next: ${nextExercise}` : ''}. Return when the timer reaches zero.`;
+    const finishTime = new Date(end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const body = `Rest until ${finishTime}${nextExercise ? ` · Next: ${nextExercise}` : ''}.`;
     try {
       const registration = await navigator.serviceWorker?.ready;
       if (registration?.showNotification) {
