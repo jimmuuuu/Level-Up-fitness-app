@@ -1,107 +1,70 @@
 (() => {
   const SET_LIST_ID = 'setList';
-  const AUTO_PREFIX = 'custom-auto-weekly-';
-  const CONFIG_PREFIX = 'levelUpFitnessWeeklyPlan:';
-  const BASELINE_PREFIX = 'levelUpFitnessSetHistoryBaselineV6:';
+  const UNLOCK_PREFIX = 'levelUpFitnessSetHistoryUnlockedV7:';
 
   const state = {
     loading: false,
     ready: false,
     userId: '',
-    email: '',
     planId: '',
     planName: '',
-    baseline: 0,
+    fingerprint: '',
+    unlockedAt: 0,
     key: '',
     previous: new Map()
   };
 
   let rendering = false;
   let renderQueued = false;
+  let lastContext = null;
 
   function client() {
     try { return typeof getSupabaseClient === 'function' ? getSupabaseClient() : null; }
     catch { return null; }
   }
 
-  function idFor(plan) {
+  function planId(plan) {
     try { return typeof planIdFor === 'function' ? String(planIdFor(plan) || '') : String(plan?.id || ''); }
     catch { return String(plan?.id || ''); }
   }
 
-  function configBaseline(planId, accountId) {
-    if (!planId.startsWith(AUTO_PREFIX)) return 0;
-    const candidateKeys = [];
-    if (accountId) candidateKeys.push(`${CONFIG_PREFIX}${accountId}`);
-    try {
-      const accountKey = String(userProfile?.accountKey || '');
-      const email = String(userProfile?.email || '').trim().toLowerCase();
-      if (accountKey) candidateKeys.push(`${CONFIG_PREFIX}${accountKey}`);
-      if (email) candidateKeys.push(`${CONFIG_PREFIX}${email}`);
-    } catch {}
+  function setCount(exercise) {
+    try { return typeof setCountFor === 'function' ? Number(setCountFor(exercise)) || 3 : Number(exercise?.sets) || 3; }
+    catch { return Number(exercise?.sets) || 3; }
+  }
 
-    for (const key of [...new Set(candidateKeys)]) {
-      try {
-        const config = JSON.parse(localStorage.getItem(key) || 'null');
-        if (config && Array.isArray(config.planIds) && config.planIds.includes(planId)) {
-          const updatedAt = Number(config.updatedAt) || 0;
-          if (updatedAt) return updatedAt;
-        }
-      } catch {}
+  function fingerprintFor(plan) {
+    if (!plan || !Array.isArray(plan.exercises)) return '';
+    return plan.exercises.map((exercise, index) => {
+      const reps = Array.isArray(exercise?.repRange) ? exercise.repRange.join('-') : '';
+      return `${index}:${String(exercise?.name || '').trim()}:${setCount(exercise)}:${reps}`;
+    }).join('|');
+  }
+
+  function hash(value) {
+    let h = 2166136261;
+    const text = String(value || '');
+    for (let i = 0; i < text.length; i += 1) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
     }
-    return 0;
+    return (h >>> 0).toString(36);
   }
 
-  function activeWorkoutStart() {
+  function currentContext(userId = '') {
     try {
-      const started = Number(activeStartedAt) || 0;
-      if (started > 0) return started;
-    } catch {}
-    try {
-      if (typeof loadActiveWorkoutDraft === 'function') {
-        const started = Number(loadActiveWorkoutDraft()?.startedAt) || 0;
-        if (started > 0) return started;
-      }
-    } catch {}
-    return 0;
-  }
-
-  function persistentGeneratedBaseline(planId, accountId) {
-    if (!planId.startsWith(AUTO_PREFIX)) return 0;
-    const owner = accountId || 'local';
-    const key = `${BASELINE_PREFIX}${owner}:${planId}`;
-    let saved = 0;
-    try { saved = Number(localStorage.getItem(key)) || 0; } catch {}
-
-    if (!saved) {
-      const started = activeWorkoutStart();
-      if (started > 0) {
-        saved = started;
-        try { localStorage.setItem(key, String(saved)); } catch {}
-      }
-    }
-    return saved;
-  }
-
-  function currentPlan(accountId = '') {
-    try {
-      if (typeof activePlan === 'undefined' || !activePlan) return { id: '', name: '', baseline: 0 };
-      const id = idFor(activePlan);
-      let baseline = configBaseline(id, accountId);
-      if (id.startsWith(AUTO_PREFIX)) {
-        try {
-          const storedPlan = typeof customPlansForCurrentUser === 'function'
-            ? customPlansForCurrentUser().find(plan => idFor(plan) === id)
-            : null;
-          baseline = Math.max(baseline, Number(storedPlan?.updatedAt) || Number(activePlan.updatedAt) || 0);
-        } catch {
-          baseline = Math.max(baseline, Number(activePlan.updatedAt) || 0);
-        }
-        baseline = Math.max(baseline, persistentGeneratedBaseline(id, accountId));
-      }
-      return { id, name: String(activePlan.name || ''), baseline };
+      if (typeof activePlan === 'undefined' || !activePlan) return null;
+      const id = planId(activePlan);
+      const name = String(activePlan.name || '');
+      const fingerprint = fingerprintFor(activePlan);
+      if (!id && !name) return null;
+      const owner = userId || 'local';
+      const unlockKey = `${UNLOCK_PREFIX}${owner}:${id || name}:${hash(fingerprint)}`;
+      let unlockedAt = 0;
+      try { unlockedAt = Number(localStorage.getItem(unlockKey)) || 0; } catch {}
+      return { id, name, fingerprint, unlockKey, unlockedAt };
     } catch {
-      return { id: '', name: '', baseline: 0 };
+      return null;
     }
   }
 
@@ -140,19 +103,19 @@
     if (node && node.textContent !== value) node.textContent = value;
   }
 
-  function accountIndicator() {
-    const title = document.getElementById('activeTitle');
-    if (!title) return;
-    let node = document.getElementById('activeAccountIndicator');
-    if (!node) {
-      node = document.createElement('p');
-      node.id = 'activeAccountIndicator';
-      node.style.margin = '-4px 0 12px';
-      node.style.color = 'var(--muted)';
-      node.style.fontSize = '.78rem';
-      title.insertAdjacentElement('afterend', node);
-    }
-    setText(node, state.email ? `Signed in as ${state.email}` : (state.ready ? 'Local profile' : 'Checking signed-in account…'));
+  function syncRecommendationVisibility(showHistory) {
+    const list = document.getElementById(SET_LIST_ID);
+    if (!list) return;
+    list.querySelectorAll('.weight-recommendation').forEach(card => {
+      if (!/your exercise history/i.test(card.textContent || '')) return;
+      if (!showHistory) {
+        card.style.display = 'none';
+        card.dataset.exactWorkoutHistoryHidden = 'true';
+      } else if (card.dataset.exactWorkoutHistoryHidden === 'true') {
+        card.style.display = '';
+        delete card.dataset.exactWorkoutHistoryHidden;
+      }
+    });
   }
 
   function renderBox(box, previous, weightInput, repsInput, setNumber) {
@@ -169,9 +132,18 @@
     if (!list) return;
     rendering = true;
     try {
-      accountIndicator();
+      const unlocked = Boolean(state.unlockedAt && state.previous.size);
+      list.dataset.setHistoryUnlocked = unlocked ? 'true' : 'false';
 
-      // Legacy history cards are never allowed to remain in the active workout.
+      // Nothing related to Set History is allowed to remain until this exact
+      // workout version has been completed at least once.
+      if (!unlocked) {
+        list.querySelectorAll('.set-history-compare').forEach(node => node.remove());
+        syncRecommendationVisibility(false);
+        return;
+      }
+
+      syncRecommendationVisibility(true);
       list.querySelectorAll('.set-history-compare:not([data-history-v6="true"])').forEach(node => node.remove());
 
       list.querySelectorAll('.set-row').forEach(row => {
@@ -180,20 +152,18 @@
         row.querySelectorAll('button[data-log]').forEach(button => {
           const [exerciseIndex, setNumber] = String(button.dataset.log || '').split('-').map(Number);
           if (!Number.isInteger(exerciseIndex) || !Number.isInteger(setNumber)) return;
-          const weightInput = document.getElementById(`w-${exerciseIndex}-${setNumber}`);
-          const repsInput = document.getElementById(`r-${exerciseIndex}-${setNumber}`);
-          if (!weightInput || !repsInput) return;
-
+          const previous = state.previous.get(setKey(exercise, setNumber)) || null;
           let box = button.nextElementSibling;
           const isV6Box = box?.classList?.contains('set-history-compare') && box.dataset.historyV6 === 'true';
-          const previous = state.ready ? (state.previous.get(setKey(exercise, setNumber)) || null) : null;
 
-          // A first-time workout should not show a Set History card at all.
-          // History appears only after this exact workout has a verified prior set.
           if (!previous) {
             if (isV6Box) box.remove();
             return;
           }
+
+          const weightInput = document.getElementById(`w-${exerciseIndex}-${setNumber}`);
+          const repsInput = document.getElementById(`r-${exerciseIndex}-${setNumber}`);
+          if (!weightInput || !repsInput) return;
 
           if (!isV6Box) {
             box = document.createElement('div');
@@ -221,16 +191,15 @@
     });
   }
 
-  function localPrevious(plan) {
+  function localPrevious(context) {
     const previous = new Map();
     let history = [];
     try { history = Array.isArray(workoutHistory) ? workoutHistory : []; } catch {}
     history
       .filter(session => {
         if (!session || !Array.isArray(session.logs)) return false;
-        if (plan.id ? String(session.planId || '') !== plan.id : String(session.plan || '') !== plan.name) return false;
-        if (plan.baseline && Number(session.completedAt) && Number(session.completedAt) < plan.baseline) return false;
-        return true;
+        if (context.id ? String(session.planId || '') !== context.id : String(session.plan || '') !== context.name) return false;
+        return Number(session.completedAt) >= Math.max(0, context.unlockedAt - 2000);
       })
       .sort((a, b) => (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0))
       .forEach(session => {
@@ -250,28 +219,40 @@
       try { authSession = (await supabase.auth.getSession()).data?.session || null; } catch {}
     }
     const user = authSession?.user || null;
-    const plan = currentPlan(user?.id || '');
-    const nextKey = `${user?.id || 'local'}|${plan.id}|${plan.name}|${plan.baseline}`;
+    const context = currentContext(user?.id || '');
+    lastContext = context;
+
+    if (!context) {
+      state.ready = true;
+      state.previous = new Map();
+      state.unlockedAt = 0;
+      return queueRender();
+    }
+
+    const nextKey = `${user?.id || 'local'}|${context.id}|${hash(context.fingerprint)}|${context.unlockedAt}`;
     if (!force && state.ready && state.key === nextKey) return queueRender();
 
     state.loading = true;
     state.ready = false;
     state.key = nextKey;
     state.userId = user?.id || '';
-    state.email = user?.email || '';
-    state.planId = plan.id;
-    state.planName = plan.name;
-    state.baseline = plan.baseline;
+    state.planId = context.id;
+    state.planName = context.name;
+    state.fingerprint = context.fingerprint;
+    state.unlockedAt = context.unlockedAt;
     state.previous = new Map();
     queueRender();
 
     try {
-      if (!user?.id || !supabase) {
-        state.previous = localPrevious(plan);
+      // Hard gate: until this exact workout fingerprint has been completed once,
+      // do not load or display any Set History at all.
+      if (!context.unlockedAt) {
         state.ready = true;
         return queueRender();
       }
-      if (!plan.id && !plan.name) {
+
+      if (!user?.id || !supabase) {
+        state.previous = localPrevious(context);
         state.ready = true;
         return queueRender();
       }
@@ -281,10 +262,10 @@
         .select('id, completed_at')
         .eq('user_id', user.id)
         .eq('status', 'completed')
+        .gte('completed_at', new Date(Math.max(0, context.unlockedAt - 2000)).toISOString())
         .order('completed_at', { ascending: false });
-      if (plan.id) query = query.eq('plan_id', plan.id);
-      else query = query.eq('plan_name', plan.name);
-      if (plan.baseline) query = query.gte('completed_at', new Date(plan.baseline).toISOString());
+      if (context.id) query = query.eq('plan_id', context.id);
+      else query = query.eq('plan_name', context.name);
 
       const { data: sessions, error: sessionError } = await query;
       if (sessionError) throw sessionError;
@@ -314,7 +295,6 @@
       state.ready = true;
       queueRender();
     } catch {
-      // Never substitute shared browser history for unverified cloud history.
       state.previous = new Map();
       state.ready = true;
       queueRender();
@@ -323,17 +303,61 @@
     }
   }
 
+  function completedSessionFor(context, since) {
+    let history = [];
+    try { history = Array.isArray(workoutHistory) ? workoutHistory : []; } catch {}
+    return history
+      .filter(session => {
+        if (!session || !Number(session.completedAt) || Number(session.completedAt) < since - 3000) return false;
+        return context.id ? String(session.planId || '') === context.id : String(session.plan || '') === context.name;
+      })
+      .sort((a, b) => Number(b.completedAt) - Number(a.completedAt))[0] || null;
+  }
+
+  function unlockFromCompletedSession(context, session) {
+    if (!context || !session?.completedAt) return false;
+    const completedAt = Number(session.completedAt) || Date.now();
+    try { localStorage.setItem(context.unlockKey, String(completedAt)); } catch {}
+    void reload(true);
+    return true;
+  }
+
+  function watchFinishClick() {
+    document.addEventListener('click', event => {
+      const button = event.target.closest?.('#finish');
+      if (!button) return;
+      const context = lastContext || currentContext(state.userId);
+      if (!context) return;
+      const clickedAt = Date.now();
+      [150, 400, 900, 1600, 2600].forEach(delay => {
+        window.setTimeout(() => {
+          const session = completedSessionFor(context, clickedAt);
+          if (session) unlockFromCompletedSession(context, session);
+        }, delay);
+      });
+    }, true);
+
+    window.addEventListener('levelup:workout-finished', () => {
+      const context = lastContext || currentContext(state.userId);
+      if (!context) return;
+      const session = completedSessionFor(context, Date.now() - 10000);
+      if (session) unlockFromCompletedSession(context, session);
+    });
+  }
+
   function start() {
     const list = document.getElementById(SET_LIST_ID);
     if (list) {
+      // Remove anything an older cached history script may have inserted.
+      list.querySelectorAll('.set-history-compare').forEach(node => node.remove());
+      list.dataset.setHistoryUnlocked = 'false';
       new MutationObserver(mutations => {
         let relevant = false;
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeType !== 1) continue;
             const element = node;
-            if (element.matches?.('.set-row, .set-history-compare:not([data-history-v6="true"])')
-              || element.querySelector?.('.set-row, .set-history-compare:not([data-history-v6="true"])')) {
+            if (element.matches?.('.set-row, .set-history-compare') || element.querySelector?.('.set-row, .set-history-compare')) {
               relevant = true;
               break;
             }
@@ -349,13 +373,17 @@
       try { supabase.auth.onAuthStateChange(() => window.setTimeout(() => void reload(true), 0)); } catch {}
     }
 
+    watchFinishClick();
+
     let lastPlanKey = '';
     window.setInterval(() => {
-      const plan = currentPlan(state.userId);
-      const key = `${plan.id}|${plan.name}|${plan.baseline}`;
+      const context = currentContext(state.userId);
+      const key = context ? `${context.id}|${hash(context.fingerprint)}|${context.unlockedAt}` : '';
       if (key !== lastPlanKey) {
         lastPlanKey = key;
         void reload(true);
+      } else if (!state.unlockedAt) {
+        queueRender();
       }
     }, 500);
 
