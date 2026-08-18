@@ -1,0 +1,83 @@
+/* Final fixes from the first real gym field test. */
+
+/* Bottom-sheet handle now looks and behaves like a draggable control. */
+#scan .scan-sheet-handle {
+  width: 52px;
+  height: 5px;
+  margin-top: 2px;
+  margin-bottom: 16px;
+  cursor: grab;
+  touch-action: none;
+}
+
+#scan .scan-result-sheet,
+#scan .scan-picker,
+#scan .scan-about-panel,
+#scan .scan-manual-panel {
+  transition: transform .18s ease, opacity .18s ease;
+  will-change: transform;
+  -webkit-overflow-scrolling: touch;
+}
+
+#scan .scan-sheet-dragging {
+  transition: none !important;
+}
+
+/* Make sure the top edge and normal vertical swipes stay available on iPhone. */
+html,
+body,
+#appShell,
+#active,
+#scan {
+  overscroll-behavior-y: auto !important;
+}
+
+#active,
+#scan .scan-shell {
+  touch-action: pan-y;
+}
+
+/* Extra lock-screen alert opt-in. iOS requires a tap before notification permission. */
+.field-rest-alerts {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 12px;
+  padding: 0 11px;
+  color: #c7ced4;
+  border: 1px solid #343a40;
+  border-radius: 999px;
+  background: #15191d;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.field-rest-alerts.enabled {
+  color: #ff9ca3;
+  border-color: rgba(255,77,87,.4);
+  background: rgba(255,77,87,.08);
+}
+
+/* Last-resort containment for every set row, including the exact iPhone layout
+   shown during the field test. */
+@media (max-width: 600px) {
+  #active .set-row,
+  #active .set-grid {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #setList .set-grid > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #setList .set-grid input,
+  #setList .set-grid select,
+  #setList .set-grid button {
+    box-sizing: border-box;
+    max-width: 100% !important;
+  }
+}
