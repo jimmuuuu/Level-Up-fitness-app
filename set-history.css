@@ -11,6 +11,13 @@
   background: #0c0f12;
 }
 
+/* The set grid has five data columns but only four visible headings.
+   Pin each set number to column one so the first set starts on a fresh row
+   instead of being auto-placed in the empty Save column beside the headings. */
+#setList .set-grid > span:not(.set-history-kicker):not(.set-history-detail) {
+  grid-column: 1;
+}
+
 .set-history-kicker {
   grid-row: 1 / span 2;
   color: #8e969e;
@@ -64,5 +71,12 @@
 
   .set-history-kicker {
     grid-row: auto;
+  }
+
+  /* On narrow screens the base app uses four columns. Keep Set, Weight,
+     Reps and Type together, then give Save its own full-width row. */
+  #setList .set-grid > button.complete {
+    grid-column: 2 / -1;
+    width: 100%;
   }
 }
