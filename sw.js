@@ -1,9 +1,10 @@
-const CACHE = 'level-up-fitness-20260817-red-assets-v1';
+const CACHE = 'level-up-fitness-20260817-weekly-review-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
   './set-history.css', './set-history.js', './workout-summary.css', './workout-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
+  './weekly-workout-review.css', './weekly-workout-review.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -18,8 +19,8 @@ const CORE = [
   './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 15);
-const ASSETS = CORE.slice(15);
+const SHELL = CORE.slice(0, 17);
+const ASSETS = CORE.slice(17);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
