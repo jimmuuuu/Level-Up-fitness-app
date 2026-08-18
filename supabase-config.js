@@ -190,5 +190,12 @@ window.LEVEL_UP_SUPABASE = {
       weeklyOnboardingInteractions.dataset.weeklyOnboardingInteractions = 'true';
       document.body.appendChild(weeklyOnboardingInteractions);
     }
+
+    if (!document.querySelector('script[data-weekly-plan-personalization]')) {
+      const weeklyPlanPersonalization = document.createElement('script');
+      weeklyPlanPersonalization.src = 'weekly-plan-personalization.js?v=1';
+      weeklyPlanPersonalization.dataset.weeklyPlanPersonalization = 'true';
+      document.body.appendChild(weeklyPlanPersonalization);
+    }
   }, { once: true });
 })();
