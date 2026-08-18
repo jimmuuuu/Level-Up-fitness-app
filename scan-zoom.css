@@ -1,0 +1,41 @@
+.scan-zoom-controls {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: max(108px, calc(96px + env(safe-area-inset-bottom)));
+  display: grid;
+  grid-template-columns: 38px minmax(100px, 170px) 38px 42px;
+  align-items: center;
+  gap: 7px;
+  width: min(calc(100% - 34px), 330px);
+  padding: 8px 10px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(8,10,12,.78);
+  backdrop-filter: blur(14px);
+}
+.scan-zoom-controls button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255,255,255,.07);
+  font-size: 20px;
+  font-weight: 800;
+}
+.scan-zoom-controls input[type="range"] {
+  width: 100%;
+  min-width: 0;
+  accent-color: #ff4d57;
+}
+.scan-zoom-controls span {
+  color: #f5f7f8;
+  font-size: 11px;
+  font-weight: 850;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+#scan .scan-shell { touch-action: pan-y; }
