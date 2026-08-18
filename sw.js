@@ -1,8 +1,9 @@
-const CACHE = 'level-up-fitness-20260817-rank-five-v1';
+const CACHE = 'level-up-fitness-20260817-auto-summary-red-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
   './set-history.css', './set-history.js', './workout-summary.css', './workout-summary.js',
+  './post-workout-auto-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
@@ -19,8 +20,8 @@ const CORE = [
   './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 18);
-const ASSETS = CORE.slice(18);
+const SHELL = CORE.slice(0, 19);
+const ASSETS = CORE.slice(19);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
