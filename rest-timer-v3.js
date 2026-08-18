@@ -32,26 +32,28 @@
 
   function readState() {
     const key = timerKey();
-    if (!key) return { endAt: 0, duration: DEFAULT_SECONDS };
+    if (!key) return { endAt: 0, duration: DEFAULT_SECONDS, pausedRemaining: 0 };
     try {
       const value = JSON.parse(localStorage.getItem(key) || 'null');
       return {
         endAt: Math.max(0, Number(value?.endAt) || 0),
-        duration: Math.max(15, Math.min(600, Number(value?.duration) || DEFAULT_SECONDS))
+        duration: Math.max(15, Math.min(600, Number(value?.duration) || DEFAULT_SECONDS)),
+        pausedRemaining: Math.max(0, Math.min(600, Number(value?.pausedRemaining) || 0))
       };
     } catch {
-      return { endAt: 0, duration: DEFAULT_SECONDS };
+      return { endAt: 0, duration: DEFAULT_SECONDS, pausedRemaining: 0 };
     }
   }
 
-  function writeState(endAt, duration = DEFAULT_SECONDS) {
+  function writeState(endAt, duration = DEFAULT_SECONDS, pausedRemaining = 0) {
     const key = timerKey();
     if (!key) return;
     try {
       localStorage.setItem(key, JSON.stringify({
-        version: 3,
+        version: 4,
         endAt: Math.max(0, Number(endAt) || 0),
         duration: Math.max(15, Math.min(600, Number(duration) || DEFAULT_SECONDS)),
+        pausedRemaining: Math.max(0, Math.min(600, Number(pausedRemaining) || 0)),
         updatedAt: Date.now()
       }));
     } catch {}
@@ -90,8 +92,9 @@
       </div>
       <div id="restTimerV3Controls" class="rest-timer-v3-controls hidden">
         <button type="button" data-rest-v3-adjust="-30">−30 sec</button>
-        <button type="button" data-rest-v3-skip>Skip</button>
+        <button id="restTimerV3Pause" class="rest-timer-v3-pause" type="button" data-rest-v3-pause>Pause</button>
         <button type="button" data-rest-v3-adjust="30">+30 sec</button>
+        <button type="button" data-rest-v3-skip>Skip</button>
       </div>
       <button id="restTimerV3Alerts" class="rest-timer-v3-alerts" type="button">Enable lock-screen rest alerts</button>`;
 
@@ -160,7 +163,7 @@
     }
     const duration = Math.max(15, Math.min(600, Number(seconds) || DEFAULT_SECONDS));
     const endAt = Date.now() + duration * 1000;
-    writeState(endAt, duration);
+    writeState(endAt, duration, 0);
     lastCompleteKey = '';
     render();
     const endLabel = new Date(endAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -169,17 +172,48 @@
     }
   }
 
+  function pauseTimer() {
+    const state = readState();
+    if (!state.endAt) return;
+    const remaining = Math.max(1, Math.ceil((state.endAt - Date.now()) / 1000));
+    if (remaining <= 0) return;
+    writeState(0, state.duration, remaining);
+    render();
+  }
+
+  function resumeTimer() {
+    const state = readState();
+    if (!state.pausedRemaining) return;
+    const remaining = Math.max(1, state.pausedRemaining);
+    writeState(Date.now() + remaining * 1000, state.duration, 0);
+    lastCompleteKey = '';
+    render();
+  }
+
+  function togglePause() {
+    const state = readState();
+    if (state.pausedRemaining > 0) resumeTimer();
+    else if (state.endAt > Date.now()) pauseTimer();
+  }
+
   function adjustTimer(seconds) {
     const state = readState();
+    const delta = Number(seconds || 0);
+    if (state.pausedRemaining > 0) {
+      const pausedRemaining = Math.max(1, Math.min(600, state.pausedRemaining + delta));
+      writeState(0, Math.max(15, pausedRemaining), pausedRemaining);
+      render();
+      return;
+    }
     const currentEnd = state.endAt > Date.now() ? state.endAt : Date.now();
-    const endAt = Math.max(Date.now() + 1000, currentEnd + Number(seconds || 0) * 1000);
-    writeState(endAt, Math.max(15, Math.ceil((endAt - Date.now()) / 1000)));
+    const endAt = Math.max(Date.now() + 1000, currentEnd + delta * 1000);
+    writeState(endAt, Math.max(15, Math.ceil((endAt - Date.now()) / 1000)), 0);
     lastCompleteKey = '';
     render();
   }
 
   function skipTimer() {
-    writeState(0, DEFAULT_SECONDS);
+    writeState(0, DEFAULT_SECONDS, 0);
     lastCompleteKey = timerKey();
     render();
   }
@@ -191,6 +225,7 @@
     const status = byId('restTimerV3Status');
     const presets = byId('restTimerV3Presets');
     const controls = byId('restTimerV3Controls');
+    const pauseButton = byId('restTimerV3Pause');
     if (!card || !time || !status || !presets || !controls) return;
 
     const exists = activeWorkoutExists();
@@ -206,7 +241,9 @@
     const state = readState();
     const remaining = Math.max(0, Math.ceil((state.endAt - Date.now()) / 1000));
     const running = Boolean(state.endAt && remaining > 0);
+    const paused = Boolean(!running && state.pausedRemaining > 0);
     card.classList.toggle('running', running);
+    card.classList.toggle('paused', paused);
     card.classList.remove('rest-timer-v3-complete');
 
     if (running) {
@@ -214,15 +251,23 @@
       status.textContent = `Resting. Ready at ${new Date(state.endAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`;
       presets.classList.add('hidden');
       controls.classList.remove('hidden');
+      if (pauseButton) pauseButton.textContent = 'Pause';
+    } else if (paused) {
+      time.textContent = format(state.pausedRemaining);
+      status.textContent = 'Paused. Resume when you are ready to continue the countdown.';
+      presets.classList.add('hidden');
+      controls.classList.remove('hidden');
+      if (pauseButton) pauseButton.textContent = 'Resume';
     } else {
       time.textContent = format(state.duration || DEFAULT_SECONDS);
       status.textContent = 'Ready. It starts automatically after you save a set.';
       presets.classList.remove('hidden');
       controls.classList.add('hidden');
+      if (pauseButton) pauseButton.textContent = 'Pause';
 
       if (state.endAt && state.endAt <= Date.now() && lastCompleteKey !== key) {
         lastCompleteKey = key;
-        writeState(0, state.duration || DEFAULT_SECONDS);
+        writeState(0, state.duration || DEFAULT_SECONDS, 0);
         card.classList.add('rest-timer-v3-complete');
         status.textContent = 'Rest complete. Start your next set when ready.';
         void notify('Rest complete', 'Your next set is ready when you are.', 'level-up-rest-complete');
@@ -256,6 +301,10 @@
       const adjust = event.target.closest?.('[data-rest-v3-adjust]');
       if (adjust) {
         adjustTimer(Number(adjust.dataset.restV3Adjust) || 0);
+        return;
+      }
+      if (event.target.closest?.('[data-rest-v3-pause]')) {
+        togglePause();
         return;
       }
       if (event.target.closest?.('[data-rest-v3-skip]')) {
@@ -300,6 +349,9 @@
 
   window.LevelUpRestTimerV3 = {
     start: seconds => startTimer(seconds, 'manual'),
+    pause: pauseTimer,
+    resume: resumeTimer,
+    togglePause,
     skip: skipTimer,
     render
   };
