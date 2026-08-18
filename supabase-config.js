@@ -197,5 +197,12 @@ window.LEVEL_UP_SUPABASE = {
       weeklyPlanPersonalization.dataset.weeklyPlanPersonalization = 'true';
       document.body.appendChild(weeklyPlanPersonalization);
     }
+
+    if (!document.querySelector('script[data-weekly-preview-editor]')) {
+      const weeklyPreviewEditor = document.createElement('script');
+      weeklyPreviewEditor.src = 'weekly-preview-editor.js?v=1';
+      weeklyPreviewEditor.dataset.weeklyPreviewEditor = 'true';
+      document.body.appendChild(weeklyPreviewEditor);
+    }
   }, { once: true });
 })();
