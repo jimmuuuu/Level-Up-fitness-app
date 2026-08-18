@@ -114,6 +114,69 @@ window.LEVEL_UP_SUPABASE = {
     }
   };
 
+  // The HTML briefly hides the app shell while the remembered page is restored.
+  // Cloud profile/history hydration can take longer than expected, so never let
+  // that temporary state turn into a permanent black screen. If startup has not
+  // finished quickly, render the cached/local UI immediately while cloud sync
+  // continues in the background.
+  const recoverLocalStartup = () => {
+    if (!document.documentElement.hasAttribute('data-restoring-page')) return;
+
+    try {
+      if (typeof renderPlans === 'function') renderPlans();
+      if (typeof renderProfile === 'function') renderProfile();
+      if (typeof renderHome === 'function') renderHome();
+      if (typeof initializeProfile === 'function') initializeProfile();
+
+      if (typeof go === 'function') {
+        let destination = 'workout';
+        try {
+          const remembered = sessionStorage.getItem('levelUpFitnessLastPage') || '';
+          if (['workout', 'progress', 'profile', 'builder', 'active'].includes(remembered)) destination = remembered;
+        } catch {}
+
+        let restoredActive = false;
+        if (destination === 'active' && typeof restoreActiveWorkout === 'function') {
+          try { restoredActive = Boolean(restoreActiveWorkout(false)); } catch {}
+          if (!restoredActive) destination = 'workout';
+        }
+
+        go(destination);
+
+        document.querySelectorAll('[data-page]').forEach(button => {
+          button.onclick = () => go(button.dataset.page);
+        });
+        const create = document.getElementById('create');
+        if (create && typeof openWorkoutBuilder === 'function') create.onclick = () => openWorkoutBuilder();
+        const newCustomWorkout = document.getElementById('newCustomWorkout');
+        if (newCustomWorkout && typeof openWorkoutBuilder === 'function') newCustomWorkout.onclick = () => openWorkoutBuilder('', true);
+        const backToWorkouts = document.getElementById('backToWorkouts');
+        if (backToWorkouts) backToWorkouts.onclick = () => go('workout');
+        const activeBack = document.getElementById('activeBackToDetails');
+        if (activeBack && typeof showActiveWorkoutDetail === 'function') activeBack.onclick = showActiveWorkoutDetail;
+        const start = document.getElementById('start');
+        if (start && typeof startWorkout === 'function') start.onclick = startWorkout;
+        const finish = document.getElementById('finish');
+        if (finish && typeof finishWorkout === 'function') finish.onclick = finishWorkout;
+        const discard = document.getElementById('discardWorkout');
+        if (discard && typeof discardWorkout === 'function') discard.onclick = discardWorkout;
+      }
+    } catch {
+      // Even if one optional renderer fails, reveal the base Workout page.
+    }
+
+    document.documentElement.removeAttribute('data-restoring-page');
+    const shell = document.getElementById('appShell');
+    if (shell) shell.style.visibility = 'visible';
+    const visiblePage = document.querySelector('.page:not(.hidden)');
+    if (!visiblePage) document.getElementById('workout')?.classList.remove('hidden');
+  };
+
+  const scheduleStartupRecovery = delay => window.setTimeout(recoverLocalStartup, delay);
+  scheduleStartupRecovery(1600);
+  window.addEventListener('error', () => scheduleStartupRecovery(0));
+  window.addEventListener('unhandledrejection', () => scheduleStartupRecovery(0));
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', forceWorkoutIfHome, { once: true });
   } else {
@@ -122,6 +185,8 @@ window.LEVEL_UP_SUPABASE = {
 
   // Load optional helpers only after the main app has finished loading.
   window.addEventListener('load', () => {
+    scheduleStartupRecovery(700);
+
     if (!document.querySelector('script[data-auth-session-fix]')) {
       const authSessionFix = document.createElement('script');
       authSessionFix.src = 'auth-session-fix.js?v=2';
