@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260818-field-test-fixes-v1';
+const CACHE = 'level-up-fitness-20260818-field-test-fixes-v2';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -11,7 +11,7 @@ const CORE = [
   './weekly-preview-editor.js', './start-workout-navigation-fix.js', './account-history-isolation.js', './account-history-truth.js',
   './authoritative-history-sync.js', './auth-session-fix.js', './account-switch-fix-v2.js',
   './scan-feature.css', './scan-feature.js', './scan-zoom.css', './scan-zoom.js',
-  './gym-passes.css', './gym-passes.js', './gym-session-fixes.css', './gym-session-fixes.js',
+  './gym-passes.css', './gym-passes.js', './gym-session-fixes.css', './gym-session-fixes.js', './leg-day-start-fix.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -23,8 +23,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 43);
-const ASSETS = CORE.slice(43);
+const SHELL = CORE.slice(0, 44);
+const ASSETS = CORE.slice(44);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
@@ -51,6 +51,21 @@ self.addEventListener('activate', event => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
     await self.clients.claim();
+  })());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const target = new URL(event.notification?.data?.url || './', self.registration.scope).href;
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existing = windows.find(client => client.url.startsWith(self.registration.scope));
+    if (existing) {
+      try { await existing.navigate(target); } catch {}
+      await existing.focus();
+      return;
+    }
+    await self.clients.openWindow(target);
   })());
 });
 
