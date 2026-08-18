@@ -11,6 +11,13 @@
     document.body.appendChild(sync);
   }
 
+  if (!document.querySelector('script[data-account-switch-fix]')) {
+    const accountSwitchFix = document.createElement('script');
+    accountSwitchFix.src = 'account-switch-fix-v2.js?v=2';
+    accountSwitchFix.dataset.accountSwitchFix = 'true';
+    document.body.appendChild(accountSwitchFix);
+  }
+
   function activeWorkoutExists() {
     try {
       if (typeof activePlan !== 'undefined' && activePlan) return true;
@@ -182,9 +189,6 @@
     if (!authUserId) return false;
     const owner = mostLikelyWeeklyPlanOwner();
     if (!owner) return false;
-    // Cloud-generated weekly plans use the Supabase user id as the storage scope.
-    // If the newest matching weekly plan belongs to another id, never borrow the
-    // current Supabase session's workout history for this active workout.
     if (/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(owner)) return owner !== authUserId;
     return false;
   }
