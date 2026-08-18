@@ -1,0 +1,148 @@
+/* Field-tested active-workout fixes. */
+#active {
+  overflow-x: hidden;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+}
+
+#active .active-session-clock,
+#active .set-save-notice,
+#active .rest-timer {
+  touch-action: pan-y;
+}
+
+#active .rest-timer {
+  display: flex;
+  width: 100%;
+  min-height: 64px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ink);
+  border: 1px solid #33383d;
+  border-radius: 14px;
+  background: #121518;
+  box-shadow: none;
+  text-transform: none;
+}
+
+#active .rest-timer.hidden { display: none !important; }
+
+.rest-timer-main {
+  display: flex;
+  min-width: 88px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rest-timer-main span,
+#active .rest-timer.rest-complete span {
+  color: #8f989f;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .8px;
+}
+
+.rest-timer-main strong,
+#active .rest-timer.rest-complete strong {
+  color: #f5f7f8;
+  font-size: 23px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rest-timer-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  width: min(210px, 62%);
+}
+
+.rest-timer-controls button {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 7px;
+  color: #f2f4f5;
+  border: 1px solid #343a40;
+  border-radius: 10px;
+  background: #1b1f23;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+#active .rest-timer.rest-complete {
+  border-color: rgba(255, 77, 87, .45);
+  background: rgba(255, 77, 87, .07);
+}
+
+@media (max-width: 600px) {
+  #active .set-row {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 10px;
+    overflow: hidden;
+  }
+
+  #setList .set-grid {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 24px minmax(48px, 1fr) minmax(46px, .82fr) minmax(60px, .95fr) 54px !important;
+    gap: 4px !important;
+    align-items: center;
+  }
+
+  #setList .set-grid > b {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 9px;
+    letter-spacing: .15px;
+    white-space: nowrap;
+  }
+
+  #setList .set-grid > span:not(.set-history-kicker):not(.set-history-detail) {
+    grid-column: 1 !important;
+  }
+
+  #setList .set-grid input,
+  #setList .set-grid .set-type-select {
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 5px;
+    font-size: 13px;
+  }
+
+  #setList .set-grid .set-type-select {
+    font-size: 10px;
+  }
+
+  #setList .set-grid > button.complete {
+    grid-column: 5 !important;
+    width: 100% !important;
+    min-width: 0;
+    min-height: 40px;
+    padding: 5px 2px;
+    font-size: 10px;
+  }
+
+  #active .exercise-heading {
+    gap: 6px;
+  }
+
+  #active .exercise-heading span {
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 360px) {
+  #setList .set-grid {
+    grid-template-columns: 21px minmax(44px, 1fr) minmax(42px, .78fr) minmax(55px, .9fr) 49px !important;
+    gap: 3px !important;
+  }
+  #setList .set-grid input,
+  #setList .set-grid .set-type-select { font-size: 11px; }
+  #setList .set-grid > button.complete { font-size: 9px; }
+}
