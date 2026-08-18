@@ -1,6 +1,7 @@
 (() => {
   const HISTORY_KEY = 'levelUpFitnessWorkoutHistory';
   const SET_LIST_ID = 'setList';
+  const AUTO_WEEKLY_PREFIX = 'custom-auto-weekly-';
 
   if (!document.querySelector('link[data-set-history-style]')) {
     const style = document.createElement('link');
@@ -12,6 +13,12 @@
 
   function readHistory() {
     try {
+      if (typeof workoutHistory !== 'undefined' && Array.isArray(workoutHistory)) {
+        return workoutHistory;
+      }
+    } catch {}
+
+    try {
       const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
       return Array.isArray(parsed) ? parsed : [];
     } catch {
@@ -19,9 +26,43 @@
     }
   }
 
+  function currentWorkoutContext() {
+    try {
+      if (typeof activePlan !== 'undefined' && activePlan) {
+        const id = typeof planIdFor === 'function'
+          ? planIdFor(activePlan)
+          : String(activePlan.id || '');
+        return {
+          planId: id,
+          planName: String(activePlan.name || ''),
+          baseline: id.startsWith(AUTO_WEEKLY_PREFIX) ? (Number(activePlan.updatedAt) || 0) : 0
+        };
+      }
+    } catch {}
+    return { planId: '', planName: '', baseline: 0 };
+  }
+
+  function belongsToCurrentWorkout(session, context) {
+    if (!session || !context) return false;
+    const sessionPlanId = String(session.planId || '');
+    const sessionPlanName = String(session.plan || '');
+
+    const sameWorkout = context.planId
+      ? sessionPlanId === context.planId || (!sessionPlanId && context.planName && sessionPlanName === context.planName)
+      : Boolean(context.planName && sessionPlanName === context.planName);
+    if (!sameWorkout) return false;
+
+    const completedAt = Number(session.completedAt) || 0;
+    if (context.baseline && completedAt && completedAt < context.baseline) return false;
+    return true;
+  }
+
   function previousSetFor(exerciseName, setNumber) {
+    const context = currentWorkoutContext();
+    if (!context.planId && !context.planName) return null;
+
     const history = readHistory()
-      .filter(session => session && Array.isArray(session.logs))
+      .filter(session => session && Array.isArray(session.logs) && belongsToCurrentWorkout(session, context))
       .sort((a, b) => (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0));
 
     for (const session of history) {
@@ -65,8 +106,8 @@
     if (!previous) {
       return {
         tone: 'baseline',
-        summary: 'No previous set yet',
-        detail: 'Save this set to create your baseline.'
+        summary: 'First time in this workout',
+        detail: 'Save this set to create this workout’s history.'
       };
     }
 
