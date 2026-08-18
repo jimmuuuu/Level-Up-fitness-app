@@ -191,6 +191,13 @@ window.LEVEL_UP_SUPABASE = {
       document.body.appendChild(weeklyOnboardingInteractions);
     }
 
+    if (!document.querySelector('script[data-start-workout-navigation-fix]')) {
+      const startWorkoutNavigationFix = document.createElement('script');
+      startWorkoutNavigationFix.src = 'start-workout-navigation-fix.js?v=1';
+      startWorkoutNavigationFix.dataset.startWorkoutNavigationFix = 'true';
+      document.body.appendChild(startWorkoutNavigationFix);
+    }
+
     const loadWeeklyPreviewEditor = () => {
       if (document.querySelector('script[data-weekly-preview-editor]')) return;
       const weeklyPreviewEditor = document.createElement('script');
