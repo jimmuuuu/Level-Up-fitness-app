@@ -79,6 +79,11 @@
         assists: []
       });
     } catch {}
+    try {
+      if (typeof exerciseTargets === 'object' && exerciseTargets) {
+        exerciseTargets['Calf Extension'] = { primary: ['Calves'], assists: [] };
+      }
+    } catch {}
   }
 
   function dedicatedLegDay(plan) {
@@ -117,6 +122,24 @@
     };
   }
 
+  function applyStaticProgramPreferences() {
+    const userId = currentUserId();
+    if (!TARGET_USERS.has(userId)) return;
+    try {
+      if (typeof personalProgram === 'object' && Array.isArray(personalProgram?.plans)) {
+        personalProgram.plans = personalProgram.plans.map(plan => mapComfortPreferences(dedicatedLegDay(plan)));
+      }
+    } catch {}
+    try {
+      if (Array.isArray(plans)) {
+        for (let index = 0; index < plans.length; index += 1) {
+          plans[index] = mapComfortPreferences(plans[index]);
+        }
+      }
+    } catch {}
+    try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
+  }
+
   function personalizeSelectedPlan() {
     const userId = currentUserId();
     if (!TARGET_USERS.has(userId)) return;
@@ -128,6 +151,7 @@
 
   function install() {
     addCalfExtensionToCatalog();
+    applyStaticProgramPreferences();
     try {
       if (typeof startWorkout === 'function' && !startWorkout.__fieldLegDayWrapped) {
         const previous = startWorkout;
