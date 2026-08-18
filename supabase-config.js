@@ -201,7 +201,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-set-history-feature]')) {
       const setHistory = document.createElement('script');
-      setHistory.src = 'set-history-v5.js?v=1';
+      setHistory.src = 'set-history-v6.js?v=1';
       setHistory.dataset.setHistoryFeature = 'true';
       document.body.appendChild(setHistory);
     }
