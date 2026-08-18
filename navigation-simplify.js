@@ -97,7 +97,7 @@
   }
 
   function loadRestTimerV3() {
-    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=1', 'data-rest-timer-v3', 'rest-timer-v3.js?v=1');
+    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=1', 'data-rest-timer-v3', 'rest-timer-v3.js?v=2');
   }
 
   function start() {
