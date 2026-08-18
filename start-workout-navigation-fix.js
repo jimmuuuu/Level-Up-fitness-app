@@ -1,6 +1,8 @@
 (() => {
   let forcing = false;
   let timerWatchdog = null;
+  let identityCheckRunning = false;
+  let identityMismatch = false;
 
   if (!document.querySelector('script[data-authoritative-history-sync]')) {
     const sync = document.createElement('script');
@@ -111,13 +113,96 @@
     });
   }
 
+  function normalizeEmail(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function currentProfileIdentity() {
+    try {
+      return {
+        provider: String(userProfile?.provider || ''),
+        email: normalizeEmail(userProfile?.email),
+        cloudUserId: String(userProfile?.cloudUserId || '')
+      };
+    } catch {
+      return { provider: '', email: '', cloudUserId: '' };
+    }
+  }
+
+  async function verifyAccountIdentity() {
+    if (identityCheckRunning) return;
+    identityCheckRunning = true;
+    try {
+      const client = typeof getSupabaseClient === 'function' ? getSupabaseClient() : null;
+      if (!client) {
+        identityMismatch = false;
+        return;
+      }
+      const { data } = await client.auth.getSession();
+      const authUser = data?.session?.user || null;
+      const profile = currentProfileIdentity();
+
+      if (!authUser) {
+        identityMismatch = false;
+        return;
+      }
+
+      const authEmail = normalizeEmail(authUser.email);
+      const profileIsGoogle = profile.provider === 'google';
+      const emailMismatch = Boolean(profile.email && authEmail && profile.email !== authEmail);
+      const idMismatch = Boolean(profile.cloudUserId && profile.cloudUserId !== authUser.id);
+      const localProfileWithCloudSession = Boolean(profile.provider && !profileIsGoogle);
+
+      identityMismatch = emailMismatch || idMismatch || localProfileWithCloudSession;
+      if (identityMismatch) enforceIdentitySafeHistory();
+    } catch {
+      // If identity cannot be verified, do not invent or rewrite history.
+    } finally {
+      identityCheckRunning = false;
+    }
+  }
+
+  function enforceIdentitySafeHistory() {
+    const setList = document.getElementById('setList');
+    if (!setList) return;
+
+    setList.querySelectorAll('.set-history-compare').forEach(box => {
+      box.dataset.tone = 'baseline';
+      const summary = box.querySelector('.set-history-summary');
+      const detail = box.querySelector('.set-history-detail');
+      if (summary) summary.textContent = 'First time in this workout';
+      if (detail) detail.textContent = 'Save this set to create this workout history.';
+    });
+
+    setList.querySelectorAll('.weight-recommendation').forEach(card => {
+      if (/your exercise history/i.test(card.textContent || '')) {
+        card.style.display = 'none';
+        card.dataset.identityHistoryHidden = 'true';
+      }
+    });
+  }
+
+  function keepIdentityHistorySafe() {
+    if (identityMismatch) enforceIdentitySafeHistory();
+  }
+
   document.addEventListener('click', event => {
     const start = event.target.closest?.('#start');
     if (!start) return;
     scheduleActivePageCheck();
+    window.setTimeout(() => { void verifyAccountIdentity(); }, 0);
   });
 
   window.addEventListener('pageshow', () => {
     if (activeWorkoutExists()) ensureSessionTimer();
+    void verifyAccountIdentity();
   });
+
+  window.addEventListener('load', () => {
+    void verifyAccountIdentity();
+    window.setInterval(() => {
+      void verifyAccountIdentity();
+      keepIdentityHistorySafe();
+    }, 500);
+  }, { once: true });
 })();
