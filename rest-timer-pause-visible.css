@@ -1,0 +1,65 @@
+/* Keep Pause/Resume visible so users can see the control before the timer starts. */
+.rest-timer-v3-top {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center !important;
+}
+
+.rest-timer-v3-status {
+  justify-self: end;
+}
+
+.rest-timer-pause-visible {
+  min-width: 78px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  border-color: #343a40 !important;
+  color: #737c83 !important;
+  background: #161a1e !important;
+}
+
+.rest-timer-pause-visible.active {
+  color: #f5f7f8 !important;
+  border-color: rgba(255,77,87,.55) !important;
+}
+
+.rest-timer-pause-visible.paused {
+  color: #080a0c !important;
+  border-color: #ff4d57 !important;
+  background: #ff4d57 !important;
+}
+
+.rest-timer-pause-visible:disabled {
+  opacity: .62;
+  cursor: not-allowed;
+}
+
+/* The persistent top button replaces the duplicate Pause button in running controls. */
+.rest-timer-v3-controls .rest-timer-v3-pause {
+  display: none !important;
+}
+
+.rest-timer-v3-controls {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 520px) {
+  .rest-timer-v3-top {
+    grid-template-columns: 1fr auto;
+    gap: 8px !important;
+  }
+
+  .rest-timer-v3-status {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    max-width: none !important;
+    text-align: left !important;
+  }
+
+  .rest-timer-pause-visible {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 82px !important;
+  }
+}
