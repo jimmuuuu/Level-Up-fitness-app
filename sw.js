@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-duration-75-plus-v1';
+const CACHE = 'level-up-fitness-20260817-weekly-manual-choices-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -7,23 +7,20 @@ const CORE = [
   './weight-recommendations.css', './weight-recommendations.js',
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
   './weekly-plan-onboarding.css', './weekly-plan-onboarding-v2.css', './weekly-plan-onboarding.js',
-  './gym-category-labels.js',
+  './gym-category-labels.js', './weekly-onboarding-interactions.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
   './assets/workouts/upper-body-tower.png', './assets/workouts/barbell.png',
   './assets/workouts/bench-press.png', './assets/workouts/lat-pulldown.png',
   './assets/workouts/hip-thrust.png', './assets/workouts/ab-wheel.png',
-  './assets/workouts/dumbbell.png', './assets/workouts/machine.png',
-  './assets/workouts/treadmill.png', './assets/workouts/timer.png',
-  './assets/ranks/foundation.png', './assets/ranks/iron.png',
-  './assets/ranks/bronze.png', './assets/ranks/silver.png',
-  './assets/ranks/gold.png', './assets/ranks/platinum.png',
-  './assets/ranks/diamond.png', './assets/ranks/champion.png',
+  './assets/workouts/dumbbell.png', './assets/workouts/machine.png', './assets/workouts/treadmill.png', './assets/workouts/timer.png',
+  './assets/ranks/foundation.png', './assets/ranks/iron.png', './assets/ranks/bronze.png', './assets/ranks/silver.png',
+  './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 24);
-const ASSETS = CORE.slice(24);
+const SHELL = CORE.slice(0, 25);
+const ASSETS = CORE.slice(25);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
