@@ -11,6 +11,15 @@
   touch-action: pan-y;
 }
 
+/* These two status pills are display-only. Ignoring pointer hits lets a swipe
+   that starts on them scroll/pull the page instead of feeling blocked. */
+#active .active-session-clock,
+#active .set-save-notice {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 #active .rest-timer {
   display: flex;
   width: 100%;
