@@ -97,7 +97,16 @@
   }
 
   function loadRestTimerV3() {
-    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=1', 'data-rest-timer-v3', 'rest-timer-v3.js?v=2');
+    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=3');
+  }
+
+  function disableWeightRecommendations() {
+    loadFeature(
+      'data-disable-weight-recommendations-style',
+      'disable-weight-recommendations.css?v=1',
+      'data-disable-weight-recommendations',
+      'disable-weight-recommendations.js?v=1'
+    );
   }
 
   function start() {
@@ -115,6 +124,7 @@
     loadFinalFieldNotes();
     loadFiveDayPlan();
     loadRestTimerV3();
+    disableWeightRecommendations();
     redirectHomeToWorkout();
 
     const home = document.getElementById('home');
