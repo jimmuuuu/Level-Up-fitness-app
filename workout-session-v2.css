@@ -57,6 +57,27 @@ html, body {
   font-weight: 800;
 }
 
+.workout-session-alerts {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 30px;
+  margin-top: 3px;
+  padding: 0 10px;
+  border: 1px solid #343a40;
+  border-radius: 999px;
+  color: #cbd1d6;
+  background: #161a1e;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.workout-session-alerts.enabled {
+  color: #ff9ca3;
+  border-color: rgba(255,77,87,.36);
+  background: rgba(255,77,87,.08);
+}
+
 /* Existing timer stays visible but the new status card is the compact source of truth. */
 #active .active-session-clock {
   margin-bottom: 8px;
