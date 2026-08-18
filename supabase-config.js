@@ -41,6 +41,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(weightRecommendationsStyle);
   }
 
+  if (!document.querySelector('link[data-weekly-workout-review-style]')) {
+    const weeklyWorkoutReviewStyle = document.createElement('link');
+    weeklyWorkoutReviewStyle.rel = 'stylesheet';
+    weeklyWorkoutReviewStyle.href = 'weekly-workout-review.css?v=1';
+    weeklyWorkoutReviewStyle.dataset.weeklyWorkoutReviewStyle = 'true';
+    document.head.appendChild(weeklyWorkoutReviewStyle);
+  }
+
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', '#080a0c');
 
@@ -107,6 +115,13 @@ window.LEVEL_UP_SUPABASE = {
       weightRecommendations.src = 'weight-recommendations.js?v=1';
       weightRecommendations.dataset.weightRecommendations = 'true';
       document.body.appendChild(weightRecommendations);
+    }
+
+    if (!document.querySelector('script[data-weekly-workout-review]')) {
+      const weeklyWorkoutReview = document.createElement('script');
+      weeklyWorkoutReview.src = 'weekly-workout-review.js?v=1';
+      weeklyWorkoutReview.dataset.weeklyWorkoutReview = 'true';
+      document.body.appendChild(weeklyWorkoutReview);
     }
   }, { once: true });
 })();
