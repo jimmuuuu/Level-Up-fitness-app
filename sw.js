@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260818-field-test-fixes-v4';
+const CACHE = 'level-up-fitness-20260818-field-test-fixes-v5';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -12,7 +12,7 @@ const CORE = [
   './authoritative-history-sync.js', './auth-session-fix.js', './account-switch-fix-v2.js',
   './scan-feature.css', './scan-feature.js', './scan-zoom.css', './scan-zoom.js',
   './gym-passes.css', './gym-passes.js', './gym-session-fixes.css', './gym-session-fixes.js', './leg-day-start-fix.js',
-  './field-notes-final.css', './field-notes-final.js',
+  './field-notes-final.css', './field-notes-final.js', './five-day-plan.js', './rest-timer-v3.css', './rest-timer-v3.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -24,8 +24,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 46);
-const ASSETS = CORE.slice(46);
+const SHELL = CORE.slice(0, 49);
+const ASSETS = CORE.slice(49);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
