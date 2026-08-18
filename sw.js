@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-history-v6-verified-only';
+const CACHE = 'level-up-fitness-20260817-history-v6-legacy-purge';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
