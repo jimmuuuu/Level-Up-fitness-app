@@ -42,6 +42,10 @@
   color: #ff4d57;
 }
 
+.rest-timer-v3.paused .rest-timer-v3-time {
+  color: #f5f7f8;
+}
+
 .rest-timer-v3-status {
   max-width: 180px;
   color: #9ba4ab;
@@ -50,15 +54,22 @@
   text-align: right;
 }
 
-.rest-timer-v3.running .rest-timer-v3-status {
+.rest-timer-v3.running .rest-timer-v3-status,
+.rest-timer-v3.paused .rest-timer-v3-status {
   color: #e9edef;
   font-weight: 750;
 }
 
-.rest-timer-v3-presets,
-.rest-timer-v3-controls {
+.rest-timer-v3-presets {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.rest-timer-v3-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
   margin-top: 11px;
 }
@@ -79,6 +90,16 @@
 .rest-timer-v3 button.primary {
   color: #080a0c;
   border-color: #ff4d57;
+  background: #ff4d57;
+}
+
+.rest-timer-v3-pause {
+  border-color: rgba(255,77,87,.45) !important;
+}
+
+.rest-timer-v3.paused .rest-timer-v3-pause {
+  color: #080a0c;
+  border-color: #ff4d57 !important;
   background: #ff4d57;
 }
 
@@ -107,4 +128,5 @@
   .rest-timer-v3-time { font-size: 28px; }
   .rest-timer-v3-status { max-width: 145px; }
   .rest-timer-v3 button { min-height: 40px; font-size: 10px; }
+  .rest-timer-v3-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
