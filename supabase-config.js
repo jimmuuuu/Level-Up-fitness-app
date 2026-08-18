@@ -119,7 +119,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-weekly-workout-review]')) {
       const weeklyWorkoutReview = document.createElement('script');
-      weeklyWorkoutReview.src = 'weekly-workout-review.js?v=1';
+      weeklyWorkoutReview.src = 'weekly-workout-review.js?v=2';
       weeklyWorkoutReview.dataset.weeklyWorkoutReview = 'true';
       document.body.appendChild(weeklyWorkoutReview);
     }
