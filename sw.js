@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260817-weekly-personalization-v3';
+const CACHE = 'level-up-fitness-20260817-weekly-preview-editor-v1';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -8,6 +8,7 @@ const CORE = [
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
   './weekly-plan-onboarding.css', './weekly-plan-onboarding-v2.css', './weekly-plan-onboarding.js',
   './gym-category-labels.js', './weekly-onboarding-interactions.js', './weekly-plan-personalization-v3.js',
+  './weekly-preview-editor.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -19,8 +20,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 26);
-const ASSETS = CORE.slice(26);
+const SHELL = CORE.slice(0, 27);
+const ASSETS = CORE.slice(27);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
