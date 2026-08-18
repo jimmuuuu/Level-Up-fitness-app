@@ -44,20 +44,28 @@
     else profile.querySelector('.profile-email')?.insertAdjacentElement('afterend', shortcut);
   }
 
-  function loadScanFeature() {
-    if (!document.querySelector('link[data-scan-feature-style]')) {
+  function loadFeature(styleFlag, styleHref, scriptFlag, scriptSrc) {
+    if (!document.querySelector(`link[${styleFlag}]`)) {
       const style = document.createElement('link');
       style.rel = 'stylesheet';
-      style.href = 'scan-feature.css?v=1';
-      style.dataset.scanFeatureStyle = 'true';
+      style.href = styleHref;
+      style.setAttribute(styleFlag, 'true');
       document.head.appendChild(style);
     }
-    if (!document.querySelector('script[data-scan-feature]')) {
+    if (!document.querySelector(`script[${scriptFlag}]`)) {
       const script = document.createElement('script');
-      script.src = 'scan-feature.js?v=1';
-      script.dataset.scanFeature = 'true';
+      script.src = scriptSrc;
+      script.setAttribute(scriptFlag, 'true');
       document.body.appendChild(script);
     }
+  }
+
+  function loadScanFeature() {
+    loadFeature('data-scan-feature-style', 'scan-feature.css?v=1', 'data-scan-feature', 'scan-feature.js?v=1');
+  }
+
+  function loadGymPasses() {
+    loadFeature('data-gym-passes-style', 'gym-passes.css?v=1', 'data-gym-passes', 'gym-passes.js?v=1');
   }
 
   function start() {
@@ -68,6 +76,7 @@
 
     setupProfileSettings();
     loadScanFeature();
+    loadGymPasses();
     redirectHomeToWorkout();
 
     const home = document.getElementById('home');
