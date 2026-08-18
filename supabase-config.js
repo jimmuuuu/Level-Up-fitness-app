@@ -49,6 +49,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(weeklyWorkoutReviewStyle);
   }
 
+  if (!document.querySelector('link[data-weekly-plan-onboarding-base]')) {
+    const weeklyPlanOnboardingBase = document.createElement('link');
+    weeklyPlanOnboardingBase.rel = 'stylesheet';
+    weeklyPlanOnboardingBase.href = 'weekly-plan-onboarding.css?v=1';
+    weeklyPlanOnboardingBase.dataset.weeklyPlanOnboardingBase = 'true';
+    document.head.appendChild(weeklyPlanOnboardingBase);
+  }
+
   if (!document.querySelector('link[data-weekly-plan-onboarding-style]')) {
     const weeklyPlanOnboardingStyle = document.createElement('link');
     weeklyPlanOnboardingStyle.rel = 'stylesheet';
