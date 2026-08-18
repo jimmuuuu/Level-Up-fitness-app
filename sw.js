@@ -1,8 +1,8 @@
-const CACHE = 'level-up-fitness-20260817-account-switching-v2';
+const CACHE = 'level-up-fitness-20260817-history-v5';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
-  './set-history.css', './set-history.js', './workout-summary.css', './workout-summary.js',
+  './set-history.css', './set-history.js', './set-history-v5.js', './cloud-history-v5.js', './workout-summary.css', './workout-summary.js',
   './summary-red-override.css', './post-workout-auto-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
   './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
@@ -21,8 +21,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 33);
-const ASSETS = CORE.slice(33);
+const SHELL = CORE.slice(0, 35);
+const ASSETS = CORE.slice(35);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
