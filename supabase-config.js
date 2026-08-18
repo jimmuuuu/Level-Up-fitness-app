@@ -33,6 +33,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(navigationStyle);
   }
 
+  if (!document.querySelector('link[data-set-history-style]')) {
+    const setHistoryStyle = document.createElement('link');
+    setHistoryStyle.rel = 'stylesheet';
+    setHistoryStyle.href = 'set-history.css?v=2';
+    setHistoryStyle.dataset.setHistoryStyle = 'true';
+    document.head.appendChild(setHistoryStyle);
+  }
+
   if (!document.querySelector('link[data-weight-recommendations-style]')) {
     const weightRecommendationsStyle = document.createElement('link');
     weightRecommendationsStyle.rel = 'stylesheet';
