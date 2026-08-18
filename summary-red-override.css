@@ -1,0 +1,36 @@
+.workout-summary-overlay .ws-kicker,
+.workout-summary-overlay .ws-section-title span,
+.workout-summary-overlay .ws-progress-grid article.good strong {
+  color: #ff4d57 !important;
+}
+
+.workout-summary-overlay .ws-progress-card {
+  border-color: rgba(255, 77, 87, .34) !important;
+}
+
+.workout-summary-overlay .ws-volume-change {
+  color: #f0c3c7 !important;
+}
+
+.workout-summary-overlay .ws-set-change.up,
+.workout-summary-overlay .ws-primary {
+  color: #080a0c !important;
+  border-color: #ff4d57 !important;
+  background: #ff4d57 !important;
+}
+
+.workout-summary-overlay .ws-set-change.baseline {
+  color: #ffd9dd !important;
+  background: #3a2024 !important;
+}
+
+.workout-summary-overlay #wsNotes:focus {
+  border-color: rgba(255, 77, 87, .62) !important;
+  box-shadow: 0 0 0 1px rgba(255, 77, 87, .16) !important;
+}
+
+.workout-summary-overlay .ws-view-summary,
+.ws-view-summary {
+  color: #f7d9dc !important;
+  border-color: rgba(255, 77, 87, .28) !important;
+}
