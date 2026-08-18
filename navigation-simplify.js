@@ -85,7 +85,7 @@
   }
 
   function loadLegDayStartFix() {
-    loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=1');
+    loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=2');
   }
 
   function loadFinalFieldNotes() {
