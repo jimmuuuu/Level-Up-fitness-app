@@ -11,9 +11,9 @@
   background: #0c0f12;
 }
 
-/* Only V6 is allowed to show Set History. Any older cached implementation is
-   hidden even if it manages to insert a legacy history card into the workout. */
-.set-history-compare[data-history-v6="true"] {
+/* Set History stays completely hidden until the current exact workout version
+   has been completed at least once. V6 controls the parent unlock flag. */
+#setList[data-set-history-unlocked="true"] .set-history-compare[data-history-v6="true"] {
   display: grid !important;
 }
 
@@ -48,12 +48,12 @@
 }
 
 .set-history-compare[data-tone="up"] {
-  border-color: rgba(183, 255, 60, .34);
-  background: rgba(183, 255, 60, .055);
+  border-color: rgba(255, 77, 87, .34);
+  background: rgba(255, 77, 87, .055);
 }
 
 .set-history-compare[data-tone="up"] .set-history-summary {
-  color: #b7ff3c;
+  color: #ff4d57;
 }
 
 .set-history-compare[data-tone="same"] .set-history-summary {
@@ -64,12 +64,8 @@
   color: #c9ced3;
 }
 
-.set-history-compare[data-tone="baseline"] {
-  border-style: dashed;
-}
-
 @media (max-width: 390px) {
-  .set-history-compare[data-history-v6="true"] {
+  #setList[data-set-history-unlocked="true"] .set-history-compare[data-history-v6="true"] {
     grid-template-columns: 1fr;
     gap: 2px;
     padding: 8px 9px;
