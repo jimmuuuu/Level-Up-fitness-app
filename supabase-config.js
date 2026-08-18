@@ -49,6 +49,14 @@ window.LEVEL_UP_SUPABASE = {
     document.head.appendChild(weeklyWorkoutReviewStyle);
   }
 
+  if (!document.querySelector('link[data-weekly-plan-onboarding-style]')) {
+    const weeklyPlanOnboardingStyle = document.createElement('link');
+    weeklyPlanOnboardingStyle.rel = 'stylesheet';
+    weeklyPlanOnboardingStyle.href = 'weekly-plan-onboarding.css?v=1';
+    weeklyPlanOnboardingStyle.dataset.weeklyPlanOnboardingStyle = 'true';
+    document.head.appendChild(weeklyPlanOnboardingStyle);
+  }
+
   if (!document.querySelector('link[data-workout-summary-style]')) {
     const workoutSummaryStyle = document.createElement('link');
     workoutSummaryStyle.rel = 'stylesheet';
@@ -152,6 +160,13 @@ window.LEVEL_UP_SUPABASE = {
       rankThreshold.src = 'rank-threshold.js?v=1';
       rankThreshold.dataset.rankThreshold = 'true';
       document.body.appendChild(rankThreshold);
+    }
+
+    if (!document.querySelector('script[data-weekly-plan-onboarding]')) {
+      const weeklyPlanOnboarding = document.createElement('script');
+      weeklyPlanOnboarding.src = 'weekly-plan-onboarding.js?v=1';
+      weeklyPlanOnboarding.dataset.weeklyPlanOnboarding = 'true';
+      document.body.appendChild(weeklyPlanOnboarding);
     }
   }, { once: true });
 })();
