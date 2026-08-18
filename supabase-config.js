@@ -52,9 +52,17 @@ window.LEVEL_UP_SUPABASE = {
   if (!document.querySelector('link[data-workout-summary-style]')) {
     const workoutSummaryStyle = document.createElement('link');
     workoutSummaryStyle.rel = 'stylesheet';
-    workoutSummaryStyle.href = 'workout-summary.css?v=2';
+    workoutSummaryStyle.href = 'workout-summary.css?v=3';
     workoutSummaryStyle.dataset.workoutSummaryStyle = 'true';
     document.head.appendChild(workoutSummaryStyle);
+  }
+
+  if (!document.querySelector('link[data-summary-red-override]')) {
+    const summaryRedOverride = document.createElement('link');
+    summaryRedOverride.rel = 'stylesheet';
+    summaryRedOverride.href = 'summary-red-override.css?v=1';
+    summaryRedOverride.dataset.summaryRedOverride = 'true';
+    document.head.appendChild(summaryRedOverride);
   }
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
