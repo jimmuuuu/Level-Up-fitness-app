@@ -36,7 +36,7 @@ body.workout-summary-open { overflow: hidden; }
 .ws-header p { margin: 0; color: #8e969e; font-size: 13px; }
 .ws-kicker,
 .ws-section-title span {
-  color: #b7ff3c;
+  color: #ff4d57;
   font-size: 11px;
   font-weight: 850;
   letter-spacing: 1.4px;
@@ -99,14 +99,14 @@ body.workout-summary-open { overflow: hidden; }
   background: #0f1215;
 }
 
-.ws-progress-card { border-color: rgba(183, 255, 60, .28); }
+.ws-progress-card { border-color: rgba(255, 77, 87, .30); }
 .ws-progress-grid { margin-top: 13px; }
-.ws-progress-grid article.good strong { color: #b7ff3c; }
+.ws-progress-grid article.good strong { color: #ff4d57; }
 .ws-progress-grid article:last-child strong { font-size: 15px; }
 .ws-section-title { align-items: flex-end; }
 .ws-section-title h3 { margin: 2px 0 0; font-size: 17px; }
 .ws-section-title small { color: #8e969e; font-size: 11px; }
-.ws-volume-change { margin: 12px 2px 0; color: #cdd4c1; font-size: 12px; }
+.ws-volume-change { margin: 12px 2px 0; color: #f0c3c7; font-size: 12px; }
 
 .ws-exercises { display: grid; gap: 10px; margin-top: 13px; }
 .ws-exercise {
@@ -139,10 +139,10 @@ body.workout-summary-open { overflow: hidden; }
   font-size: 11px;
   font-weight: 900;
 }
-.ws-set-change.up { color: #080a0c; background: #b7ff3c; }
+.ws-set-change.up { color: #080a0c; background: #ff4d57; }
 .ws-set-change.same { color: #d8dce0; background: #292e33; }
 .ws-set-change.down { color: #ffc5c5; background: #472428; }
-.ws-set-change.baseline { color: #d9e2c6; background: #26301e; font-size: 9px; }
+.ws-set-change.baseline { color: #ffd9dd; background: #3a2024; font-size: 9px; }
 
 #wsNotes {
   box-sizing: border-box;
@@ -159,7 +159,7 @@ body.workout-summary-open { overflow: hidden; }
   font: inherit;
   line-height: 1.45;
 }
-#wsNotes:focus { border-color: rgba(183, 255, 60, .55); }
+#wsNotes:focus { border-color: rgba(255, 77, 87, .58); }
 
 .ws-photo-grid {
   display: grid;
@@ -221,14 +221,14 @@ body.workout-summary-open { overflow: hidden; }
   min-width: 170px;
   padding: 0 16px;
   color: #080a0c;
-  border: 1px solid #b7ff3c;
-  background: #b7ff3c;
+  border: 1px solid #ff4d57;
+  background: #ff4d57;
 }
 
 .ws-view-summary {
   min-height: 34px;
   padding: 0 10px;
-  color: #dce3d1;
+  color: #f4d7da;
   border: 1px solid #343a3f;
   border-radius: 10px;
   background: #171b1f;
