@@ -1,0 +1,376 @@
+/* Gym Passes: local-only membership wallet inside Profile. */
+.gym-passes-section {
+  margin: 26px 0 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.gym-passes-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gym-passes-heading h2 {
+  margin: 3px 0 5px;
+}
+
+.gym-passes-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.gym-pass-add {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,77,87,.5);
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(255,77,87,.1);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.gym-passes-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.gym-pass-empty {
+  padding: 16px;
+  border: 1px dashed #30363c;
+  border-radius: 15px;
+  color: var(--muted);
+  background: rgba(255,255,255,.015);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.gym-pass-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid #30363c;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #171b1f, #0c0f12 72%);
+}
+
+.gym-pass-card::after {
+  position: absolute;
+  top: -44px;
+  right: -44px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255,77,87,.08);
+  content: '';
+  pointer-events: none;
+}
+
+.gym-pass-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gym-pass-name {
+  margin: 0;
+  color: #f5f7f8;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.gym-pass-type {
+  margin: 5px 0 0;
+  color: #969fa7;
+  font-size: 11px;
+}
+
+.gym-pass-badge {
+  padding: 5px 8px;
+  border: 1px solid rgba(255,77,87,.32);
+  border-radius: 999px;
+  color: #ffd8dc;
+  background: rgba(255,77,87,.07);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .45px;
+  text-transform: uppercase;
+}
+
+.gym-pass-preview {
+  width: 100%;
+  max-height: 160px;
+  margin-top: 14px;
+  object-fit: contain;
+  border: 1px solid #292e33;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.gym-pass-id {
+  margin-top: 12px;
+  color: #c6ccd1;
+  font-size: 11px;
+}
+
+.gym-pass-id strong {
+  color: #f5f7f8;
+}
+
+.gym-pass-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gym-pass-actions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #30363c;
+  border-radius: 12px;
+  color: #f5f7f8;
+  background: #15191d;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.gym-pass-actions .gym-pass-open {
+  border-color: #ff4d57;
+  background: #ff4d57;
+  color: #090b0d;
+}
+
+.gym-pass-security-note {
+  margin: 13px 0 0;
+  color: #7f8992;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.gym-pass-modal {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  background: rgba(0,0,0,.68);
+  backdrop-filter: blur(5px);
+}
+
+.gym-pass-modal.hidden {
+  display: none !important;
+}
+
+.gym-pass-sheet {
+  width: min(100%, 620px);
+  max-height: 91dvh;
+  margin: 0 auto;
+  overflow: auto;
+  padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+  border: 1px solid #292e33;
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: #0c0f12;
+  box-shadow: 0 -20px 60px rgba(0,0,0,.45);
+}
+
+.gym-pass-handle {
+  width: 44px;
+  height: 4px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  background: #3a4046;
+}
+
+.gym-pass-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gym-pass-sheet h2 {
+  margin: 3px 0 6px;
+  color: #f5f7f8;
+}
+
+.gym-pass-sheet p {
+  color: #99a2aa;
+  font-size: 12px;
+  line-height: 1.48;
+}
+
+.gym-pass-close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #30363c;
+  border-radius: 50%;
+  color: #fff;
+  background: #15191d;
+  font: inherit;
+  font-size: 20px;
+}
+
+.gym-pass-choice-grid,
+.gym-pass-form,
+.gym-pass-photo-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.gym-pass-choice {
+  min-height: 74px;
+  padding: 14px;
+  border: 1px solid #30363c;
+  border-radius: 15px;
+  color: #f5f7f8;
+  background: #12161a;
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+}
+
+.gym-pass-choice small {
+  display: block;
+  margin-top: 5px;
+  color: #8d969e;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.gym-pass-field {
+  display: grid;
+  gap: 6px;
+}
+
+.gym-pass-field span {
+  color: #b7bec5;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.gym-pass-field input,
+.gym-pass-field select {
+  min-height: 46px;
+  width: 100%;
+  padding: 0 13px;
+  border: 1px solid #30363c;
+  border-radius: 13px;
+  color: #f5f7f8;
+  background: #080b0e;
+  font: inherit;
+}
+
+.gym-pass-photo-slot {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 104px;
+  padding: 10px;
+  border: 1px solid #30363c;
+  border-radius: 15px;
+  background: #111417;
+}
+
+.gym-pass-photo-slot img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #090b0d;
+}
+
+.gym-pass-photo-placeholder {
+  display: grid;
+  width: 84px;
+  height: 84px;
+  place-items: center;
+  border: 1px dashed #41484f;
+  border-radius: 10px;
+  color: #747e87;
+  font-size: 9px;
+  text-align: center;
+}
+
+.gym-pass-photo-slot button,
+.gym-pass-submit,
+.gym-pass-danger {
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid #30363c;
+  border-radius: 13px;
+  color: #f5f7f8;
+  background: #15191d;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.gym-pass-submit {
+  width: 100%;
+  margin-top: 14px;
+  border-color: #ff4d57;
+  background: #ff4d57;
+  color: #090b0d;
+}
+
+.gym-pass-danger {
+  width: 100%;
+  margin-top: 8px;
+  color: #ffb6bd;
+  border-color: rgba(255,77,87,.3);
+  background: rgba(255,77,87,.06);
+}
+
+.gym-pass-detect-status {
+  margin-top: 8px;
+  padding: 10px 11px;
+  border: 1px solid #2e353b;
+  border-radius: 11px;
+  color: #aeb6bd;
+  background: #111417;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.gym-pass-viewer-image {
+  display: block;
+  width: 100%;
+  max-height: 56dvh;
+  margin: 14px auto 0;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.gym-pass-viewer-meta {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #292e33;
+  border-radius: 12px;
+  color: #aeb6bd;
+  background: #111417;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (min-width: 700px) {
+  .gym-pass-modal { align-items: center; padding: 24px; }
+  .gym-pass-sheet { border-bottom: 1px solid #292e33; border-radius: 28px; }
+}
