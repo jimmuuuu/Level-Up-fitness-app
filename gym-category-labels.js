@@ -24,7 +24,7 @@
       if (freeWeight) {
         const heading = freeWeight.querySelector('b');
         const detail = freeWeight.querySelector('small');
-        if (heading) heading.textContent = 'Full free-weight gym';
+        if (heading) heading.textContent = 'Free weight';
         if (detail) detail.textContent = 'Machines plus barbells, squat racks, benches and free weights';
       }
 
@@ -48,7 +48,8 @@
       if (previewCopy) {
         previewCopy.textContent = previewCopy.textContent
           .replace(/Planet Fitness/g, 'Machine-focused gym')
-          .replace(/Full gym/g, 'Full free-weight gym')
+          .replace(/Full gym/g, 'Free weight')
+          .replace(/Full free-weight gym/g, 'Free weight')
           .replace(/Home gym \/ dumbbells/g, 'Home gym');
       }
     }
@@ -58,7 +59,8 @@
     if (planIntro) {
       planIntro.textContent = planIntro.textContent
         .replace(/Planet Fitness/g, 'Machine-focused gym')
-        .replace(/Full gym/g, 'Full free-weight gym')
+        .replace(/Full gym/g, 'Free weight')
+        .replace(/Full free-weight gym/g, 'Free weight')
         .replace(/Home gym \/ dumbbells/g, 'Home gym');
     }
   }
