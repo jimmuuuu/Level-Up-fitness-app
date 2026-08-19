@@ -30,6 +30,11 @@
     return session ? `${TIMER_PREFIX}${accountKey()}:${session}` : '';
   }
 
+  function autoStartEnabled() {
+    try { return window.LevelUpExtraSettings?.get?.().autoStartRest !== false; }
+    catch { return true; }
+  }
+
   function readState() {
     const key = timerKey();
     if (!key) return { endAt: 0, duration: DEFAULT_SECONDS, pausedRemaining: 0 };
@@ -157,6 +162,7 @@
   function startTimer(seconds = DEFAULT_SECONDS, source = 'manual') {
     if (!activeWorkoutExists()) return;
     if (source === 'saved-set') {
+      if (!autoStartEnabled()) return;
       const now = Date.now();
       if (now - lastAutoStartAt < 500) return;
       lastAutoStartAt = now;
@@ -166,6 +172,7 @@
     writeState(endAt, duration, 0);
     lastCompleteKey = '';
     render();
+    window.dispatchEvent(new CustomEvent('levelup:rest-started', { detail: { seconds: duration, source } }));
     const endLabel = new Date(endAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     if (source === 'saved-set') {
       void notify(`Rest ${format(duration)}`, `Your rest ends at ${endLabel}.`, 'level-up-rest-running');
@@ -260,7 +267,7 @@
       if (pauseButton) pauseButton.textContent = 'Resume';
     } else {
       time.textContent = format(state.duration || DEFAULT_SECONDS);
-      status.textContent = 'Ready. It starts automatically after you save a set.';
+      status.textContent = autoStartEnabled() ? 'Ready. It starts automatically after you save a set.' : 'Ready. Auto-start is off; start the timer when you want it.';
       presets.classList.remove('hidden');
       controls.classList.add('hidden');
       if (pauseButton) pauseButton.textContent = 'Pause';
@@ -270,6 +277,7 @@
         writeState(0, state.duration || DEFAULT_SECONDS, 0);
         card.classList.add('rest-timer-v3-complete');
         status.textContent = 'Rest complete. Start your next set when ready.';
+        window.dispatchEvent(new CustomEvent('levelup:rest-complete'));
         void notify('Rest complete', 'Your next set is ready when you are.', 'level-up-rest-complete');
       }
     }
@@ -333,6 +341,7 @@
       installCoreHook();
       render();
     });
+    window.addEventListener('levelup:extra-settings-changed', render);
   }
 
   function start() {
