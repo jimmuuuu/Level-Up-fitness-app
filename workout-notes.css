@@ -1,7 +1,94 @@
-/* Workout notes */
-.workout-notes-card { margin: 16px 0; padding: 14px; border: 1px solid #2c3238; border-radius: 16px; background: #111417; }
-.workout-notes-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-.workout-notes-heading h2 { margin: 3px 0 0; color: #fff; font-size: 16px; }
-.workout-notes-heading > span { color: #8d969e; font-size: 9px; }
-.workout-notes-card textarea { width: 100%; margin-top: 11px; padding: 11px 12px; resize: vertical; border: 1px solid #30363c; border-radius: 13px; color: #f5f7f8; background: #0d1013; font: inherit; font-size: 11px; line-height: 1.45; }
-.workout-notes-card p { margin: 8px 0 0; color: #87919a; font-size: 9px; line-height: 1.4; }
+/* Workout and per-exercise notes */
+.workout-notes-card {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid #2c3238;
+  border-radius: 16px;
+  background: #111417;
+}
+
+.workout-notes-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.workout-notes-heading h2 {
+  margin: 3px 0 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.workout-notes-heading > span {
+  color: #8d969e;
+  font-size: 9px;
+}
+
+.workout-notes-card textarea,
+.exercise-personal-note textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #30363c;
+  border-radius: 13px;
+  color: #f5f7f8;
+  background: #0d1013;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.workout-notes-card textarea {
+  margin-top: 11px;
+  padding: 11px 12px;
+}
+
+.workout-notes-card p {
+  margin: 8px 0 0;
+  color: #87919a;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.exercise-personal-note {
+  margin: 9px 0 10px;
+  border: 1px solid #2b3136;
+  border-radius: 12px;
+  background: #0e1114;
+  overflow: hidden;
+}
+
+.exercise-personal-note summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 11px;
+  cursor: pointer;
+  list-style: none;
+  color: #dfe4e7;
+}
+
+.exercise-personal-note summary::-webkit-details-marker { display: none; }
+.exercise-personal-note summary span { font-size: 11px; font-weight: 850; }
+.exercise-personal-note summary small { color: #838d95; font-size: 9px; text-align: right; }
+.exercise-personal-note.has-note { border-color: rgba(255,77,87,.35); }
+.exercise-personal-note.has-note summary span { color: #ff7179; }
+
+.exercise-personal-note-body {
+  padding: 0 10px 10px;
+}
+
+.exercise-personal-note textarea {
+  min-height: 68px;
+  padding: 9px 10px;
+}
+
+.exercise-personal-note-status {
+  display: block;
+  margin-top: 5px;
+  color: #7f8991;
+  font-size: 9px;
+}
