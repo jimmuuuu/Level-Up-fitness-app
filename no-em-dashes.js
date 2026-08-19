@@ -6,7 +6,13 @@
   function cleanCopy(value) {
     const text = String(value ?? '');
     if (!text.includes(EM_DASH)) return text;
-    if (text.trim() === EM_DASH) return text.replace(EM_DASH, 'Not yet');
+
+    // A standalone em dash is being used as an empty-value placeholder,
+    // not as sentence punctuation. Show a clear N/A instead.
+    if (text.trim() === EM_DASH) return text.replace(EM_DASH, 'N/A');
+
+    // Only remove actual em dashes. Normal hyphens (-), en dashes (–),
+    // minus signs (−), ranges, and hyphenated words are left untouched.
     return text
       .replace(/\s*\u2014\s*/g, ', ')
       .replace(/\s+,/g, ',')
