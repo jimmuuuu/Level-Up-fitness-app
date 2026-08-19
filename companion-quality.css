@@ -11,10 +11,15 @@
   min-width: 0;
 }
 
-#setList .exercise-swap-button,
-#setList .exercise-facts-button {
+#setList .exercise-swap-button {
   flex: 0 0 auto;
   margin-left: 0;
+}
+
+/* The per-exercise History control is intentionally removed from active workouts. */
+#setList .exercise-facts-button,
+#exerciseFactsModal {
+  display: none !important;
 }
 
 @media (max-width: 390px) {
@@ -22,8 +27,7 @@
     flex-basis: 100%;
   }
 
-  #setList .exercise-swap-button,
-  #setList .exercise-facts-button {
+  #setList .exercise-swap-button {
     min-height: 32px;
     padding-inline: 10px;
   }
