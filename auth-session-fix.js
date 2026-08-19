@@ -7,6 +7,7 @@
   const ACTIVE_WORKOUT_KEY = 'levelUpFitnessActiveWorkout';
 
   let boundClient = null;
+  let documentClickBound = false;
 
   function redirectUrl() {
     if (location.hostname === 'jimmuuuu.github.io') return GITHUB_PAGES_APP_URL;
@@ -63,8 +64,6 @@
       preserveVisibleHistoryFor(owner.slice('cloud:'.length));
     }
 
-    // Never carry the visible history from one Google account into another.
-    // The current account's database history will be loaded by the app after auth hydration.
     if (owner !== expectedOwner) {
       writeArray(HISTORY_KEY, []);
       try { workoutHistory = []; } catch {}
@@ -94,8 +93,6 @@
       const currentId = data?.session?.user?.id || '';
       if (currentId) preserveVisibleHistoryFor(currentId);
 
-      // End only this browser session before starting OAuth. This prevents an
-      // already-signed-in account from silently winning the next login attempt.
       await client.auth.signOut({ scope: 'local' });
       clearVisibleHistory();
       try { localStorage.removeItem(USER_PROFILE_KEY); } catch {}
@@ -114,13 +111,26 @@
     if (error && notice) notice.textContent = error.message || 'Google sign-in could not start.';
   }
 
-  function bindGoogleSignIn() {
-    const button = document.getElementById('googleSignIn');
-    if (!button || button.dataset.authRedirectFixed === 'true') return;
+  function installGlobalOverride() {
+    // app.js still contains an older sign-in function that redirects to the
+    // github.io domain root. Replace that global entry point so every Google
+    // sign-in path, including the dynamically-created "Switch to Google" button,
+    // uses the repository Pages URL instead.
+    try { window.signInWithGoogle = startGoogleSignIn; } catch {}
+    window.LevelUpGoogleRedirectUrl = redirectUrl;
+  }
 
-    button.dataset.authRedirectFixed = 'true';
-    // Capture-phase listener runs before the legacy onclick in app.js.
-    button.addEventListener('click', startGoogleSignIn, true);
+  function bindGoogleSignIn() {
+    if (documentClickBound) return;
+    documentClickBound = true;
+
+    // Capture on document so this also catches buttons created later by app.js.
+    // Stopping propagation here prevents the legacy onclick from firing after us.
+    document.addEventListener('click', event => {
+      const target = event.target.closest?.('#googleSignIn, #switchToGoogle');
+      if (!target) return;
+      void startGoogleSignIn(event);
+    }, true);
   }
 
   function bindSessionIsolation() {
@@ -146,6 +156,7 @@
   }
 
   function start() {
+    installGlobalOverride();
     bindGoogleSignIn();
     bindSessionIsolation();
   }
