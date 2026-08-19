@@ -23,6 +23,12 @@
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  function startOfToday() {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date.getTime();
+  }
+
   function weekStart() {
     const now = new Date();
     const day = now.getDay();
@@ -71,8 +77,8 @@
     if (cappedWeekly >= plannedTarget) totalXp += 100;
     const level = Math.floor(totalXp / 1000) + 1;
     const levelXp = totalXp % 1000;
-    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const plannedToday = days.includes(todayName);
+    const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const plannedToday = days.includes(dayName);
     const todayKey = new Date().toDateString();
     const todaySessions = all.filter(session => new Date(stamp(session)).toDateString() === todayKey);
     const todaySets = todaySessions.reduce((sum, session) => sum + (session?.logs || []).filter(log => Number(log?.reps) > 0).length, 0);
@@ -143,11 +149,7 @@
     if (!context?.planId) return null;
     try {
       if (typeof activePlan !== 'undefined' && activePlan && planId(activePlan) === context.planId) {
-        return {
-          started: true,
-          logs: Array.isArray(logs) ? logs : [],
-          plan: activePlan
-        };
+        return { started: true, logs: Array.isArray(logs) ? logs : [], plan: activePlan };
       }
     } catch {}
 
@@ -172,19 +174,188 @@
     return Math.max(1, Number(exercise?.sets) || 3);
   }
 
-  function setCountForExercise(logList, exerciseName) {
-    const name = String(exerciseName || '').trim().toLowerCase();
-    if (!name) return 0;
-    return validLogs(logList).filter(log => String(log.exercise || '').trim().toLowerCase() === name).length;
+  function repRange(exercise) {
+    const range = Array.isArray(exercise?.repRange) ? exercise.repRange.map(Number) : [8, 12];
+    const min = Number.isFinite(range[0]) ? Math.max(1, Math.round(range[0])) : 8;
+    const max = Number.isFinite(range[1]) ? Math.max(min, Math.round(range[1])) : Math.max(min, 12);
+    return [min, max];
   }
 
-  function completedExerciseCount(plan, logList) {
+  function historicalSessions() {
+    const cutoff = startOfToday();
+    return history().filter(session => stamp(session) > 0 && stamp(session) < cutoff);
+  }
+
+  function logsForExercise(logList, exerciseName) {
+    const target = String(exerciseName || '').trim().toLowerCase();
+    if (!target) return [];
+    return validLogs(logList).filter(log => String(log.exercise || '').trim().toLowerCase() === target);
+  }
+
+  function historicalLogs(exerciseName) {
+    return historicalSessions().flatMap(session => logsForExercise(session.logs, exerciseName));
+  }
+
+  function estimatedOneRepMax(log) {
+    const weight = Number(log?.weight);
+    const reps = Number(log?.reps);
+    if (!(weight > 0) || !(reps >= 2 && reps <= 12)) return 0;
+    return weight * (1 + reps / 30);
+  }
+
+  function bestHistoricalEstimate(exerciseName) {
+    return historicalLogs(exerciseName).reduce((best, log) => Math.max(best, estimatedOneRepMax(log)), 0);
+  }
+
+  function bestCurrentEstimate(logList, exerciseName) {
+    return logsForExercise(logList, exerciseName).reduce((best, log) => Math.max(best, estimatedOneRepMax(log)), 0);
+  }
+
+  function repPrTarget(exercise) {
+    const [, maxReps] = repRange(exercise);
+    const byWeight = new Map();
+    historicalLogs(exercise.name).forEach(log => {
+      const weight = Number(log?.weight);
+      const reps = Number(log?.reps);
+      if (!(weight > 0) || !(reps > 0) || reps >= maxReps) return;
+      const previous = byWeight.get(weight) || 0;
+      if (reps > previous) byWeight.set(weight, reps);
+    });
+    const candidates = [...byWeight.entries()]
+      .map(([weight, reps]) => ({ weight, reps, target: reps + 1 }))
+      .filter(item => item.target <= maxReps)
+      .sort((a, b) => b.weight - a.weight || b.reps - a.reps);
+    return candidates[0] || null;
+  }
+
+  function repPrDone(logList, exerciseName, target) {
+    if (!target) return false;
+    return logsForExercise(logList, exerciseName).some(log => {
+      const weight = Number(log?.weight);
+      const reps = Number(log?.reps);
+      return Math.abs(weight - target.weight) < 0.01 && reps >= target.target;
+    });
+  }
+
+  function sessionVolume(session, exerciseName, capSets) {
+    return logsForExercise(session?.logs, exerciseName)
+      .filter(log => Number(log?.weight) > 0)
+      .slice(0, capSets)
+      .reduce((sum, log) => sum + Number(log.weight) * Number(log.reps), 0);
+  }
+
+  function bestHistoricalVolume(exerciseName, capSets) {
+    return historicalSessions().reduce((best, session) => Math.max(best, sessionVolume(session, exerciseName, capSets)), 0);
+  }
+
+  function currentVolume(logList, exerciseName, capSets) {
+    return logsForExercise(logList, exerciseName)
+      .filter(log => Number(log?.weight) > 0)
+      .slice(0, capSets)
+      .reduce((sum, log) => sum + Number(log.weight) * Number(log.reps), 0);
+  }
+
+  function benchmarkDone(logList, exercise) {
+    return logsForExercise(logList, exercise.name).length >= plannedSetCount(exercise);
+  }
+
+  function formatWeight(value) {
+    const rounded = Math.round(Number(value) * 10) / 10;
+    return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1);
+  }
+
+  function formatNumber(value) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Math.max(0, Number(value) || 0));
+  }
+
+  function candidateQuests(plan, progressLogs) {
     const exercises = Array.isArray(plan?.exercises) ? plan.exercises : [];
-    return exercises.filter(exercise => setCountForExercise(logList, exercise.name) >= plannedSetCount(exercise)).length;
+    const strength = [];
+    const reps = [];
+    const volume = [];
+    const baseline = [];
+
+    exercises.forEach(exercise => {
+      const name = String(exercise?.name || '').trim();
+      if (!name) return;
+      const previousEstimate = bestHistoricalEstimate(name);
+      const currentEstimate = bestCurrentEstimate(progressLogs, name);
+      if (previousEstimate > 0) {
+        strength.push({
+          type: 'strength',
+          exercise: name,
+          done: currentEstimate > previousEstimate + 0.01,
+          title: `Set an estimated 1RM PR on ${name}`,
+          detail: `Previous estimate: ${formatWeight(previousEstimate)} lb. Beat it with a normal 2-12 rep working set, not a true 1-rep max.`
+        });
+      }
+
+      const repTarget = repPrTarget(exercise);
+      if (repTarget) {
+        reps.push({
+          type: 'reps',
+          exercise: name,
+          done: repPrDone(progressLogs, name, repTarget),
+          title: `Rep PR on ${name}`,
+          detail: `Beat ${repTarget.reps} reps at ${formatWeight(repTarget.weight)} lb. Target: ${repTarget.target} reps, still inside today's rep range.`
+        });
+      }
+
+      const capSets = plannedSetCount(exercise);
+      const previousVolume = bestHistoricalVolume(name, capSets);
+      const nowVolume = currentVolume(progressLogs, name, capSets);
+      if (previousVolume > 0) {
+        volume.push({
+          type: 'volume',
+          exercise: name,
+          done: nowVolume > previousVolume,
+          title: `Beat your ${name} volume PR`,
+          detail: `Previous best across up to ${capSets} planned sets: ${formatNumber(previousVolume)} lb. Extra sets do not count.`
+        });
+      }
+
+      if (!previousEstimate && !repTarget && !previousVolume) {
+        baseline.push({
+          type: 'baseline',
+          exercise: name,
+          done: benchmarkDone(progressLogs, exercise),
+          title: `Create a ${name} benchmark`,
+          detail: `Log all ${capSets} planned sets today. That unlocks real PR challenges for this exercise next time.`
+        });
+      }
+    });
+
+    const chosen = [];
+    const usedExercises = new Set();
+    const addUnique = candidate => {
+      if (!candidate || usedExercises.has(candidate.exercise) || chosen.length >= 3) return false;
+      chosen.push(candidate);
+      usedExercises.add(candidate.exercise);
+      return true;
+    };
+
+    [strength, reps, volume].forEach(group => {
+      const candidate = group.find(item => !usedExercises.has(item.exercise));
+      addUnique(candidate);
+    });
+
+    if (chosen.length < 3) {
+      [...strength, ...reps, ...volume, ...baseline].forEach(addUnique);
+    }
+
+    if (!chosen.length && exercises[0]) addUnique(baseline[0] || {
+      type: 'baseline',
+      exercise: exercises[0].name,
+      done: benchmarkDone(progressLogs, exercises[0]),
+      title: `Create a ${exercises[0].name} benchmark`,
+      detail: `Log all ${plannedSetCount(exercises[0])} planned sets so Level Up can build PR challenges from your real numbers.`
+    });
+
+    return chosen.slice(0, 3);
   }
 
-  function quest(done, title, detail) {
-    return `<div class="training-quest${done ? ' done' : ''}"><span>${done ? '✓' : ''}</span><div><strong>${esc(title)}</strong><small>${esc(detail)}</small></div></div>`;
+  function quest(item) {
+    return `<div class="training-quest${item.done ? ' done' : ''}"><span>${item.done ? '✓' : ''}</span><div><strong>${esc(item.title)}</strong><small>${esc(item.detail)}</small></div></div>`;
   }
 
   function ensureSection() {
@@ -205,7 +376,7 @@
     section.innerHTML = `
       <div class="training-quests-card">
         <div class="training-quests-heading"><div class="over">TODAY'S QUESTS</div><h3>Recovery day</h3></div>
-        <p class="training-quests-rest">No workout quests today. Your next quests will match your next scheduled workout.</p>
+        <p class="training-quests-rest">No training challenges today. Your next quest set will be built from your next scheduled workout.</p>
       </div>`;
   }
 
@@ -219,34 +390,27 @@
       return;
     }
 
-    const completedSessions = todayCompletedSessions(context);
-    const completedSession = completedSessions[0] || null;
+    const completedSession = todayCompletedSessions(context)[0] || null;
     const active = activeProgress(context);
     const plan = active?.plan || context.plan;
 
     if (!plan || !Array.isArray(plan.exercises) || !plan.exercises.length) {
       section.innerHTML = `
         <div class="training-quests-card">
-          <div class="training-quests-heading"><div class="over">TODAY'S QUESTS</div><h3>Today's workout</h3></div>
-          ${quest(Boolean(completedSession), 'Complete today\'s workout', completedSession ? 'Workout saved' : 'Follow the workout scheduled for today')}
+          <div class="training-quests-heading"><div class="over">TODAY'S QUESTS</div><h3>Challenges unavailable</h3></div>
+          <p class="training-quests-rest">Level Up could not load enough of today's workout to build safe, trackable challenges.</p>
         </div>`;
       return;
     }
 
     const progressLogs = validLogs(completedSession?.logs || active?.logs || []);
-    const firstExercise = plan.exercises[0];
-    const firstTarget = plannedSetCount(firstExercise);
-    const firstDoneSets = Math.min(firstTarget, setCountForExercise(progressLogs, firstExercise.name));
-    const finishedExercises = completedSession ? plan.exercises.length : completedExerciseCount(plan, progressLogs);
-    const halfwayTarget = Math.max(1, Math.ceil(plan.exercises.length / 2));
-    const workoutDone = Boolean(completedSession);
+    const challenges = candidateQuests(plan, progressLogs);
 
     section.innerHTML = `
       <div class="training-quests-card">
-        <div class="training-quests-heading"><div class="over">TODAY'S QUESTS</div><h3>${esc(plan.name || 'Today')}</h3></div>
-        ${quest(firstDoneSets >= firstTarget, `Finish ${firstExercise.name}`, `${firstDoneSets} / ${firstTarget} planned sets logged`)}
-        ${quest(finishedExercises >= halfwayTarget, `Complete ${halfwayTarget} exercises`, `${Math.min(finishedExercises, halfwayTarget)} / ${halfwayTarget} finished in ${plan.name || 'today\'s workout'}`)}
-        ${quest(workoutDone, `Finish ${plan.name || 'today\'s workout'}`, workoutDone ? 'Workout completed and saved' : 'Complete the workout and save it')}
+        <div class="training-quests-heading"><div class="over">TODAY'S QUESTS</div><h3>${esc(plan.name || 'Challenge day')}</h3></div>
+        <p class="training-quests-rest">Optional challenges based on today's exercises and your real history. They never require extra sets or a true 1-rep max test.</p>
+        ${challenges.map(quest).join('')}
       </div>`;
   }
 
@@ -257,11 +421,13 @@
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
     document.addEventListener('click', event => {
       if (event.target?.closest?.('[data-page="workout"]')) setTimeout(render, 80);
+      if (event.target?.closest?.('#setList button, #finish')) setTimeout(render, 120);
     }, true);
     setInterval(() => {
       const workout = document.getElementById('workout');
-      if (workout && !workout.classList.contains('hidden')) render();
-    }, 3000);
+      const activePage = document.getElementById('active');
+      if ((workout && !workout.classList.contains('hidden')) || (activePage && !activePage.classList.contains('hidden'))) render();
+    }, 2500);
   }
 
   window.LevelUpTrainingQuests = { render, stats, today: todayPlanContext };
