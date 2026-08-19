@@ -90,6 +90,7 @@
   function loadWorkoutCheckIn() { loadFeature('data-workout-checkin-style', 'workout-checkin.css?v=1', 'data-workout-checkin', 'workout-checkin.js?v=2'); }
   function loadProgressInsights() { loadFeature('data-progress-insights-style', 'progress-insights.css?v=1', 'data-progress-insights', 'progress-insights.js?v=2'); }
   function loadTrainingQuests() { loadFeature('data-training-quests-style', 'training-quests.css?v=1', 'data-training-quests', 'training-quests.js?v=1'); }
+  function loadProfileLevelAvatar() { loadFeature('data-profile-level-avatar-style', 'profile-level-avatar.css?v=1', 'data-profile-level-avatar', 'profile-level-avatar.js?v=1'); }
   function loadWorkoutNotes() { loadFeature('data-workout-notes-style', 'workout-notes.css?v=1', 'data-workout-notes', 'workout-notes.js?v=2'); }
   function loadExpandedSettings() { loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=4'); }
   function loadHistoryEnrichment() { loadScript('data-history-enrichment', 'history-enrichment.js?v=2'); }
@@ -124,6 +125,7 @@
     loadWorkoutCheckIn();
     loadProgressInsights();
     loadTrainingQuests();
+    loadProfileLevelAvatar();
     loadWorkoutNotes();
     loadExpandedSettings();
     loadHistoryEnrichment();
