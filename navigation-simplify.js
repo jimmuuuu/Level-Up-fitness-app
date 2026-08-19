@@ -97,38 +97,67 @@
   }
 
   function loadRestTimerV3() {
-    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=3');
+    loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=4');
   }
 
   function loadPersistentPause() {
-    loadFeature(
-      'data-rest-timer-pause-visible-style',
-      'rest-timer-pause-visible.css?v=1',
-      'data-rest-timer-pause-visible',
-      'rest-timer-pause-visible.js?v=1'
-    );
+    loadFeature('data-rest-timer-pause-visible-style', 'rest-timer-pause-visible.css?v=1', 'data-rest-timer-pause-visible', 'rest-timer-pause-visible.js?v=1');
   }
 
   function loadProfileSettingsPage() {
-    loadFeature(
-      'data-profile-settings-page-style',
-      'profile-settings-page.css?v=1',
-      'data-profile-settings-page',
-      'profile-settings-page.js?v=1'
-    );
+    loadFeature('data-profile-settings-page-style', 'profile-settings-page.css?v=1', 'data-profile-settings-page', 'profile-settings-page.js?v=1');
   }
 
   function loadRestTimerSettingsBridge() {
-    loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=2');
+    loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=3');
+  }
+
+  function loadExerciseSwap() {
+    loadFeature('data-exercise-swap-style', 'exercise-swap.css?v=1', 'data-exercise-swap', 'exercise-swap.js?v=1');
+  }
+
+  function loadExerciseFacts() {
+    loadFeature('data-exercise-facts-style', 'exercise-history-facts.css?v=1', 'data-exercise-facts', 'exercise-history-facts.js?v=1');
+  }
+
+  function loadWorkoutCalendar() {
+    loadFeature('data-workout-calendar-style', 'workout-calendar.css?v=1', 'data-workout-calendar', 'workout-calendar.js?v=1');
+  }
+
+  function loadExerciseLibraryPage() {
+    loadFeature('data-exercise-library-page-style', 'exercise-library-page.css?v=1', 'data-exercise-library-page', 'exercise-library-page.js?v=1');
+  }
+
+  function loadGymProfiles() {
+    loadFeature('data-gym-profiles-style', 'gym-profiles.css?v=1', 'data-gym-profiles', 'gym-profiles.js?v=1');
+  }
+
+  function loadWorkoutCheckIn() {
+    loadFeature('data-workout-checkin-style', 'workout-checkin.css?v=1', 'data-workout-checkin', 'workout-checkin.js?v=1');
+  }
+
+  function loadProgressInsights() {
+    loadFeature('data-progress-insights-style', 'progress-insights.css?v=1', 'data-progress-insights', 'progress-insights.js?v=1');
+  }
+
+  function loadTrainingQuests() {
+    loadFeature('data-training-quests-style', 'training-quests.css?v=1', 'data-training-quests', 'training-quests.js?v=1');
+  }
+
+  function loadWorkoutNotes() {
+    loadFeature('data-workout-notes-style', 'workout-notes.css?v=1', 'data-workout-notes', 'workout-notes.js?v=1');
+  }
+
+  function loadExpandedSettings() {
+    loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=1');
+  }
+
+  function loadHistoryEnrichment() {
+    loadScript('data-history-enrichment', 'history-enrichment.js?v=1');
   }
 
   function disableWeightRecommendations() {
-    loadFeature(
-      'data-disable-weight-recommendations-style',
-      'disable-weight-recommendations.css?v=2',
-      'data-disable-weight-recommendations',
-      'disable-weight-recommendations.js?v=2'
-    );
+    loadFeature('data-disable-weight-recommendations-style', 'disable-weight-recommendations.css?v=2', 'data-disable-weight-recommendations', 'disable-weight-recommendations.js?v=2');
   }
 
   function start() {
@@ -149,6 +178,21 @@
     loadPersistentPause();
     loadProfileSettingsPage();
     loadRestTimerSettingsBridge();
+
+    // Companion features are loaded in dependency order so each can reuse the
+    // exercise catalog, verified account history, and settings already present.
+    loadExerciseSwap();
+    loadExerciseFacts();
+    loadWorkoutCalendar();
+    loadExerciseLibraryPage();
+    loadGymProfiles();
+    loadWorkoutCheckIn();
+    loadProgressInsights();
+    loadTrainingQuests();
+    loadWorkoutNotes();
+    loadExpandedSettings();
+    loadHistoryEnrichment();
+
     disableWeightRecommendations();
     redirectHomeToWorkout();
 
@@ -159,9 +203,6 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start, { once: true });
-  } else {
-    start();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
