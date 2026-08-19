@@ -1,0 +1,54 @@
+name: Validate static app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -maxdepth 1 -type f -name '*.js' -print0)
+
+      - name: Verify cached and dynamically loaded files exist
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+          missing = []
+
+          sw = (root / 'sw.js').read_text(encoding='utf-8')
+          core_match = re.search(r'const CORE\s*=\s*\[(.*?)\];', sw, re.S)
+          if not core_match:
+              raise SystemExit('Could not find CORE array in sw.js')
+          for path in re.findall(r"['\"](\./[^'\"]+)['\"]", core_match.group(1)):
+              if path == './':
+                  continue
+              target = root / path[2:]
+              if not target.exists():
+                  missing.append(f'sw.js -> {path}')
+
+          nav = (root / 'navigation-simplify.js').read_text(encoding='utf-8')
+          for path in re.findall(r"['\"]([A-Za-z0-9_.-]+\.(?:js|css))\?v=\d+['\"]", nav):
+              if not (root / path).exists():
+                  missing.append(f'navigation-simplify.js -> {path}')
+
+          if missing:
+              raise SystemExit('Missing local files:\n' + '\n'.join(missing))
+          print('All referenced local JS/CSS/cache files exist.')
