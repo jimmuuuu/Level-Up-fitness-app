@@ -69,7 +69,7 @@
           <div><span>Best logged set</span><strong>${best ? `${esc(best.weight)} lb × ${esc(best.reps)}` : '—'}</strong></div>
         </div>
         <section class="exercise-facts-card">
-          <div class="exercise-facts-card-title"><div><span>Last workout</span><strong>${esc(dateLabel(latest.session))}</strong></div><small>${esc(latest.session?.planName || latest.session?.plan_name || latest.session?.name || 'Workout')}</small></div>
+          <div class="exercise-facts-card-title"><div><span>Last workout</span><strong>${esc(dateLabel(latest.session))}</strong></div><small>${esc(latest.session?.planName || latest.session?.plan_name || latest.session?.plan || latest.session?.name || 'Workout')}</small></div>
           <div class="exercise-facts-sets">
             ${latestSets.map((log, index) => `<div><span>Set ${esc(log.set || log.setNumber || index + 1)}</span><strong>${Number(log.weight) > 0 ? `${esc(log.weight)} lb` : 'Bodyweight'} × ${esc(log.reps)} reps</strong></div>`).join('')}
           </div>
