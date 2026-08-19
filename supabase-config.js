@@ -180,7 +180,7 @@ window.LEVEL_UP_SUPABASE = {
 
     if (!document.querySelector('script[data-auth-session-fix]')) {
       const authSessionFix = document.createElement('script');
-      authSessionFix.src = 'auth-session-fix.js?v=3';
+      authSessionFix.src = 'auth-session-fix.js?v=4';
       authSessionFix.dataset.authSessionFix = 'true';
       document.body.appendChild(authSessionFix);
     }

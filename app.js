@@ -1526,7 +1526,7 @@ async function signInWithGoogle() {
   el('authNotice').textContent = 'Opening Google sign-in...';
   await client.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${location.origin}/` }
+    options: { redirectTo: 'https://jimmuuuu.github.io/Level-Up-fitness-app/' }
   });
 }
 

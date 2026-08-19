@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-pwa-launch-v29';
+const CACHE = 'level-up-fitness-20260819-oauth-core-v30';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
