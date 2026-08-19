@@ -89,14 +89,27 @@
     return [...groups.entries()];
   }
 
+  function exerciseNote(session, exerciseName) {
+    const notes = session?.exercise_notes && typeof session.exercise_notes === 'object'
+      ? Object.values(session.exercise_notes)
+      : [];
+    const target = String(exerciseName || '').trim().toLowerCase();
+    const match = notes.find(item => String(item?.exercise || '').trim().toLowerCase() === target && String(item?.note || '').trim());
+    return match ? String(match.note).trim() : '';
+  }
+
   function sessionDetails(session) {
     const groups = groupedLogs(session);
     if (!groups.length) return '<p class="workout-calendar-no-sets">No set details were saved for this workout.</p>';
-    return `<div class="workout-calendar-exercises">${groups.map(([name, logs]) => `
+    return `<div class="workout-calendar-exercises">${groups.map(([name, logs]) => {
+      const note = exerciseNote(session, name);
+      return `
       <div class="workout-calendar-exercise">
         <strong>${esc(name)}</strong>
         <div>${logs.map((log, index) => `<span>Set ${esc(log.set || index + 1)}: ${Number(log.weight) > 0 ? `${esc(log.weight)} lb × ` : ''}${esc(log.reps)} reps</span>`).join('')}</div>
-      </div>`).join('')}</div>`;
+        ${note ? `<p class="workout-calendar-note"><b>Exercise note:</b> ${esc(note)}</p>` : ''}
+      </div>`;
+    }).join('')}</div>`;
   }
 
   function openDay(date, sessions) {
@@ -108,7 +121,7 @@
         <button type="button" data-calendar-close class="workout-calendar-close" aria-label="Close">×</button>
       </div>
       <div class="workout-calendar-day-list">
-        ${sessions.map(session => `<article class="workout-calendar-session"><strong>${esc(session?.planName || session?.plan_name || session?.plan || session?.name || 'Workout')}</strong><span>${esc(daySummary(session))}</span>${sessionDetails(session)}${session?.workout_note ? `<p class="workout-calendar-note"><b>Note:</b> ${esc(session.workout_note)}</p>` : ''}</article>`).join('')}
+        ${sessions.map(session => `<article class="workout-calendar-session"><strong>${esc(session?.planName || session?.plan_name || session?.plan || session?.name || 'Workout')}</strong><span>${esc(daySummary(session))}</span>${sessionDetails(session)}${session?.workout_note ? `<p class="workout-calendar-note"><b>Workout note:</b> ${esc(session.workout_note)}</p>` : ''}</article>`).join('')}
       </div>`;
     modal.classList.remove('hidden');
   }
@@ -140,7 +153,7 @@
       </div>
       <div class="workout-calendar-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
       <div class="workout-calendar-grid">${cells.join('')}</div>
-      <p class="workout-calendar-help">Completed workouts are marked automatically. Tap a marked day to see every set you logged.</p>`;
+      <p class="workout-calendar-help">Completed workouts are marked automatically. Tap a marked day to see every set and note you saved.</p>`;
 
     root.querySelector('[data-cal-prev]').onclick = () => { viewDate = new Date(year, month - 1, 1); render(); };
     root.querySelector('[data-cal-next]').onclick = () => { viewDate = new Date(year, month + 1, 1); render(); };
