@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260818-profile-settings-v11';
+const CACHE = 'level-up-fitness-20260819-companion-suite-v12';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -16,6 +16,16 @@ const CORE = [
   './rest-timer-pause-visible.css', './rest-timer-pause-visible.js',
   './profile-settings-page.css', './profile-settings-page.js', './rest-timer-settings-bridge.js',
   './disable-weight-recommendations.css', './disable-weight-recommendations.js',
+  './exercise-swap.css', './exercise-swap.js',
+  './exercise-history-facts.css', './exercise-history-facts.js',
+  './workout-calendar.css', './workout-calendar.js',
+  './exercise-library-page.css', './exercise-library-page.js',
+  './gym-profiles.css', './gym-profiles.js',
+  './workout-checkin.css', './workout-checkin.js',
+  './progress-insights.css', './progress-insights.js',
+  './training-quests.css', './training-quests.js',
+  './workout-notes.css', './workout-notes.js',
+  './settings-expanded.css', './settings-expanded.js', './history-enrichment.js',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -27,8 +37,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 56);
-const ASSETS = CORE.slice(56);
+const SHELL = CORE.slice(0, 77);
+const ASSETS = CORE.slice(77);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
