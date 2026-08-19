@@ -1,0 +1,33 @@
+/* Gym profiles */
+.gym-profiles-section { margin-top: 18px; }
+.gym-profiles-copy { margin: 6px 0 12px; color: var(--muted, #929ca4); font-size: 11px; line-height: 1.45; }
+.gym-preferred { padding: 13px; border: 1px solid rgba(255,77,87,.38); border-radius: 14px; background: rgba(255,77,87,.06); }
+.gym-preferred span, .gym-preferred small { display: block; color: #929ca4; font-size: 9px; }
+.gym-preferred strong { display: block; margin: 3px 0; color: #fff; font-size: 14px; }
+.gym-profile-list { display: grid; gap: 8px; margin-top: 10px; }
+.gym-profile-card { width: 100%; min-height: 56px; padding: 10px 12px; border: 1px solid #2c3238; border-radius: 14px; color: #fff; background: #111417; font: inherit; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; }
+.gym-profile-card.preferred { border-color: rgba(255,77,87,.38); }
+.gym-profile-card strong { display: block; font-size: 13px; }
+.gym-profile-card span, .gym-profile-card small { color: #8f989f; font-size: 10px; }
+.gym-profile-empty { padding: 13px; border: 1px dashed #30363c; border-radius: 13px; color: #87919a; font-size: 11px; text-align: center; }
+.gym-profile-modal { position: fixed; z-index: 9998; inset: 0; display: grid; align-items: end; }
+.gym-profile-modal.hidden { display: none !important; }
+.gym-profile-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); }
+.gym-profile-sheet { position: relative; z-index: 1; width: min(100%, 620px); max-height: 85dvh; margin: 0 auto; overflow: auto; padding: 12px 18px calc(22px + env(safe-area-inset-bottom)); border: 1px solid #2b3137; border-bottom: 0; border-radius: 28px 28px 0 0; background: #0d1013; }
+.gym-profile-handle { width: 44px; height: 4px; margin: 0 auto 15px; border-radius: 999px; background: #3a4046; }
+.gym-profile-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.gym-profile-heading h2 { margin: 3px 0 0; color: #fff; font-size: 24px; }
+.gym-profile-heading button { width: 42px; height: 42px; border: 1px solid #343a40; border-radius: 50%; color: #fff; background: #15191d; font-size: 22px; }
+.gym-profile-field { display: grid; gap: 6px; margin-top: 14px; color: #9da6ad; font-size: 10px; font-weight: 800; }
+.gym-profile-field input { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #30363c; border-radius: 13px; color: #fff; background: #101418; font: inherit; }
+.gym-profile-equipment { margin-top: 14px; }
+.gym-profile-equipment > span { color: #9da6ad; font-size: 10px; font-weight: 800; }
+.gym-profile-equipment > div { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+.gym-profile-equipment label input { position: absolute; opacity: 0; pointer-events: none; }
+.gym-profile-equipment label span { display: block; padding: 8px 10px; border: 1px solid #30363c; border-radius: 999px; color: #a8b0b6; background: #13171b; font-size: 10px; font-weight: 800; }
+.gym-profile-equipment label input:checked + span { color: #090b0d; border-color: #ff4d57; background: #ff4d57; }
+.gym-profile-preferred { display: flex; align-items: center; gap: 9px; margin-top: 14px; color: #d8dde1; font-size: 11px; }
+.gym-profile-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 16px; }
+.gym-profile-actions button { min-height: 46px; padding: 0 14px; border: 1px solid #30363c; border-radius: 13px; color: #fff; background: #15191d; font: inherit; font-size: 11px; font-weight: 850; }
+.gym-profile-actions .primary { color: #090b0d; border-color: #ff4d57; background: #ff4d57; }
+.gym-profile-status { margin: 8px 0 0; color: #ff9ba4; font-size: 10px; }
