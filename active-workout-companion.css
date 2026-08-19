@@ -1,0 +1,109 @@
+/* Active workout companion bar and mobile input zoom protection. */
+.active-workout-companion {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  border: 1px solid #2c3238;
+  border-radius: 0 0 15px 15px;
+  background: rgba(10, 13, 16, .96);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.active-workout-companion.hidden { display: none !important; }
+
+.active-companion-metric,
+.active-companion-rest {
+  min-width: 0;
+  padding: 4px 7px;
+}
+
+.active-companion-metric span,
+.active-companion-rest span {
+  display: block;
+  margin-bottom: 2px;
+  color: #7f8991;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+}
+
+.active-companion-metric strong,
+.active-companion-rest strong {
+  display: block;
+  overflow: hidden;
+  color: #f5f7f8;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.active-companion-rest {
+  border: 0;
+  border-radius: 10px;
+  background: #15191d;
+  font: inherit;
+  text-align: left;
+}
+
+.active-companion-rest.running strong { color: #ff5963; }
+.active-companion-rest.paused strong { color: #f0c96b; }
+.active-companion-rest.complete strong { color: #8fdd9a; }
+
+.active-companion-pause {
+  min-width: 66px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 77, 87, .38);
+  border-radius: 10px;
+  color: #f5f7f8;
+  background: #171b1f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.active-companion-pause.hidden { display: none !important; }
+
+/* iOS Safari automatically zooms focused form controls smaller than 16px.
+   Keep workout inputs at 16px instead of disabling pinch zoom globally. */
+@media (max-width: 820px) {
+  #active input,
+  #active select,
+  #active textarea,
+  .exercise-swap-sheet input,
+  .exercise-swap-sheet select,
+  .exercise-swap-sheet textarea {
+    font-size: 16px !important;
+  }
+
+  #active button,
+  #active input,
+  #active select,
+  #active textarea {
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 390px) {
+  .active-workout-companion {
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .active-companion-metric strong,
+  .active-companion-rest strong { font-size: 15px; }
+  .active-companion-pause { min-width: 58px; padding: 0 7px; }
+}
