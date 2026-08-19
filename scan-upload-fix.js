@@ -3,9 +3,13 @@
   let drag = null;
 
   function installStabilityStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = STYLE_ID;
+      document.head.appendChild(style);
+    }
+
     style.textContent = `
       html:has(#scan.page:not(.hidden)),
       body:has(#scan.page:not(.hidden)) {
@@ -41,7 +45,7 @@
         height: 100% !important;
         min-height: 0 !important;
         overflow: hidden !important;
-        touch-action: pan-y !important;
+        touch-action: auto !important;
       }
 
       #scan .scan-camera,
@@ -87,30 +91,47 @@
       }
 
       #scan .scan-result-sheet {
+        max-height: calc(100dvh - max(54px, env(safe-area-inset-top))) !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: contain !important;
+        touch-action: pan-y !important;
+        padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
         transform: translate3d(0, var(--scan-sheet-drag, 0px), 0);
         transition: transform 180ms cubic-bezier(.22,.8,.3,1), opacity 180ms ease;
         will-change: transform;
-        touch-action: pan-y;
+      }
+
+      #scan .scan-result-sheet > *:not(.scan-sheet-handle) {
+        touch-action: pan-y !important;
+      }
+
+      #scan .scan-result-sheet .scan-actions {
+        padding-bottom: 18px !important;
       }
 
       #scan .scan-result-sheet.scan-sheet-dragging {
+        overflow-y: hidden !important;
         transition: none !important;
       }
 
       #scan .scan-sheet-handle {
-        position: relative;
+        position: sticky !important;
+        z-index: 3 !important;
+        top: 0 !important;
         width: 76px !important;
-        height: 28px !important;
+        height: 30px !important;
         margin: -7px auto 2px !important;
         border-radius: 999px !important;
-        background: transparent !important;
+        background: rgba(12,15,18,.96) !important;
         touch-action: none !important;
         cursor: grab;
       }
 
       #scan .scan-sheet-handle::after {
         position: absolute;
-        top: 10px;
+        top: 11px;
         left: 50%;
         width: 48px;
         height: 5px;
@@ -132,6 +153,10 @@
         #scan .scan-status {
           bottom: calc(206px + max(8px, env(safe-area-inset-bottom))) !important;
         }
+
+        #scan .scan-result-sheet {
+          max-height: calc(100dvh - max(42px, env(safe-area-inset-top))) !important;
+        }
       }
 
       @media (max-width: 380px) {
@@ -143,7 +168,6 @@
         }
       }
     `;
-    document.head.appendChild(style);
   }
 
   function prepareScanFilePicker() {
@@ -196,8 +220,15 @@
     const sheet = resultSheet();
     if (!sheet || sheet.dataset.scanEquipmentObserver === 'true') return;
     sheet.dataset.scanEquipmentObserver = 'true';
-    const observer = new MutationObserver(updateResultCopy);
-    observer.observe(sheet, { childList: true });
+    const observer = new MutationObserver(() => {
+      updateResultCopy();
+      if (!sheet.classList.contains('hidden') && !sheet.dataset.scanScrollInitialized) {
+        sheet.scrollTop = 0;
+        sheet.dataset.scanScrollInitialized = 'true';
+      }
+      if (sheet.classList.contains('hidden')) delete sheet.dataset.scanScrollInitialized;
+    });
+    observer.observe(sheet, { childList: true, attributes: true, attributeFilter: ['class'] });
   }
 
   function resetSheet(sheet) {
@@ -236,9 +267,7 @@
       sheet,
       handle,
       startY: event.clientY,
-      lastY: event.clientY,
       startTime: performance.now(),
-      lastTime: performance.now(),
     };
     sheet.classList.add('scan-sheet-dragging');
     try { handle.setPointerCapture(event.pointerId); } catch {}
@@ -248,9 +277,6 @@
   function moveSheetDrag(event) {
     if (!drag || event.pointerId !== drag.pointerId) return;
     const dy = Math.max(0, event.clientY - drag.startY);
-    const now = performance.now();
-    drag.lastY = event.clientY;
-    drag.lastTime = now;
     drag.sheet.style.setProperty('--scan-sheet-drag', `${dy}px`);
     drag.sheet.style.opacity = String(Math.max(0.55, 1 - dy / Math.max(500, drag.sheet.offsetHeight * 1.25)));
     event.preventDefault();
