@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-challenge-quests-v24';
+const CACHE = 'level-up-fitness-20260819-weekly-plan-v25';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
