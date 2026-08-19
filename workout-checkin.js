@@ -19,25 +19,25 @@
     return 'local';
   }
 
-  function key() { return `${PREFIX}${accountKey()}:${sessionId()}`; }
+  function key(id = sessionId()) { return `${PREFIX}${accountKey()}:${id}`; }
 
-  function read() {
-    const id = sessionId();
+  function read(id = sessionId()) {
     if (!id) return null;
     try {
-      const parsed = JSON.parse(localStorage.getItem(key()) || 'null');
+      const parsed = JSON.parse(localStorage.getItem(key(id)) || 'null');
       return parsed && typeof parsed === 'object' ? parsed : null;
     } catch { return null; }
   }
 
-  function write(value) {
+  function write(value, id = sessionId()) {
+    if (!id) return null;
     const next = { value, createdAt: Date.now() };
-    try { localStorage.setItem(key(), JSON.stringify(next)); } catch {}
+    try { localStorage.setItem(key(id), JSON.stringify(next)); } catch {}
     return next;
   }
 
-  async function saveCloud(checkIn, attempt = 0) {
-    if (!sessionId() || !checkIn) return;
+  async function saveCloud(checkIn, id = sessionId(), attempt = 0) {
+    if (!id || !checkIn) return;
     try {
       const client = typeof getSupabaseClient === 'function' ? getSupabaseClient() : null;
       if (!client) return;
@@ -47,23 +47,29 @@
       const { data: rows, error } = await client
         .from('workout_sessions')
         .update({ check_in: checkIn, updated_at: new Date().toISOString() })
-        .eq('id', sessionId())
+        .eq('id', id)
         .eq('user_id', userId)
         .select('id');
       if (error) throw error;
-      if ((!rows || !rows.length) && attempt < 4) setTimeout(() => void saveCloud(checkIn, attempt + 1), 1200 * (attempt + 1));
+      if ((!rows || !rows.length) && attempt < 4) {
+        setTimeout(() => void saveCloud(checkIn, id, attempt + 1), 1200 * (attempt + 1));
+      }
     } catch {
-      if (attempt < 3) setTimeout(() => void saveCloud(checkIn, attempt + 1), 1500 * (attempt + 1));
+      if (attempt < 3) setTimeout(() => void saveCloud(checkIn, id, attempt + 1), 1500 * (attempt + 1));
     }
   }
 
   function ensureCard() {
     const active = document.getElementById('active');
-    if (!active || !sessionId()) return null;
+    const id = sessionId();
+    if (!active || !id) return null;
     let card = document.getElementById('workoutCheckIn');
+    if (card && card.dataset.sessionId !== id) card.remove();
+    card = document.getElementById('workoutCheckIn');
     if (card) return card;
     card = document.createElement('section');
     card.id = 'workoutCheckIn';
+    card.dataset.sessionId = id;
     card.className = 'workout-checkin';
     const timer = document.getElementById('restTimerV3');
     const notice = document.getElementById('setSaveNotice');
@@ -76,11 +82,15 @@
   function render() {
     const card = ensureCard();
     if (!card) return;
-    const saved = read();
+    const id = card.dataset.sessionId || sessionId();
+    const saved = read(id);
     if (saved?.value) {
       const option = OPTIONS.find(item => item.value === saved.value) || { label: saved.value };
       card.innerHTML = `<div class="workout-checkin-saved"><div><span>Today’s check-in</span><strong>${option.label}</strong></div><button type="button" data-checkin-change>Change</button></div><p>This is just a training note. It does not automatically make your workout harder or easier.</p>`;
-      card.querySelector('[data-checkin-change]').onclick = () => { try { localStorage.removeItem(key()); } catch {} render(); };
+      card.querySelector('[data-checkin-change]').onclick = () => {
+        try { localStorage.removeItem(key(id)); } catch {}
+        render();
+      };
       return;
     }
     card.innerHTML = `
@@ -89,9 +99,9 @@
       <p>This is logged so you can notice patterns later. It does not change the workout automatically.</p>`;
     card.querySelectorAll('[data-checkin]').forEach(button => {
       button.onclick = () => {
-        const next = write(button.dataset.checkin);
+        const next = write(button.dataset.checkin, id);
         render();
-        void saveCloud(next);
+        void saveCloud(next, id);
       };
     });
   }
@@ -106,10 +116,19 @@
   function start() {
     render();
     window.addEventListener('pageshow', () => { cleanupWhenInactive(); render(); });
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { cleanupWhenInactive(); render(); } });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') { cleanupWhenInactive(); render(); }
+    });
+    document.addEventListener('click', event => {
+      if (!event.target.closest?.('#finish')) return;
+      const id = sessionId();
+      const checkIn = read(id);
+      if (id && checkIn) void saveCloud(checkIn, id);
+    }, true);
     setInterval(() => { cleanupWhenInactive(); render(); }, 1500);
   }
 
   window.LevelUpWorkoutCheckIn = { get: read, render };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
