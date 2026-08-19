@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260818-profile-settings-v10';
+const CACHE = 'level-up-fitness-20260818-profile-settings-v11';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
