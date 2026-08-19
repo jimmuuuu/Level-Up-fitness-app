@@ -54,6 +54,7 @@
     }
     if (!document.querySelector(`script[${scriptFlag}]`)) {
       const script = document.createElement('script');
+      script.async = false;
       script.src = scriptSrc;
       script.setAttribute(scriptFlag, 'true');
       document.body.appendChild(script);
@@ -63,6 +64,7 @@
   function loadScript(flag, src) {
     if (document.querySelector(`script[${flag}]`)) return;
     const script = document.createElement('script');
+    script.async = false;
     script.src = src;
     script.setAttribute(flag, 'true');
     document.body.appendChild(script);
