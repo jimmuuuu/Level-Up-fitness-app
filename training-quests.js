@@ -94,12 +94,8 @@
     const todayWorkoutDone = data.todaySessions > 0;
     const todaySetsDone = data.todaySets >= 3;
     const weeklyHalf = Math.min(3, data.plannedTarget);
+
     section.innerHTML = `
-      <div class="training-xp-card">
-        <div class="training-xp-heading"><div><div class="over">TRAINING XP</div><h2>Level ${data.level}</h2></div><strong>${data.levelXp} / 1000 XP</strong></div>
-        <div class="training-xp-track"><span style="width:${Math.min(100, data.levelXp / 10)}%"></span></div>
-        <p>XP rewards logging and consistency. Extra sets beyond a normal workout do not keep giving unlimited XP.</p>
-      </div>
       <div class="training-quests-card">
         <div class="training-quests-heading"><div class="over">QUESTS</div><h3>${data.plannedToday ? 'Today' : 'Recovery day'}</h3></div>
         ${data.plannedToday ? quest(todayWorkoutDone, 'Complete today’s planned workout', todayWorkoutDone ? 'Completed' : 'Your scheduled training day') : quest(true, 'Recovery day', 'No workout required today')}
