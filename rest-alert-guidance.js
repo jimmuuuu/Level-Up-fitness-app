@@ -1,4 +1,8 @@
 (() => {
+  let observedButton = null;
+  let observer = null;
+  let queued = false;
+
   function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent)
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -9,19 +13,47 @@
       || navigator.standalone === true;
   }
 
+  function needsInstall() {
+    return isIOS() && !isStandalone();
+  }
+
   function update() {
     const button = document.getElementById('restTimerV3Alerts');
     if (!button) return;
 
-    if (isIOS() && !isStandalone()) {
-      button.disabled = false;
-      button.dataset.levelupInstallRequired = 'true';
-      button.classList.remove('enabled');
-      button.textContent = 'Add Level Up to Home Screen for lock-screen alerts';
-      return;
+    if (needsInstall()) {
+      const wanted = 'Add Level Up to Home Screen for lock-screen alerts';
+      if (button.disabled) button.disabled = false;
+      if (button.dataset.levelupInstallRequired !== 'true') button.dataset.levelupInstallRequired = 'true';
+      if (button.classList.contains('enabled')) button.classList.remove('enabled');
+      if (button.textContent !== wanted) button.textContent = wanted;
+    } else {
+      if (button.dataset.levelupInstallRequired) delete button.dataset.levelupInstallRequired;
     }
 
-    delete button.dataset.levelupInstallRequired;
+    if (button !== observedButton) observeButton(button);
+  }
+
+  function queueUpdate() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      update();
+    });
+  }
+
+  function observeButton(button) {
+    observer?.disconnect();
+    observedButton = button;
+    observer = new MutationObserver(queueUpdate);
+    observer.observe(button, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['disabled', 'class']
+    });
   }
 
   function showInstallHelp() {
