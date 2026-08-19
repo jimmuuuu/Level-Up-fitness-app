@@ -12,6 +12,10 @@
   font-size: 10px;
   font-weight: 850;
 }
+.exercise-swap-button:disabled {
+  opacity: .48;
+  cursor: default;
+}
 .exercise-swap-modal {
   position: fixed;
   z-index: 9999;
