@@ -15,21 +15,18 @@
   }
 
   function avoidKey() { return `${AVOID_PREFIX}${accountKey()}`; }
-
   function avoided() {
     try {
       const parsed = JSON.parse(localStorage.getItem(avoidKey()) || '[]');
       return Array.isArray(parsed) ? parsed.map(String) : [];
     } catch { return []; }
   }
-
   function saveAvoided(list) {
     const clean = [...new Set(list.map(String).filter(Boolean))].slice(0, 100);
     try { localStorage.setItem(avoidKey(), JSON.stringify(clean)); } catch {}
     window.dispatchEvent(new CustomEvent('levelup:avoid-exercises-changed', { detail: clean }));
     return clean;
   }
-
   function addAvoid(name) { return saveAvoided([...avoided(), name]); }
   function removeAvoid(name) { return saveAvoided(avoided().filter(item => item !== name)); }
 
@@ -37,17 +34,38 @@
     try { return Array.isArray(exerciseCatalog) ? exerciseCatalog : []; }
     catch { return []; }
   }
-
   function activeExercises() {
     try { return Array.isArray(activePlan?.exercises) ? activePlan.exercises : []; }
     catch { return []; }
   }
-
   function normalizeMuscles(exercise) {
     const values = [exercise?.muscle, ...(exercise?.primary || []), ...(exercise?.assists || [])]
       .map(value => String(value || '').trim().toLowerCase())
       .filter(Boolean);
     return [...new Set(values)];
+  }
+
+  function preferredGym() {
+    try { return window.LevelUpGymProfiles?.preferred?.() || null; }
+    catch { return null; }
+  }
+
+  function equipmentBucket(value) {
+    const text = String(value || '').toLowerCase();
+    if (/smith/.test(text)) return 'Smith machine';
+    if (/dumbbell/.test(text)) return 'Dumbbells';
+    if (/barbell/.test(text)) return 'Barbell';
+    if (/cable/.test(text)) return 'Cable';
+    if (/bodyweight|pull-up|dip station/.test(text)) return 'Bodyweight';
+    if (/treadmill|bike|cardio|stair/.test(text)) return 'Cardio';
+    return 'Machines';
+  }
+
+  function gymEquipmentScore(candidate) {
+    const gym = preferredGym();
+    const saved = Array.isArray(gym?.equipment) ? gym.equipment : [];
+    if (!saved.length) return 0;
+    return saved.includes(equipmentBucket(candidate?.equipment || candidate?.category)) ? 4 : -2;
   }
 
   function scoreCandidate(current, candidate) {
@@ -61,7 +79,7 @@
     const primaryCandidate = (candidate.primary || []).map(v => String(v).toLowerCase());
     const primaryOverlap = primaryCandidate.filter(muscle => primaryCurrent.includes(muscle)).length;
     const sameEquipment = String(current.equipment || '').toLowerCase() === String(candidate.equipment || '').toLowerCase();
-    return primaryOverlap * 7 + overlap * 3 + (sameEquipment ? 2 : 0);
+    return primaryOverlap * 7 + overlap * 3 + (sameEquipment ? 2 : 0) + gymEquipmentScore(candidate);
   }
 
   function suggestions(current) {
@@ -75,9 +93,7 @@
 
   function makeExercise(candidate, current) {
     let made = null;
-    try {
-      if (typeof builderExerciseFromCatalog === 'function') made = builderExerciseFromCatalog(candidate);
-    } catch {}
+    try { if (typeof builderExerciseFromCatalog === 'function') made = builderExerciseFromCatalog(candidate); } catch {}
     if (!made) {
       made = {
         instanceId: `swap-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -106,12 +122,9 @@
     modal.className = 'exercise-swap-modal hidden';
     modal.innerHTML = '<div class="exercise-swap-backdrop" data-swap-close></div><section class="exercise-swap-sheet" role="dialog" aria-modal="true" aria-labelledby="exerciseSwapTitle"><div class="exercise-swap-handle"></div><div id="exerciseSwapContent"></div></section>';
     document.body.appendChild(modal);
-    modal.addEventListener('click', event => {
-      if (event.target.closest?.('[data-swap-close]')) closeModal();
-    });
+    modal.addEventListener('click', event => { if (event.target.closest?.('[data-swap-close]')) closeModal(); });
     return modal;
   }
-
   function closeModal() {
     document.getElementById(MODAL_ID)?.classList.add('hidden');
     currentIndex = -1;
@@ -126,14 +139,13 @@
     const content = modal.querySelector('#exerciseSwapContent');
     const options = suggestions(current);
     const isAvoided = avoided().includes(String(current.name || ''));
+    const gym = preferredGym();
     content.innerHTML = `
       <div class="exercise-swap-heading">
-        <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">Replace ${esc(current.name)}</h2><p>These options target the same main muscles. Your current sets and rep range will stay the same.</p></div>
+        <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">Replace ${esc(current.name)}</h2><p>These options target the same main muscles. Your current sets and rep range will stay the same.${gym?.name ? ` Options that match ${esc(gym.name)} equipment are ranked higher.` : ''}</p></div>
         <button type="button" class="exercise-swap-close" data-swap-close aria-label="Close">×</button>
       </div>
-      <div class="exercise-swap-actions">
-        <button type="button" class="exercise-swap-avoid${isAvoided ? ' active' : ''}" data-swap-avoid>${isAvoided ? 'Allow this exercise again' : "Don't recommend this exercise again"}</button>
-      </div>
+      <div class="exercise-swap-actions"><button type="button" class="exercise-swap-avoid${isAvoided ? ' active' : ''}" data-swap-avoid>${isAvoided ? 'Allow this exercise again' : "Don't recommend this exercise again"}</button></div>
       <div class="exercise-swap-list">
         ${options.length ? options.map(item => `<button type="button" class="exercise-swap-option" data-swap-name="${esc(item.name)}"><span>${esc(item.name)}</span><small>${esc(item.equipment || 'Exercise')} · ${esc((item.primary || []).join(', '))}</small></button>`).join('') : '<p class="exercise-swap-empty">No close matches are available in the exercise library yet.</p>'}
       </div>`;
@@ -142,9 +154,7 @@
       if (isAvoided) removeAvoid(current.name); else addAvoid(current.name);
       renderModal(index);
     });
-    content.querySelectorAll('[data-swap-name]').forEach(button => {
-      button.onclick = () => replaceExercise(index, button.dataset.swapName);
-    });
+    content.querySelectorAll('[data-swap-name]').forEach(button => { button.onclick = () => replaceExercise(index, button.dataset.swapName); });
   }
 
   function replaceExercise(index, name) {
@@ -187,9 +197,9 @@
     const list = document.getElementById('setList');
     if (list) new MutationObserver(() => requestAnimationFrame(decorateRows)).observe(list, { childList: true });
     window.addEventListener('pageshow', decorateRows);
+    window.addEventListener('levelup:gym-profiles-changed', decorateRows);
   }
 
   window.LevelUpExerciseSwap = { open: renderModal, avoided, addAvoid, removeAvoid };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
-  else start();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
 })();
