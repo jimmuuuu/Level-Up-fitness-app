@@ -1,5 +1,6 @@
 (() => {
   const NOTE_PREFIX = 'levelUpFitnessWorkoutNote:';
+  const EXERCISE_NOTE_PREFIX = 'levelUpFitnessExerciseNotes:';
   const CHECKIN_PREFIX = 'levelUpFitnessWorkoutCheckIn:';
   let loading = false;
 
@@ -43,8 +44,28 @@
     return '';
   }
 
+  function parseExerciseNotes(raw) {
+    if (!raw) return {};
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+      const clean = {};
+      Object.entries(parsed).forEach(([index, value]) => {
+        const note = String(value?.note || '').trim();
+        if (!note) return;
+        clean[String(index)] = {
+          exercise: String(value?.exercise || '').trim(),
+          note,
+          updatedAt: Number(value?.updatedAt) || 0
+        };
+      });
+      return clean;
+    } catch { return {}; }
+  }
+
   function localExtras(sessionId) {
     const note = localValue(NOTE_PREFIX, sessionId);
+    const exerciseNotes = parseExerciseNotes(localValue(EXERCISE_NOTE_PREFIX, sessionId));
     const rawCheckIn = localValue(CHECKIN_PREFIX, sessionId);
     let checkIn = null;
     if (rawCheckIn) {
@@ -53,7 +74,7 @@
         if (parsed && typeof parsed === 'object') checkIn = parsed;
       } catch {}
     }
-    return { note, checkIn };
+    return { note, exerciseNotes, checkIn };
   }
 
   function writeHistory(next) {
@@ -76,14 +97,13 @@
       const current = currentHistory();
       if (!current.length) return;
 
-      // First merge device-saved notes/check-ins. This keeps the feature useful
-      // for local profiles and also protects notes while cloud sync is catching up.
       let next = current.map(session => {
         const local = localExtras(session?.id);
         return {
           ...session,
           checkIn: local.checkIn || session?.checkIn || null,
-          workout_note: local.note || session?.workout_note || ''
+          workout_note: local.note || session?.workout_note || '',
+          exercise_notes: Object.keys(local.exerciseNotes).length ? local.exerciseNotes : (session?.exercise_notes || {})
         };
       });
 
@@ -94,7 +114,7 @@
           const userId = sessionData?.session?.user?.id || '';
           if (userId) {
             const { data, error } = await client.from('workout_sessions')
-              .select('id, check_in, workout_note')
+              .select('id, check_in, workout_note, exercise_notes')
               .eq('user_id', userId)
               .eq('status', 'completed');
             if (!error) {
@@ -102,10 +122,12 @@
               next = next.map(session => {
                 const remote = extras.get(String(session?.id || ''));
                 if (!remote) return session;
+                const remoteExerciseNotes = parseExerciseNotes(remote.exercise_notes);
                 return {
                   ...session,
                   checkIn: remote.check_in || session.checkIn || null,
-                  workout_note: remote.workout_note || session.workout_note || ''
+                  workout_note: remote.workout_note || session.workout_note || '',
+                  exercise_notes: Object.keys(remoteExerciseNotes).length ? remoteExerciseNotes : (session.exercise_notes || {})
                 };
               });
             }
