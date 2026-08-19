@@ -86,6 +86,9 @@
 
   function setSetting(name, value) {
     const next = write({ ...read(), [name]: value, updatedAt: Date.now() });
+    if (name === 'startPage') {
+      try { sessionStorage.setItem('levelUpFitnessLastPage', next.startPage); } catch {}
+    }
     void saveCloud(next);
     render();
     return next;
@@ -155,18 +158,8 @@
     };
   }
 
-  function useStartPageOnce() {
-    try {
-      const preferred = read().startPage;
-      const remembered = sessionStorage.getItem('levelUpFitnessLastPage');
-      const active = Boolean(sessionStorage.getItem('levelUpFitnessActiveWorkout'));
-      if (!active && (!remembered || remembered === 'workout')) sessionStorage.setItem('levelUpFitnessLastPage', preferred);
-    } catch {}
-  }
-
   function start() {
     apply();
-    useStartPageOnce();
     render();
     void loadCloud();
     window.addEventListener('pageshow', () => { render(); void loadCloud(); });
