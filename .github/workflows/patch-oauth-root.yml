@@ -1,0 +1,62 @@
+name: One-time OAuth redirect patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-oauth-root.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch legacy Google redirect and bust caches
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          app = Path('app.js')
+          text = app.read_text(encoding='utf-8')
+          old = "options: { redirectTo: `${location.origin}/` }"
+          new = "options: { redirectTo: 'https://jimmuuuu.github.io/Level-Up-fitness-app/' }"
+          if old not in text:
+              raise SystemExit('Expected legacy root redirect was not found in app.js')
+          text = text.replace(old, new, 1)
+          app.write_text(text, encoding='utf-8')
+
+          config = Path('supabase-config.js')
+          config_text = config.read_text(encoding='utf-8')
+          config_text = config_text.replace('auth-session-fix.js?v=3', 'auth-session-fix.js?v=4')
+          config.write_text(config_text, encoding='utf-8')
+
+          sw = Path('sw.js')
+          sw_text = sw.read_text(encoding='utf-8')
+          sw_text, count = re.subn(
+              r"^const CACHE = '[^']+';",
+              "const CACHE = 'level-up-fitness-20260819-oauth-core-v30';",
+              sw_text,
+              count=1,
+              flags=re.M,
+          )
+          if count != 1:
+              raise SystemExit('Could not update service worker cache name')
+          sw.write_text(sw_text, encoding='utf-8')
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Level Up maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.js supabase-config.js sw.js
+          git commit -m "Fix Google OAuth redirect at the source"
+          git push origin main
