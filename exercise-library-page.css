@@ -34,7 +34,12 @@
 .exercise-library-note strong { color: #fff; font-size: 12px; }
 .exercise-library-note p { margin: 5px 0 0; color: #a4adb4; font-size: 11px; line-height: 1.5; }
 .exercise-library-detail-actions { display: grid; gap: 8px; margin-top: 14px; }
-.exercise-library-detail-actions button, .exercise-library-detail-actions a { min-height: 46px; padding: 0 13px; border: 1px solid #30363c; border-radius: 13px; color: #fff; background: #15191d; font: inherit; font-size: 11px; font-weight: 850; text-decoration: none; display: grid; place-items: center; }
+.exercise-library-detail-actions > button, .exercise-library-detail-actions > a { min-height: 46px; padding: 0 13px; border: 1px solid #30363c; border-radius: 13px; color: #fff; background: #15191d; font: inherit; font-size: 11px; font-weight: 850; text-decoration: none; display: grid; place-items: center; }
 .exercise-library-detail-actions .primary { color: #090b0d; border-color: #ff4d57; background: #ff4d57; }
+.exercise-library-plan-picker { display: grid; gap: 7px; padding: 9px; border: 1px solid #2d3338; border-radius: 13px; background: #0b0e11; }
+.exercise-library-plan-picker.hidden { display: none !important; }
+.exercise-library-plan-picker button { min-height: 48px; padding: 9px 11px; border: 1px solid #30363c; border-radius: 11px; color: #fff; background: #15191d; font: inherit; text-align: left; }
+.exercise-library-plan-picker strong { display: block; font-size: 11px; }
+.exercise-library-plan-picker small { display: block; margin-top: 2px; color: #8f989f; font-size: 9px; }
 .exercise-library-status { margin: 0; color: #dce1e4; font-size: 10px; text-align: center; }
 .exercise-library-status.error { color: #ff9ba4; }
