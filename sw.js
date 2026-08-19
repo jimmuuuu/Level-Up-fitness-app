@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-scan-fullscreen-v32';
+const CACHE = 'level-up-fitness-20260819-scan-upload-profile-v33';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -10,7 +10,7 @@ const CORE = [
   './gym-category-labels.js', './weekly-onboarding-interactions.js', './weekly-plan-personalization-v3.js',
   './weekly-preview-editor.js', './start-workout-navigation-fix.js', './account-history-isolation.js', './account-history-truth.js',
   './authoritative-history-sync.js', './auth-session-fix.js', './account-switch-fix-v2.js',
-  './scan-feature.css', './scan-feature.js', './scan-zoom.css', './scan-zoom.js',
+  './scan-feature.css', './scan-feature.js', './scan-zoom.css', './scan-zoom.js', './scan-upload-fix.js',
   './gym-passes.css', './gym-passes.js', './gym-session-fixes.css', './gym-session-fixes.js', './leg-day-start-fix.js',
   './field-notes-final.css', './field-notes-final.js', './five-day-plan.js', './rest-timer-v3.css', './rest-timer-v3.js',
   './rest-timer-pause-visible.css', './rest-timer-pause-visible.js',
@@ -25,7 +25,7 @@ const CORE = [
   './workout-checkin.css', './workout-checkin.js',
   './progress-insights.css', './progress-insights.js',
   './training-quests.css', './training-quests.js',
-  './profile-level-avatar.css', './profile-level-avatar.js',
+  './profile-level-avatar.css', './profile-level-avatar.js', './profile-photo-save-fix.js',
   './workout-notes.css', './workout-notes.js',
   './settings-expanded.css', './settings-expanded.js', './history-enrichment.js',
   './companion-quality.css', './companion-quality.js', './no-em-dashes.js',
@@ -40,8 +40,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 86);
-const ASSETS = CORE.slice(86);
+const SHELL = CORE.slice(0, 88);
+const ASSETS = CORE.slice(88);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
