@@ -2,6 +2,7 @@
   const FALLBACK_SECONDS = 90;
   let interval = null;
   let lastSaveTrigger = 0;
+  let timerObserver = null;
 
   function getDefaultSeconds() {
     try {
@@ -24,13 +25,24 @@
 
   function applyDefaultToUi() {
     const seconds = getDefaultSeconds();
+    const expected = format(seconds);
     const time = document.getElementById('restTimerV3Time');
     const middle = document.querySelector('#restTimerV3Presets button.primary');
     if (middle) {
-      middle.dataset.restV3Start = String(seconds);
-      middle.textContent = `Start ${format(seconds)}`;
+      if (middle.dataset.restV3Start !== String(seconds)) middle.dataset.restV3Start = String(seconds);
+      const label = `Start ${expected}`;
+      if (middle.textContent !== label) middle.textContent = label;
     }
-    if (time && timerIdle()) time.textContent = format(seconds);
+    if (time && timerIdle() && time.textContent !== expected) time.textContent = expected;
+  }
+
+  function observeTimerUi() {
+    const card = document.getElementById('restTimerV3');
+    if (!card || card.dataset.settingsBridgeObserved === 'true') return;
+    card.dataset.settingsBridgeObserved = 'true';
+    timerObserver?.disconnect();
+    timerObserver = new MutationObserver(() => applyDefaultToUi());
+    timerObserver.observe(card, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
   }
 
   function installCoreDefaultOverride() {
@@ -68,6 +80,7 @@
 
   function refresh() {
     installCoreDefaultOverride();
+    observeTimerUi();
     applyDefaultToUi();
   }
 
@@ -80,7 +93,7 @@
       if (document.visibilityState === 'visible') refresh();
     });
     if (interval) clearInterval(interval);
-    interval = setInterval(refresh, 700);
+    interval = setInterval(refresh, 1200);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
