@@ -105,7 +105,7 @@
   }
 
   function preferredGymName() {
-    try { return window.LevelUpGymProfiles?.preferred?.()?.name || 'Not set'; } catch { return 'Not set'; }
+    try { return window.LevelUpGymProfiles?.preferred?.()?.name || 'Set up'; } catch { return 'Set up'; }
   }
 
   function switchRow(id, label, description, checked) {
@@ -136,7 +136,7 @@
       </section>
       <section class="settings-card settings-expanded-card">
         <div class="settings-card-heading"><div><div class="settings-kicker">TRAINING</div><h2>Training preferences</h2></div></div>
-        <button id="settingsManageGyms" class="settings-expanded-link" type="button"><span>Preferred gym</span><strong>${preferredGymName()}</strong></button>
+        <button id="settingsManageGyms" class="settings-expanded-link" type="button"><span>Gym & equipment</span><strong>${preferredGymName()}</strong></button>
         <button id="settingsAvoidedExercises" class="settings-expanded-link" type="button"><span>Exercises not recommended</span><strong>${avoidedCount()}</strong></button>
       </section>`;
 
@@ -145,8 +145,10 @@
     section.querySelector('#settingQuests').onchange = event => setSetting('showQuests', event.target.checked);
     section.querySelector('#settingStartPage').onchange = event => setSetting('startPage', event.target.value);
     section.querySelector('#settingsManageGyms').onclick = () => {
-      try { if (typeof go === 'function') go('profile'); } catch {}
-      setTimeout(() => document.getElementById('gymProfilesSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      try {
+        if (window.LevelUpGymProfiles?.openEditor) window.LevelUpGymProfiles.openEditor();
+        else window.LevelUpGymOnboarding?.openEditor?.();
+      } catch {}
     };
     section.querySelector('#settingsAvoidedExercises').onclick = () => {
       const list = window.LevelUpExerciseSwap?.avoided?.() || [];
