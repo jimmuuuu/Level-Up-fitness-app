@@ -119,7 +119,7 @@
   }
 
   function loadRestTimerSettingsBridge() {
-    loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=1');
+    loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=2');
   }
 
   function disableWeightRecommendations() {
