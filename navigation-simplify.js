@@ -71,7 +71,7 @@
   }
 
   function loadScanFeature() { loadFeature('data-scan-feature-style', 'scan-feature.css?v=1', 'data-scan-feature', 'scan-feature.js?v=1'); }
-  function loadScanZoom() { loadFeature('data-scan-zoom-style', 'scan-zoom.css?v=2', 'data-scan-zoom', 'scan-zoom.js?v=2'); }
+  function loadScanZoom() { loadFeature('data-scan-zoom-style', 'scan-zoom.css?v=3', 'data-scan-zoom', 'scan-zoom.js?v=2'); }
   function loadGymPasses() { loadFeature('data-gym-passes-style', 'gym-passes.css?v=1', 'data-gym-passes', 'gym-passes.js?v=1'); }
   function loadGymSessionFixes() { loadFeature('data-gym-session-fixes-style', 'gym-session-fixes.css?v=2', 'data-gym-session-fixes', 'gym-session-fixes.js?v=1'); }
   function loadLegDayStartFix() { loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=2'); }
