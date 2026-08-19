@@ -80,13 +80,13 @@
   function loadRestTimerV3() { loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=6'); }
   function loadPersistentPause() { loadFeature('data-rest-timer-pause-visible-style', 'rest-timer-pause-visible.css?v=1', 'data-rest-timer-pause-visible', 'rest-timer-pause-visible.js?v=1'); }
   function loadProfileSettingsPage() { loadFeature('data-profile-settings-page-style', 'profile-settings-page.css?v=1', 'data-profile-settings-page', 'profile-settings-page.js?v=1'); }
-  function loadRestTimerSettingsBridge() { loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=4'); }
+  function loadRestTimerSettingsBridge() { loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=5'); }
   function loadExerciseSwap() { loadFeature('data-exercise-swap-style', 'exercise-swap.css?v=1', 'data-exercise-swap', 'exercise-swap.js?v=2'); }
   function loadExerciseFacts() { loadFeature('data-exercise-facts-style', 'exercise-history-facts.css?v=1', 'data-exercise-facts', 'exercise-history-facts.js?v=2'); }
   function loadWorkoutCalendar() { loadFeature('data-workout-calendar-style', 'workout-calendar.css?v=2', 'data-workout-calendar', 'workout-calendar.js?v=2'); }
   function loadExerciseLibraryPage() { loadFeature('data-exercise-library-page-style', 'exercise-library-page.css?v=2', 'data-exercise-library-page', 'exercise-library-page.js?v=3'); }
   function loadGymProfiles() { loadFeature('data-gym-profiles-style', 'gym-profiles.css?v=1', 'data-gym-profiles', 'gym-profiles.js?v=1'); }
-  function loadWorkoutCheckIn() { loadFeature('data-workout-checkin-style', 'workout-checkin.css?v=1', 'data-workout-checkin', 'workout-checkin.js?v=1'); }
+  function loadWorkoutCheckIn() { loadFeature('data-workout-checkin-style', 'workout-checkin.css?v=1', 'data-workout-checkin', 'workout-checkin.js?v=2'); }
   function loadProgressInsights() { loadFeature('data-progress-insights-style', 'progress-insights.css?v=1', 'data-progress-insights', 'progress-insights.js?v=2'); }
   function loadTrainingQuests() { loadFeature('data-training-quests-style', 'training-quests.css?v=1', 'data-training-quests', 'training-quests.js?v=1'); }
   function loadWorkoutNotes() { loadFeature('data-workout-notes-style', 'workout-notes.css?v=1', 'data-workout-notes', 'workout-notes.js?v=2'); }
