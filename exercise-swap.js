@@ -38,11 +38,23 @@
     try { return Array.isArray(activePlan?.exercises) ? activePlan.exercises : []; }
     catch { return []; }
   }
-  function normalizeMuscles(exercise) {
-    const values = [exercise?.muscle, ...(exercise?.primary || []), ...(exercise?.assists || [])]
-      .map(value => String(value || '').trim().toLowerCase())
-      .filter(Boolean);
-    return [...new Set(values)];
+  function activeLogs() {
+    try { return Array.isArray(logs) ? logs : []; }
+    catch { return []; }
+  }
+
+  function primaryMuscles(exercise) {
+    const values = Array.isArray(exercise?.primary) && exercise.primary.length
+      ? exercise.primary
+      : [exercise?.muscle];
+    return [...new Set(values.map(value => String(value || '').trim().toLowerCase()).filter(Boolean))];
+  }
+
+  function allMuscles(exercise) {
+    return [...new Set([
+      ...primaryMuscles(exercise),
+      ...(exercise?.assists || []).map(value => String(value || '').trim().toLowerCase())
+    ].filter(Boolean))];
   }
 
   function preferredGym() {
@@ -65,29 +77,81 @@
     const gym = preferredGym();
     const saved = Array.isArray(gym?.equipment) ? gym.equipment : [];
     if (!saved.length) return 0;
-    return saved.includes(equipmentBucket(candidate?.equipment || candidate?.category)) ? 4 : -2;
+    return saved.includes(equipmentBucket(candidate?.equipment || candidate?.category)) ? 5 : -20;
   }
 
-  function scoreCandidate(current, candidate) {
+  function movementFamily(exercise) {
+    const name = String(exercise?.name || '').toLowerCase();
+    const primary = primaryMuscles(exercise);
+    if (primary.includes('calves') || /calf/.test(name)) return 'calves';
+    if (/leg curl|hamstring curl/.test(name)) return 'leg-curl';
+    if (/deadlift|romanian|hip thrust|glute bridge|kickback/.test(name)) return 'hinge-glute';
+    if (/leg press|squat|lunge|step-up|leg extension/.test(name)) return 'knee-dominant';
+    if (/abductor|adductor/.test(name)) return 'hip-machine';
+    if (/pulldown|pull-up|chin-up/.test(name)) return 'vertical-pull';
+    if (/row/.test(name)) return 'row';
+    if (/chest press|bench press|push-up/.test(name)) return 'chest-press';
+    if (/fly|pec deck/.test(name)) return 'chest-fly';
+    if (/shoulder press|overhead press/.test(name)) return 'shoulder-press';
+    if (/lateral raise/.test(name)) return 'lateral-raise';
+    if (/reverse pec|rear delt|face pull/.test(name)) return 'rear-delt';
+    if (/curl/.test(name) && primary.includes('biceps')) return 'biceps';
+    if (/triceps|pushdown|dip/.test(name) && primary.includes('triceps')) return 'triceps';
+    if (/crunch|plank|dead bug|sit-up|core/.test(name)) return 'core';
+    return String(exercise?.category || '').trim().toLowerCase() || primary.join('|');
+  }
+
+  function hasSavedSets(index) {
+    return activeLogs().some(log => Number(log?.exerciseIndex) === Number(index));
+  }
+
+  function blockedNames(index) {
+    const blocked = new Set();
+    activeExercises().forEach((exercise, exerciseIndex) => {
+      if (exerciseIndex === index) return;
+      const name = String(exercise?.name || '').trim().toLowerCase();
+      if (name) blocked.add(name);
+    });
+    activeLogs().forEach(log => {
+      const name = String(log?.exercise || '').trim().toLowerCase();
+      if (name) blocked.add(name);
+    });
+    return blocked;
+  }
+
+  function scoreCandidate(current, candidate, index) {
     if (!current || !candidate || current.name === candidate.name) return -999;
-    const avoid = new Set(avoided().map(v => v.toLowerCase()));
-    if (avoid.has(String(candidate.name || '').toLowerCase())) return -999;
-    const currentMuscles = normalizeMuscles(current);
-    const candidateMuscles = normalizeMuscles(candidate);
-    const overlap = candidateMuscles.filter(muscle => currentMuscles.includes(muscle)).length;
-    const primaryCurrent = (current.primary || []).map(v => String(v).toLowerCase());
-    const primaryCandidate = (candidate.primary || []).map(v => String(v).toLowerCase());
-    const primaryOverlap = primaryCandidate.filter(muscle => primaryCurrent.includes(muscle)).length;
+    const candidateName = String(candidate.name || '').trim().toLowerCase();
+    if (!candidateName || blockedNames(index).has(candidateName)) return -999;
+
+    const avoid = new Set(avoided().map(value => value.toLowerCase()));
+    if (avoid.has(candidateName)) return -999;
+
+    const currentPrimary = primaryMuscles(current);
+    const candidatePrimary = primaryMuscles(candidate);
+    const primaryOverlap = candidatePrimary.filter(muscle => currentPrimary.includes(muscle)).length;
+
+    // A swap must share a primary target. Assisting muscles alone are not enough.
+    if (primaryOverlap === 0) return -999;
+
+    const currentAll = allMuscles(current);
+    const candidateAll = allMuscles(candidate);
+    const totalOverlap = candidateAll.filter(muscle => currentAll.includes(muscle)).length;
+    const sameFamily = movementFamily(current) === movementFamily(candidate);
+    const sameCategory = String(current.category || '').toLowerCase() === String(candidate.category || '').toLowerCase();
     const sameEquipment = String(current.equipment || '').toLowerCase() === String(candidate.equipment || '').toLowerCase();
-    return primaryOverlap * 7 + overlap * 3 + (sameEquipment ? 2 : 0) + gymEquipmentScore(candidate);
+    const gymScore = gymEquipmentScore(candidate);
+
+    if (gymScore <= -20) return -999;
+    return primaryOverlap * 12 + totalOverlap * 3 + (sameFamily ? 9 : 0) + (sameCategory ? 3 : 0) + (sameEquipment ? 1 : 0) + gymScore;
   }
 
-  function suggestions(current) {
+  function suggestions(current, index) {
     return catalog()
-      .map(item => ({ item, score: scoreCandidate(current, item) }))
+      .map(item => ({ item, score: scoreCandidate(current, item, index) }))
       .filter(entry => entry.score > 0)
       .sort((a, b) => b.score - a.score || String(a.item.name).localeCompare(String(b.item.name)))
-      .slice(0, 12)
+      .slice(0, 10)
       .map(entry => entry.item);
   }
 
@@ -125,6 +189,7 @@
     modal.addEventListener('click', event => { if (event.target.closest?.('[data-swap-close]')) closeModal(); });
     return modal;
   }
+
   function closeModal() {
     document.getElementById(MODAL_ID)?.classList.add('hidden');
     currentIndex = -1;
@@ -137,31 +202,49 @@
     currentIndex = index;
     const modal = ensureModal();
     const content = modal.querySelector('#exerciseSwapContent');
-    const options = suggestions(current);
-    const isAvoided = avoided().includes(String(current.name || ''));
     const gym = preferredGym();
+
+    if (hasSavedSets(index)) {
+      content.innerHTML = `
+        <div class="exercise-swap-heading">
+          <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">${esc(current.name)} already started</h2><p>You already saved a set for this exercise. Swapping it now would mix two exercises inside the same workout entry, so Level Up keeps it locked.</p></div>
+          <button type="button" class="exercise-swap-close" data-swap-close aria-label="Close">×</button>
+        </div>`;
+      modal.classList.remove('hidden');
+      return;
+    }
+
+    const options = suggestions(current, index);
+    const isAvoided = avoided().includes(String(current.name || ''));
     content.innerHTML = `
       <div class="exercise-swap-heading">
-        <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">Replace ${esc(current.name)}</h2><p>These options target the same main muscles. Your current sets and rep range will stay the same.${gym?.name ? ` Options that match ${esc(gym.name)} equipment are ranked higher.` : ''}</p></div>
+        <div>
+          <div class="over">SWAP EXERCISE</div>
+          <h2 id="exerciseSwapTitle">Replace ${esc(current.name)}</h2>
+          <p>Only exercises with the same primary target are shown. Exercises already in this workout are removed.${gym?.name ? ` Options also have to fit the equipment saved for ${esc(gym.name)}.` : ''}</p>
+        </div>
         <button type="button" class="exercise-swap-close" data-swap-close aria-label="Close">×</button>
       </div>
       <div class="exercise-swap-actions"><button type="button" class="exercise-swap-avoid${isAvoided ? ' active' : ''}" data-swap-avoid>${isAvoided ? 'Allow this exercise again' : "Don't recommend this exercise again"}</button></div>
       <div class="exercise-swap-list">
-        ${options.length ? options.map(item => `<button type="button" class="exercise-swap-option" data-swap-name="${esc(item.name)}"><span>${esc(item.name)}</span><small>${esc(item.equipment || 'Exercise')} · ${esc((item.primary || []).join(', '))}</small></button>`).join('') : '<p class="exercise-swap-empty">No close matches are available in the exercise library yet.</p>'}
+        ${options.length ? options.map(item => `<button type="button" class="exercise-swap-option" data-swap-name="${esc(item.name)}"><span>${esc(item.name)}</span><small>${esc((item.primary || []).join(', '))} · ${esc(item.equipment || 'Exercise')}</small></button>`).join('') : '<p class="exercise-swap-empty">No unused exercises with the same primary target match your saved gym equipment.</p>'}
       </div>`;
     modal.classList.remove('hidden');
     content.querySelector('[data-swap-avoid]')?.addEventListener('click', () => {
       if (isAvoided) removeAvoid(current.name); else addAvoid(current.name);
       renderModal(index);
     });
-    content.querySelectorAll('[data-swap-name]').forEach(button => { button.onclick = () => replaceExercise(index, button.dataset.swapName); });
+    content.querySelectorAll('[data-swap-name]').forEach(button => {
+      button.onclick = () => replaceExercise(index, button.dataset.swapName);
+    });
   }
 
   function replaceExercise(index, name) {
+    if (hasSavedSets(index)) return renderModal(index);
     const exercises = activeExercises();
     const current = exercises[index];
     const candidate = catalog().find(item => String(item?.name || '') === String(name || ''));
-    if (!current || !candidate) return;
+    if (!current || !candidate || scoreCandidate(current, candidate, index) <= 0) return;
     const next = makeExercise(candidate, current);
     try {
       activePlan = { ...activePlan, exercises: exercises.map((exercise, i) => i === index ? next : exercise) };
@@ -177,17 +260,24 @@
   function decorateRows() {
     const list = document.getElementById('setList');
     if (!list) return;
-    const rows = [...list.querySelectorAll('.set-row')];
+    const rows = [...list.querySelectorAll(':scope > .set-row')];
     rows.forEach((row, index) => {
       const heading = row.querySelector('.exercise-heading');
-      if (!heading || heading.querySelector('.exercise-swap-button')) return;
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'exercise-swap-button';
-      button.textContent = 'Swap';
-      button.setAttribute('aria-label', `Swap ${heading.querySelector('h3')?.textContent?.trim() || 'exercise'}`);
-      button.onclick = () => renderModal(index);
-      heading.appendChild(button);
+      if (!heading) return;
+      let button = heading.querySelector('.exercise-swap-button');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'exercise-swap-button';
+        heading.appendChild(button);
+      }
+      const started = hasSavedSets(index);
+      button.textContent = started ? 'Started' : 'Swap';
+      button.disabled = started;
+      button.setAttribute('aria-label', started
+        ? `${heading.querySelector('h3')?.textContent?.trim() || 'Exercise'} already has saved sets`
+        : `Swap ${heading.querySelector('h3')?.textContent?.trim() || 'exercise'}`);
+      button.onclick = started ? null : () => renderModal(index);
     });
   }
 
@@ -198,8 +288,11 @@
     if (list) new MutationObserver(() => requestAnimationFrame(decorateRows)).observe(list, { childList: true });
     window.addEventListener('pageshow', decorateRows);
     window.addEventListener('levelup:gym-profiles-changed', decorateRows);
+    document.addEventListener('click', event => {
+      if (event.target.closest?.('#setList [data-log]')) setTimeout(decorateRows, 160);
+    }, true);
   }
 
-  window.LevelUpExerciseSwap = { open: renderModal, avoided, addAvoid, removeAvoid };
+  window.LevelUpExerciseSwap = { open: renderModal, avoided, addAvoid, removeAvoid, suggestions };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
 })();
