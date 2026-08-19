@@ -20,14 +20,20 @@
 .workout-calendar-modal { position: fixed; z-index: 9997; inset: 0; display: grid; align-items: end; }
 .workout-calendar-modal.hidden { display: none !important; }
 .workout-calendar-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); }
-.workout-calendar-sheet { position: relative; z-index: 1; width: min(100%, 620px); max-height: 75dvh; margin: 0 auto; overflow: auto; padding: 12px 18px calc(22px + env(safe-area-inset-bottom)); border: 1px solid #2b3137; border-bottom: 0; border-radius: 28px 28px 0 0; background: #0d1013; }
+.workout-calendar-sheet { position: relative; z-index: 1; width: min(100%, 620px); max-height: 78dvh; margin: 0 auto; overflow: auto; padding: 12px 18px calc(22px + env(safe-area-inset-bottom)); border: 1px solid #2b3137; border-bottom: 0; border-radius: 28px 28px 0 0; background: #0d1013; }
 .workout-calendar-handle { width: 44px; height: 4px; margin: 0 auto 15px; border-radius: 999px; background: #3a4046; }
 .workout-calendar-sheet-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .workout-calendar-sheet-heading h2 { margin: 3px 0 0; color: #fff; font-size: 23px; }
 .workout-calendar-close { width: 42px; height: 42px; border: 1px solid #343a40; border-radius: 50%; color: #fff; background: #15191d; font-size: 22px; }
 .workout-calendar-day-list { display: grid; gap: 9px; margin-top: 15px; }
 .workout-calendar-session { padding: 13px; border: 1px solid #2b3137; border-radius: 14px; background: #111417; }
-.workout-calendar-session strong { color: #f5f7f8; font-size: 13px; }
-.workout-calendar-session span { display: block; margin-top: 3px; color: #929ca4; font-size: 10px; }
-.workout-calendar-session p { margin: 8px 0 0; color: #c2c8cd; font-size: 11px; line-height: 1.45; }
+.workout-calendar-session > strong { color: #f5f7f8; font-size: 13px; }
+.workout-calendar-session > span { display: block; margin-top: 3px; color: #929ca4; font-size: 10px; }
+.workout-calendar-exercises { display: grid; gap: 8px; margin-top: 11px; }
+.workout-calendar-exercise { padding-top: 8px; border-top: 1px solid #262c31; }
+.workout-calendar-exercise > strong { display: block; color: #e9edef; font-size: 11px; }
+.workout-calendar-exercise > div { display: grid; gap: 2px; margin-top: 4px; }
+.workout-calendar-exercise span { color: #9aa3aa; font-size: 9px; }
+.workout-calendar-note { margin: 10px 0 0; padding: 9px; border-radius: 10px; color: #c2c8cd; background: #0d1013; font-size: 10px; line-height: 1.45; }
+.workout-calendar-no-sets { margin: 9px 0 0; color: #87919a; font-size: 9px; }
 @media (max-width: 420px) { .workout-calendar-heading { display: block; } .workout-calendar-nav { margin-top: 10px; justify-content: space-between; } }
