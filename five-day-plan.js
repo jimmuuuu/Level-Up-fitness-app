@@ -5,9 +5,10 @@
   ]);
   const CONFIG_PREFIX = 'levelUpFitnessWeeklyPlan:';
   const PERSONALIZATION_MARK = 'levelUpFitnessWeeklyPersonalizationV3:';
-  const VERSION_MARK = 'levelUpFitnessFiveDayPlanV1:';
+  const VERSION_MARK = 'levelUpFitnessFiveDayPlanV2:';
   const TRAINING_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Friday', 'Saturday'];
   const AUTO_IDS = [1, 2, 3, 4, 5].map(index => `custom-auto-weekly-${index}`);
+  const PERSONALIZATION_VERSION = 3;
   let applying = false;
 
   async function authUser() {
@@ -75,7 +76,7 @@
       time: '45-60 min',
       icon,
       personal: true,
-      revision: 1,
+      revision: 2,
       createdAt: now,
       updatedAt: now,
       exercises
@@ -127,43 +128,76 @@
     ];
   }
 
+  function signature(planValue) {
+    return JSON.stringify({
+      id: String(planValue?.id || ''),
+      name: String(planValue?.name || ''),
+      day: String(planValue?.day || ''),
+      exercises: (planValue?.exercises || []).map(exercise => [
+        String(exercise?.name || ''),
+        Number(exercise?.sets) || 0,
+        Array.isArray(exercise?.repRange) ? exercise.repRange.map(Number) : []
+      ])
+    });
+  }
+
+  function expectedSignatures() {
+    return fivePlans().map(signature);
+  }
+
   function expectedPlan(plans) {
-    const auto = plans.filter(item => AUTO_IDS.includes(String(item?.id || '')));
-    if (auto.length !== 5) return false;
-    const names = auto.map(item => String(item?.name || ''));
-    if (!names.includes('Leg Day') || !names.includes('Lower Body')) return false;
-    return auto.every(item => (item.exercises || []).every(exercise => !/^(calf raise|seated calf raise)$/i.test(String(exercise?.name || '')) && !/leg raise|knee raise/i.test(String(exercise?.name || ''))));
+    const auto = AUTO_IDS.map(id => plans.find(item => String(item?.id || '') === id)).filter(Boolean);
+    if (auto.length !== AUTO_IDS.length) return false;
+    const expected = expectedSignatures();
+    return auto.every((item, index) => signature(item) === expected[index]);
+  }
+
+  function desiredSchedule() {
+    return [
+      { day: 'Monday', planId: AUTO_IDS[0], rest: '' },
+      { day: 'Tuesday', planId: AUTO_IDS[1], rest: '' },
+      { day: 'Wednesday', planId: AUTO_IDS[2], rest: '' },
+      { day: 'Thursday', planId: '', rest: 'Rest or easy walking.' },
+      { day: 'Friday', planId: AUTO_IDS[3], rest: '' },
+      { day: 'Saturday', planId: AUTO_IDS[4], rest: '' },
+      { day: 'Sunday', planId: '', rest: 'Rest and recover.' }
+    ];
+  }
+
+  function sameArray(left, right) {
+    return JSON.stringify(left || []) === JSON.stringify(right || []);
   }
 
   function updateLocalConfig(userId) {
     const key = `${CONFIG_PREFIX}${userId}`;
     let existing = null;
     try { existing = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+
     const answers = {
       ...(existing?.answers || {}),
       days: 5,
       trainingDays: [...TRAINING_DAYS]
     };
+    const schedule = desiredSchedule();
+    const changed = !existing
+      || Number(existing?.answers?.days) !== 5
+      || !sameArray(existing?.answers?.trainingDays, TRAINING_DAYS)
+      || !sameArray(existing?.planIds, AUTO_IDS)
+      || !sameArray(existing?.schedule, schedule);
+
     const config = {
       version: 1,
       answers,
       planIds: [...AUTO_IDS],
-      schedule: [
-        { day: 'Monday', planId: AUTO_IDS[0], rest: '' },
-        { day: 'Tuesday', planId: AUTO_IDS[1], rest: '' },
-        { day: 'Wednesday', planId: AUTO_IDS[2], rest: '' },
-        { day: 'Thursday', planId: '', rest: 'Rest or easy walking.' },
-        { day: 'Friday', planId: AUTO_IDS[3], rest: '' },
-        { day: 'Saturday', planId: AUTO_IDS[4], rest: '' },
-        { day: 'Sunday', planId: '', rest: 'Rest and recover.' }
-      ],
-      updatedAt: Date.now()
+      schedule,
+      updatedAt: changed ? Date.now() : (Number(existing?.updatedAt) || Date.now())
     };
+
     try {
       localStorage.setItem(key, JSON.stringify(config));
-      localStorage.removeItem(`${PERSONALIZATION_MARK}${userId}`);
+      localStorage.setItem(`${PERSONALIZATION_MARK}${userId}`, `${PERSONALIZATION_VERSION}:${config.updatedAt}`);
     } catch {}
-    return config;
+    return { config, changed };
   }
 
   async function saveConfigCloud(userId, config) {
@@ -183,26 +217,29 @@
       if (!TARGET_USERS.has(userId)) return;
       if (typeof userProfile === 'undefined' || !userProfile) return;
 
-      const config = updateLocalConfig(userId);
-      void saveConfigCloud(userId, config);
+      const { config, changed: configChanged } = updateLocalConfig(userId);
+      if (configChanged) void saveConfigCloud(userId, config);
 
       const existing = Array.isArray(userProfile.customWorkouts) ? userProfile.customWorkouts : [];
       if (expectedPlan(existing)) {
-        try { localStorage.setItem(`${VERSION_MARK}${userId}`, '1'); } catch {}
+        try { localStorage.setItem(`${VERSION_MARK}${userId}`, '2'); } catch {}
+        try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
         return;
       }
 
       const keep = existing.filter(item => !String(item?.id || '').startsWith('custom-auto-weekly-'));
-      const next = [...keep, ...fivePlans()];
+      const generated = fivePlans();
+      const next = [...keep, ...generated];
       try { userProfile.customWorkouts = typeof sanitizeCustomPlans === 'function' ? sanitizeCustomPlans(next) : next; }
       catch { userProfile.customWorkouts = next; }
 
       try { if (typeof markProfileDirty === 'function') markProfileDirty('customWorkout'); } catch {}
       try { if (typeof saveUserProfile === 'function') saveUserProfile(); } catch {}
+      try { localStorage.setItem(`${PERSONALIZATION_MARK}${userId}`, `${PERSONALIZATION_VERSION}:${config.updatedAt}`); } catch {}
       try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
       try { if (typeof renderHome === 'function') renderHome(); } catch {}
       try { if (typeof saveCloudProfile === 'function') await saveCloudProfile(); } catch {}
-      try { localStorage.setItem(`${VERSION_MARK}${userId}`, '1'); } catch {}
+      try { localStorage.setItem(`${VERSION_MARK}${userId}`, '2'); } catch {}
     } finally {
       applying = false;
     }
@@ -216,7 +253,7 @@
     });
   }
 
-  window.LevelUpFiveDayPlan = { apply };
+  window.LevelUpFiveDayPlan = { apply, plans: fivePlans };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();
