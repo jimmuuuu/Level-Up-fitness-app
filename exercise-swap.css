@@ -1,0 +1,79 @@
+/* Exercise swap controls */
+.exercise-heading { position: relative; }
+.exercise-swap-button {
+  margin-left: auto;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #343a40;
+  border-radius: 10px;
+  color: #f5f7f8;
+  background: #15191d;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+.exercise-swap-modal {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  align-items: end;
+}
+.exercise-swap-modal.hidden { display: none !important; }
+.exercise-swap-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); }
+.exercise-swap-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 620px);
+  max-height: 82dvh;
+  margin: 0 auto;
+  overflow: auto;
+  padding: 12px 18px calc(22px + env(safe-area-inset-bottom));
+  border: 1px solid #292e33;
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: #0d1013;
+  box-shadow: 0 -24px 70px rgba(0,0,0,.45);
+}
+.exercise-swap-handle { width: 44px; height: 4px; margin: 0 auto 15px; border-radius: 999px; background: #3a4046; }
+.exercise-swap-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.exercise-swap-heading h2 { margin: 3px 0 6px; color: #f5f7f8; font-size: 24px; line-height: 1.08; }
+.exercise-swap-heading p { margin: 0; color: #9da6ad; font-size: 12px; line-height: 1.45; }
+.exercise-swap-close {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #33393f;
+  border-radius: 50%;
+  color: #fff;
+  background: #15191d;
+  font-size: 22px;
+}
+.exercise-swap-actions { margin-top: 14px; }
+.exercise-swap-avoid {
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid rgba(255,77,87,.35);
+  border-radius: 12px;
+  color: #ffd9dd;
+  background: rgba(255,77,87,.06);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+.exercise-swap-avoid.active { color: #080a0c; background: #ff4d57; border-color: #ff4d57; }
+.exercise-swap-list { display: grid; gap: 8px; margin-top: 14px; }
+.exercise-swap-option {
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid #2c3238;
+  border-radius: 13px;
+  color: #f5f7f8;
+  background: #12161a;
+  font: inherit;
+  text-align: left;
+}
+.exercise-swap-option span { display: block; font-size: 13px; font-weight: 850; }
+.exercise-swap-option small { display: block; margin-top: 4px; color: #919aa2; font-size: 10px; }
+.exercise-swap-empty { color: #919aa2; font-size: 12px; }
