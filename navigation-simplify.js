@@ -71,7 +71,8 @@
   }
 
   function loadScanFeature() { loadFeature('data-scan-feature-style', 'scan-feature.css?v=1', 'data-scan-feature', 'scan-feature.js?v=1'); }
-  function loadScanZoom() { loadFeature('data-scan-zoom-style', 'scan-zoom.css?v=3', 'data-scan-zoom', 'scan-zoom.js?v=2'); }
+  function loadScanZoom() { loadFeature('data-scan-zoom-style', 'scan-zoom.css?v=4', 'data-scan-zoom', 'scan-zoom.js?v=2'); }
+  function loadScanUploadFix() { loadScript('data-scan-upload-fix', 'scan-upload-fix.js?v=1'); }
   function loadGymPasses() { loadFeature('data-gym-passes-style', 'gym-passes.css?v=1', 'data-gym-passes', 'gym-passes.js?v=1'); }
   function loadGymSessionFixes() { loadFeature('data-gym-session-fixes-style', 'gym-session-fixes.css?v=2', 'data-gym-session-fixes', 'gym-session-fixes.js?v=1'); }
   function loadLegDayStartFix() { loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=2'); }
@@ -93,6 +94,7 @@
   function loadProgressInsights() { loadFeature('data-progress-insights-style', 'progress-insights.css?v=1', 'data-progress-insights', 'progress-insights.js?v=2'); }
   function loadTrainingQuests() { loadFeature('data-training-quests-style', 'training-quests.css?v=2', 'data-training-quests', 'training-quests.js?v=3'); }
   function loadProfileLevelAvatar() { loadFeature('data-profile-level-avatar-style', 'profile-level-avatar.css?v=2', 'data-profile-level-avatar', 'profile-level-avatar.js?v=2'); }
+  function loadProfilePhotoSaveFix() { loadScript('data-profile-photo-save-fix', 'profile-photo-save-fix.js?v=1'); }
   function loadWorkoutNotes() { loadFeature('data-workout-notes-style', 'workout-notes.css?v=2', 'data-workout-notes', 'workout-notes.js?v=3'); }
   function loadExpandedSettings() { loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=4'); }
   function loadHistoryEnrichment() { loadScript('data-history-enrichment', 'history-enrichment.js?v=3'); }
@@ -109,6 +111,7 @@
     setupProfileSettings();
     loadScanFeature();
     loadScanZoom();
+    loadScanUploadFix();
     loadGymPasses();
     loadGymSessionFixes();
     loadLegDayStartFix();
@@ -130,6 +133,7 @@
     loadProgressInsights();
     loadTrainingQuests();
     loadProfileLevelAvatar();
+    loadProfilePhotoSaveFix();
     loadWorkoutNotes();
     loadExpandedSettings();
     loadHistoryEnrichment();
