@@ -85,12 +85,13 @@
   function loadExerciseFacts() { loadFeature('data-exercise-facts-style', 'exercise-history-facts.css?v=1', 'data-exercise-facts', 'exercise-history-facts.js?v=2'); }
   function loadWorkoutCalendar() { loadFeature('data-workout-calendar-style', 'workout-calendar.css?v=2', 'data-workout-calendar', 'workout-calendar.js?v=2'); }
   function loadExerciseLibraryPage() { loadFeature('data-exercise-library-page-style', 'exercise-library-page.css?v=2', 'data-exercise-library-page', 'exercise-library-page.js?v=3'); }
-  function loadGymProfiles() { loadFeature('data-gym-profiles-style', 'gym-profiles.css?v=1', 'data-gym-profiles', 'gym-profiles.js?v=1'); }
+  function loadGymProfiles() { loadFeature('data-gym-profiles-style', 'gym-profiles.css?v=1', 'data-gym-profiles', 'gym-profiles.js?v=2'); }
+  function loadGymOnboardingIntegration() { loadScript('data-gym-onboarding-integration', 'gym-onboarding-integration.js?v=1'); }
   function loadWorkoutCheckIn() { loadFeature('data-workout-checkin-style', 'workout-checkin.css?v=1', 'data-workout-checkin', 'workout-checkin.js?v=2'); }
   function loadProgressInsights() { loadFeature('data-progress-insights-style', 'progress-insights.css?v=1', 'data-progress-insights', 'progress-insights.js?v=2'); }
   function loadTrainingQuests() { loadFeature('data-training-quests-style', 'training-quests.css?v=1', 'data-training-quests', 'training-quests.js?v=1'); }
   function loadWorkoutNotes() { loadFeature('data-workout-notes-style', 'workout-notes.css?v=1', 'data-workout-notes', 'workout-notes.js?v=2'); }
-  function loadExpandedSettings() { loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=3'); }
+  function loadExpandedSettings() { loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=4'); }
   function loadHistoryEnrichment() { loadScript('data-history-enrichment', 'history-enrichment.js?v=2'); }
   function loadCompanionQuality() { loadFeature('data-companion-quality-style', 'companion-quality.css?v=1', 'data-companion-quality', 'companion-quality.js?v=1'); }
   function loadNoEmDashes() { loadScript('data-no-em-dashes', 'no-em-dashes.js?v=2'); }
@@ -119,6 +120,7 @@
     loadWorkoutCalendar();
     loadExerciseLibraryPage();
     loadGymProfiles();
+    loadGymOnboardingIntegration();
     loadWorkoutCheckIn();
     loadProgressInsights();
     loadTrainingQuests();
