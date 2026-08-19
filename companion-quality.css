@@ -1,0 +1,30 @@
+/* Small layout safeguards shared by the companion features. */
+#setList .exercise-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+#setList .exercise-heading h3 {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+#setList .exercise-swap-button,
+#setList .exercise-facts-button {
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+
+@media (max-width: 390px) {
+  #setList .exercise-heading h3 {
+    flex-basis: 100%;
+  }
+
+  #setList .exercise-swap-button,
+  #setList .exercise-facts-button {
+    min-height: 32px;
+    padding-inline: 10px;
+  }
+}
