@@ -164,6 +164,21 @@
     ];
   }
 
+  function syncWeeklyProgramDisplay(plans) {
+    try {
+      if (typeof personalProgram === 'undefined' || !personalProgram || !Array.isArray(plans) || plans.length !== 5) return;
+      personalProgram.name = 'Weekly Training Plan';
+      personalProgram.instructions = [
+        'Use controlled repetitions and good technique on every set.',
+        'Use the listed rep range as your target and log the weight and repetitions you actually complete.',
+        'When you reach the top of the rep range comfortably with good form, increase the weight by a small amount next time.',
+        'Use Thursday and Sunday as recovery days.'
+      ];
+      personalProgram.plans = plans.map(item => ({ ...item, personal: true }));
+      personalProgram.schedule = desiredSchedule();
+    } catch {}
+  }
+
   function sameArray(left, right) {
     return JSON.stringify(left || []) === JSON.stringify(right || []);
   }
@@ -222,8 +237,11 @@
 
       const existing = Array.isArray(userProfile.customWorkouts) ? userProfile.customWorkouts : [];
       if (expectedPlan(existing)) {
+        const currentPlans = AUTO_IDS.map(id => existing.find(item => String(item?.id || '') === id)).filter(Boolean);
+        syncWeeklyProgramDisplay(currentPlans);
         try { localStorage.setItem(`${VERSION_MARK}${userId}`, '2'); } catch {}
         try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
+        try { if (typeof renderHome === 'function') renderHome(); } catch {}
         return;
       }
 
@@ -232,6 +250,9 @@
       const next = [...keep, ...generated];
       try { userProfile.customWorkouts = typeof sanitizeCustomPlans === 'function' ? sanitizeCustomPlans(next) : next; }
       catch { userProfile.customWorkouts = next; }
+
+      const currentPlans = AUTO_IDS.map(id => userProfile.customWorkouts.find(item => String(item?.id || '') === id)).filter(Boolean);
+      syncWeeklyProgramDisplay(currentPlans.length === 5 ? currentPlans : generated);
 
       try { if (typeof markProfileDirty === 'function') markProfileDirty('customWorkout'); } catch {}
       try { if (typeof saveUserProfile === 'function') saveUserProfile(); } catch {}
