@@ -1,68 +1,74 @@
-.profile-level-frame {
-  --level-progress: 0deg;
-  position: relative;
-  display: grid;
-  width: 82px;
-  height: 82px;
-  place-items: center;
-  padding: 4px;
-  border-radius: 24px;
-  background: conic-gradient(#ff4b59 var(--level-progress), #2d3238 var(--level-progress));
-  box-shadow: 0 0 0 1px rgba(255,255,255,.04);
+.profile-training-level {
+  margin: -8px 0 28px;
 }
 
-.profile-level-frame .profile-photo {
-  width: 74px;
-  height: 74px;
-  border: 3px solid #111;
-  border-radius: 20px;
+.profile-level-card {
+  padding: 17px;
+  border: 1px solid #2d3238;
+  border-radius: 18px;
+  background: #11161a;
 }
 
-.profile-level-badge {
-  position: absolute;
-  right: -7px;
-  bottom: -7px;
-  display: grid;
-  min-width: 38px;
-  height: 26px;
-  place-items: center;
-  padding: 0 8px;
-  border: 2px solid #111;
+.profile-level-card-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-level-card-top h2 {
+  margin-top: 3px;
+  font-size: 25px;
+}
+
+.profile-level-card-top > strong {
+  flex: 0 0 auto;
+  padding-bottom: 2px;
+  color: #f4f6f8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.profile-level-track {
+  height: 9px;
+  margin-top: 15px;
+  overflow: hidden;
   border-radius: 999px;
+  background: #292f35;
+}
+
+.profile-level-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
   background: #ff4b59;
-  color: #080808;
+  transition: width .25s ease;
+}
+
+.profile-level-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+  color: #9fa8b2;
   font-size: 11px;
-  font-weight: 950;
-  line-height: 1;
-  letter-spacing: -.02em;
-  box-shadow: 0 5px 14px rgba(0,0,0,.42);
+  font-weight: 700;
 }
 
-.profile-level-xp {
-  width: 86px;
-  margin-top: 2px;
-  color: #aab2bd;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1.25;
-  text-align: center;
-  white-space: nowrap;
+.profile-level-meta b {
+  color: #edf1f4;
+  font-weight: 900;
 }
 
-.profile-level-xp strong {
-  display: inline;
-  color: #f6f7f8;
-  font-size: inherit;
-}
-
-@media (max-width: 380px) {
-  .profile-level-frame {
-    width: 78px;
-    height: 78px;
+@media (max-width: 390px) {
+  .profile-level-card-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
   }
 
-  .profile-level-frame .profile-photo {
-    width: 70px;
-    height: 70px;
+  .profile-level-meta {
+    flex-direction: column;
+    gap: 3px;
   }
 }
