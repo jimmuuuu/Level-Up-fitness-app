@@ -23,7 +23,7 @@
     const gyms = Array.isArray(data?.gyms) ? data.gyms.slice(0, 12).map(gym => ({
       id: String(gym?.id || `gym-${Date.now()}-${Math.random().toString(36).slice(2,7)}`),
       name: String(gym?.name || 'Gym').trim().slice(0, 60),
-      equipment: Array.isArray(gym?.equipment) ? gym.equipment.filter(item => EQUIPMENT.includes(item)) : [],
+      equipment: Array.isArray(gym?.equipment) ? [...new Set(gym.equipment.filter(item => EQUIPMENT.includes(item)))] : [],
       note: String(gym?.note || '').slice(0, 160)
     })) : [];
     const preferredId = gyms.some(gym => gym.id === data?.preferredId) ? String(data.preferredId) : (gyms[0]?.id || '');
@@ -78,31 +78,28 @@
         if (remote.updatedAt > local.updatedAt) writeLocal(remote, user.id);
         else if (local.updatedAt > remote.updatedAt) void saveCloud(local);
       } else if (local.updatedAt) void saveCloud(local);
-      render();
+      notify();
     } catch {}
   }
 
   function current() { return readLocal(); }
 
+  function notify(state = current()) {
+    removeProfileSurfaces();
+    window.dispatchEvent(new CustomEvent('levelup:gym-profiles-changed', { detail: state }));
+    try { window.LevelUpExtraSettings?.refresh?.(); } catch {}
+  }
+
   function setState(next) {
     const clean = writeLocal({ ...next, updatedAt: Date.now() });
-    render();
     void saveCloud(clean);
-    window.dispatchEvent(new CustomEvent('levelup:gym-profiles-changed', { detail: clean }));
+    notify(clean);
     return clean;
   }
 
-  function ensureSection() {
-    const profile = document.getElementById('profile');
-    if (!profile) return null;
-    let section = document.getElementById('gymProfilesSection');
-    if (section) return section;
-    section = document.createElement('section');
-    section.id = 'gymProfilesSection';
-    section.className = 'profile-section gym-profiles-section';
-    const settingsPanel = document.getElementById('profileSettingsPanel');
-    if (settingsPanel) settingsPanel.insertAdjacentElement('beforebegin', section); else profile.appendChild(section);
-    return section;
+  function removeProfileSurfaces() {
+    document.getElementById('gymProfilesSection')?.remove();
+    document.querySelector('#profile .home-gym-section')?.remove();
   }
 
   function ensureModal() {
@@ -117,30 +114,29 @@
     return modal;
   }
 
-  function render() {
-    const section = ensureSection();
-    if (!section) return;
+  function saveGym({ id = '', name = '', equipment = [], note = '', preferred = true } = {}) {
+    const cleanName = String(name || '').trim().slice(0, 60);
+    if (!cleanName) return null;
     const state = current();
-    const preferred = state.gyms.find(gym => gym.id === state.preferredId) || null;
-    section.innerHTML = `
-      <div class="section-heading compact-heading"><div><div class="over">GYMS</div><h2>Gym profiles</h2></div><button id="addGymProfile" class="text-button" type="button">Add gym</button></div>
-      <p class="gym-profiles-copy">Save the equipment available at each gym. Your preferred gym can be used by workout and swap features.</p>
-      ${preferred ? `<div class="gym-preferred"><span>Preferred gym</span><strong>${esc(preferred.name)}</strong><small>${esc(preferred.equipment.join(' · ') || 'Equipment not added yet')}</small></div>` : ''}
-      <div class="gym-profile-list">
-        ${state.gyms.map(gym => `<button type="button" class="gym-profile-card${gym.id === state.preferredId ? ' preferred' : ''}" data-gym-id="${esc(gym.id)}"><div><strong>${esc(gym.name)}</strong><span>${esc(gym.equipment.join(', ') || 'Add equipment')}</span></div><small>${gym.id === state.preferredId ? 'Preferred' : 'Edit'}</small></button>`).join('')}
-        ${!state.gyms.length ? '<div class="gym-profile-empty">No gyms saved yet.</div>' : ''}
-      </div>`;
-    section.querySelector('#addGymProfile').onclick = () => openEditor();
-    section.querySelectorAll('[data-gym-id]').forEach(button => button.onclick = () => openEditor(button.dataset.gymId));
+    const existing = state.gyms.find(gym => gym.id === id) || state.gyms.find(gym => gym.name.toLowerCase() === cleanName.toLowerCase()) || null;
+    const gym = {
+      id: existing?.id || id || `gym-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+      name: cleanName,
+      equipment: [...new Set((Array.isArray(equipment) ? equipment : []).filter(item => EQUIPMENT.includes(item)))],
+      note: String(note || '').trim().slice(0, 160)
+    };
+    const gyms = existing ? state.gyms.map(item => item.id === existing.id ? gym : item) : [...state.gyms, gym];
+    return setState({ ...state, gyms, preferredId: preferred ? gym.id : (state.preferredId || gym.id) });
   }
 
   function openEditor(id = '') {
     const state = current();
-    const existing = state.gyms.find(gym => gym.id === id) || null;
+    const existing = state.gyms.find(gym => gym.id === id) || (!id ? state.gyms.find(gym => gym.id === state.preferredId) : null) || null;
     const modal = ensureModal();
     const content = modal.querySelector('#gymProfileModalContent');
     content.innerHTML = `
-      <div class="gym-profile-heading"><div><div class="over">GYM PROFILE</div><h2>${existing ? 'Edit gym' : 'Add gym'}</h2></div><button type="button" data-gym-close aria-label="Close">×</button></div>
+      <div class="gym-profile-heading"><div><div class="over">GYM & EQUIPMENT</div><h2>${existing ? 'Edit your gym' : 'Add a gym'}</h2></div><button type="button" data-gym-close aria-label="Close">×</button></div>
+      <p class="gym-profiles-copy">Level Up uses this to keep workout and exercise-swap suggestions matched to equipment you actually have.</p>
       <label class="gym-profile-field"><span>Gym name</span><input id="gymProfileName" maxlength="60" value="${esc(existing?.name || '')}" placeholder="Example: Planet Fitness"></label>
       <div class="gym-profile-equipment"><span>Equipment available</span><div>${EQUIPMENT.map(item => `<label><input type="checkbox" value="${esc(item)}" ${existing?.equipment?.includes(item) ? 'checked' : ''}><span>${esc(item)}</span></label>`).join('')}</div></div>
       <label class="gym-profile-field"><span>Note</span><input id="gymProfileNote" maxlength="160" value="${esc(existing?.note || '')}" placeholder="Optional"></label>
@@ -148,19 +144,20 @@
       <div class="gym-profile-actions"><button id="saveGymProfile" class="primary" type="button">Save gym</button>${existing ? '<button id="deleteGymProfile" type="button">Delete</button>' : ''}</div>
       <p id="gymProfileStatus" class="gym-profile-status"></p>`;
     modal.classList.remove('hidden');
+    content.querySelector('[data-gym-close]')?.addEventListener('click', () => modal.classList.add('hidden'));
     content.querySelector('#saveGymProfile').onclick = () => {
       const name = String(content.querySelector('#gymProfileName')?.value || '').trim();
       const status = content.querySelector('#gymProfileStatus');
       if (!name) { status.textContent = 'Enter a gym name.'; return; }
       const equipment = [...content.querySelectorAll('.gym-profile-equipment input:checked')].map(input => input.value);
+      if (!equipment.length) { status.textContent = 'Choose at least one type of equipment.'; return; }
       const note = String(content.querySelector('#gymProfileNote')?.value || '').trim();
       const preferred = Boolean(content.querySelector('#gymProfilePreferred')?.checked);
-      const gym = { id: existing?.id || `gym-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, name, equipment, note };
-      const gyms = existing ? state.gyms.map(item => item.id === existing.id ? gym : item) : [...state.gyms, gym];
-      setState({ ...state, gyms, preferredId: preferred ? gym.id : (state.preferredId || gym.id) });
+      saveGym({ id: existing?.id || '', name, equipment, note, preferred });
       modal.classList.add('hidden');
     };
     content.querySelector('#deleteGymProfile')?.addEventListener('click', () => {
+      if (!existing) return;
       const gyms = state.gyms.filter(gym => gym.id !== existing.id);
       setState({ ...state, gyms, preferredId: state.preferredId === existing.id ? (gyms[0]?.id || '') : state.preferredId });
       modal.classList.add('hidden');
@@ -174,11 +171,23 @@
 
   function start() {
     ensureModal();
-    render();
+    removeProfileSurfaces();
     void loadCloud();
-    window.addEventListener('pageshow', () => { render(); void loadCloud(); });
+    window.addEventListener('pageshow', () => { removeProfileSurfaces(); void loadCloud(); });
+    const profile = document.getElementById('profile');
+    if (profile) {
+      new MutationObserver(removeProfileSurfaces).observe(profile, { childList: true });
+    }
   }
 
-  window.LevelUpGymProfiles = { get: current, preferred: preferredGym, openEditor };
+  window.LevelUpGymProfiles = {
+    get: current,
+    preferred: preferredGym,
+    saveGym,
+    openEditor,
+    refresh: () => { removeProfileSurfaces(); void loadCloud(); },
+    equipmentOptions: () => [...EQUIPMENT]
+  };
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
 })();
