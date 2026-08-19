@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-companion-suite-v12';
+const CACHE = 'level-up-fitness-20260819-companion-suite-v13';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
