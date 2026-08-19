@@ -1,0 +1,19 @@
+/* Expanded settings */
+.settings-expanded-card { display: grid; gap: 4px; }
+.settings-expanded-row { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; min-height: 58px; padding: 10px 0; border-top: 1px solid #252a2f; }
+.settings-expanded-row:first-of-type { border-top: 0; }
+.settings-expanded-row strong { display: block; color: #f5f7f8; font-size: 12px; }
+.settings-expanded-row small { display: block; margin-top: 3px; max-width: 310px; color: #8d969e; font-size: 9px; line-height: 1.35; }
+.settings-expanded-row input { position: absolute; opacity: 0; pointer-events: none; }
+.settings-toggle { position: relative; width: 44px; height: 26px; border-radius: 999px; background: #30363c; transition: .18s ease; }
+.settings-toggle::after { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; content: ''; transition: .18s ease; }
+.settings-expanded-row input:checked + .settings-toggle { background: #ff4d57; }
+.settings-expanded-row input:checked + .settings-toggle::after { transform: translateX(18px); }
+.settings-expanded-select { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; min-height: 54px; padding-top: 10px; border-top: 1px solid #252a2f; color: #f5f7f8; font-size: 12px; font-weight: 800; }
+.settings-expanded-select select { min-height: 38px; padding: 0 30px 0 10px; border: 1px solid #343a40; border-radius: 11px; color: #f5f7f8; background: #15191d; font: inherit; font-size: 10px; }
+.settings-expanded-link { width: 100%; min-height: 50px; padding: 9px 0; border: 0; border-top: 1px solid #252a2f; color: #fff; background: transparent; font: inherit; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; }
+.settings-expanded-link:first-of-type { border-top: 0; }
+.settings-expanded-link span { color: #a5adb4; font-size: 11px; }
+.settings-expanded-link strong { color: #f5f7f8; font-size: 11px; text-align: right; }
+html[data-level-up-quests="off"] #trainingQuestsSection { display: none !important; }
+html[data-level-up-check-in="off"] #workoutCheckIn { display: none !important; }
