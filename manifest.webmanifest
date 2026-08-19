@@ -1,9 +1,10 @@
 {
+  "id": "/Level-Up-fitness-app/",
   "name": "Level Up Fitness",
   "short_name": "Level Up",
   "description": "Track workouts, personal records, progress, and muscle-group ranks.",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/Level-Up-fitness-app/",
+  "scope": "/Level-Up-fitness-app/",
   "display": "standalone",
   "background_color": "#080a0c",
   "theme_color": "#080a0c",
