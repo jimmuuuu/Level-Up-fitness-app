@@ -109,6 +109,19 @@
     );
   }
 
+  function loadProfileSettingsPage() {
+    loadFeature(
+      'data-profile-settings-page-style',
+      'profile-settings-page.css?v=1',
+      'data-profile-settings-page',
+      'profile-settings-page.js?v=1'
+    );
+  }
+
+  function loadRestTimerSettingsBridge() {
+    loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=1');
+  }
+
   function disableWeightRecommendations() {
     loadFeature(
       'data-disable-weight-recommendations-style',
@@ -134,6 +147,8 @@
     loadFiveDayPlan();
     loadRestTimerV3();
     loadPersistentPause();
+    loadProfileSettingsPage();
+    loadRestTimerSettingsBridge();
     disableWeightRecommendations();
     redirectHomeToWorkout();
 
