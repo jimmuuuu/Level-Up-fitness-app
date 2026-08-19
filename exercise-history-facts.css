@@ -1,0 +1,40 @@
+/* Factual history: logged sets only. */
+.exercise-facts-button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #343a40;
+  border-radius: 10px;
+  color: #aeb6bd;
+  background: #111417;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+.exercise-facts-modal { position: fixed; z-index: 9998; inset: 0; display: grid; align-items: end; }
+.exercise-facts-modal.hidden { display: none !important; }
+.exercise-facts-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.7); }
+.exercise-facts-sheet {
+  position: relative; z-index: 1; width: min(100%, 620px); max-height: 80dvh; margin: 0 auto; overflow: auto;
+  padding: 12px 18px calc(22px + env(safe-area-inset-bottom)); border: 1px solid #292e33; border-bottom: 0;
+  border-radius: 28px 28px 0 0; background: #0d1013; box-shadow: 0 -24px 70px rgba(0,0,0,.45);
+}
+.exercise-facts-handle { width: 44px; height: 4px; margin: 0 auto 15px; border-radius: 999px; background: #3a4046; }
+.exercise-facts-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.exercise-facts-heading h2 { margin: 3px 0 6px; color: #f5f7f8; font-size: 24px; }
+.exercise-facts-heading p { margin: 0; color: #929ca4; font-size: 12px; line-height: 1.45; }
+.exercise-facts-close { width: 42px; height: 42px; border: 1px solid #343a40; border-radius: 50%; color: #fff; background: #15191d; font-size: 22px; }
+.exercise-facts-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+.exercise-facts-summary > div { padding: 13px; border: 1px solid #2b3137; border-radius: 14px; background: #12161a; }
+.exercise-facts-summary span, .exercise-facts-card-title span { display: block; color: #8f989f; font-size: 9px; font-weight: 850; text-transform: uppercase; letter-spacing: .7px; }
+.exercise-facts-summary strong { display: block; margin-top: 4px; color: #f6f7f8; font-size: 15px; }
+.exercise-facts-card { margin-top: 12px; padding: 14px; border: 1px solid #2b3137; border-radius: 15px; background: #111417; }
+.exercise-facts-card-title { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.exercise-facts-card-title strong { display: block; margin-top: 3px; color: #f5f7f8; font-size: 14px; }
+.exercise-facts-card-title small { color: #929ca4; font-size: 10px; }
+.exercise-facts-sets { display: grid; gap: 7px; margin-top: 12px; }
+.exercise-facts-sets > div { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px solid #252a2f; }
+.exercise-facts-sets span { color: #8f989f; font-size: 11px; }
+.exercise-facts-sets strong { color: #f5f7f8; font-size: 11px; }
+.exercise-facts-empty { margin-top: 16px; padding: 16px; border: 1px solid #2b3137; border-radius: 14px; background: #111417; }
+.exercise-facts-empty strong { color: #f5f7f8; }
+.exercise-facts-empty p { margin: 6px 0 0; color: #929ca4; font-size: 12px; line-height: 1.45; }
