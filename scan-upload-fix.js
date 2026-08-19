@@ -149,16 +149,55 @@
   function prepareScanFilePicker() {
     const input = document.getElementById('scanFile');
     if (!input) return;
-
-    // On iPhone, capture="environment" forces this control straight into the
-    // camera. Scan already has its own live camera button, so Upload should
-    // remain a normal file/photo picker instead.
     input.removeAttribute('capture');
     input.setAttribute('accept', 'image/*');
   }
 
+  function updateScanCopy() {
+    const scan = document.getElementById('scan');
+    if (!scan) return;
+
+    const strong = scan.querySelector('.scan-copy-card strong');
+    const detail = scan.querySelector('.scan-copy-card span');
+    if (strong) strong.textContent = 'Scan gym equipment';
+    if (detail) detail.textContent = 'Point your camera at any machine, dumbbell, barbell, bench, cable attachment, cardio machine, or other workout tool. Level Up will identify it and explain how it is commonly used.';
+
+    const loadingTitle = scan.querySelector('.scan-loading-card strong');
+    const loadingText = scan.querySelector('.scan-loading-card p');
+    if (loadingTitle) loadingTitle.textContent = 'Identifying equipment';
+    if (loadingText) loadingText.textContent = 'Analyzing what the equipment is and how it is commonly used.';
+
+    const status = document.getElementById('scanStatus');
+    if (status && /Center the machine/i.test(status.textContent || '')) {
+      status.textContent = 'Center the equipment in view, then tap the red scan button.';
+    }
+  }
+
+  function updateResultCopy() {
+    const sheet = document.getElementById('scanResultSheet');
+    if (!sheet || sheet.classList.contains('hidden')) return;
+
+    sheet.querySelectorAll('.over').forEach(node => {
+      if ((node.textContent || '').trim() === 'MACHINE IDENTIFIED') node.textContent = 'EQUIPMENT IDENTIFIED';
+    });
+
+    sheet.querySelectorAll('.scan-muscle-chip').forEach(node => {
+      if ((node.textContent || '').trim() === 'Muscles need confirmation') {
+        node.textContent = 'Muscles vary by exercise or need confirmation';
+      }
+    });
+  }
+
   function resultSheet() {
     return document.getElementById('scanResultSheet');
+  }
+
+  function attachResultObserver() {
+    const sheet = resultSheet();
+    if (!sheet || sheet.dataset.scanEquipmentObserver === 'true') return;
+    sheet.dataset.scanEquipmentObserver = 'true';
+    const observer = new MutationObserver(updateResultCopy);
+    observer.observe(sheet, { childList: true });
   }
 
   function resetSheet(sheet) {
@@ -180,6 +219,7 @@
       if (retake) retake.click();
       else sheet.classList.add('hidden');
       resetSheet(sheet);
+      updateScanCopy();
     }, 170);
   }
 
@@ -239,10 +279,20 @@
     window.setTimeout(() => resetSheet(current.sheet), 190);
   }
 
-  document.addEventListener('click', event => {
-    if (!event.target?.closest?.('#scanUpload')) return;
-    // Run before scan-feature.js handles the same click and calls input.click().
+  function refreshScanUi() {
+    installStabilityStyles();
     prepareScanFilePicker();
+    updateScanCopy();
+    updateResultCopy();
+    attachResultObserver();
+  }
+
+  document.addEventListener('click', event => {
+    if (event.target?.closest?.('#scanUpload')) prepareScanFilePicker();
+    if (event.target?.closest?.('[data-page="scan"], #scanCapture, #scanUpload, [data-scan-retake]')) {
+      setTimeout(refreshScanUi, 0);
+      setTimeout(refreshScanUi, 250);
+    }
   }, true);
 
   document.addEventListener('pointerdown', beginSheetDrag, true);
@@ -251,21 +301,19 @@
   document.addEventListener('pointercancel', event => endSheetDrag(event, true), true);
 
   window.addEventListener('pageshow', () => {
-    installStabilityStyles();
-    prepareScanFilePicker();
+    refreshScanUi();
     resetSheet(resultSheet());
   });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-    installStabilityStyles();
-    prepareScanFilePicker();
+    refreshScanUi();
   });
 
-  installStabilityStyles();
+  refreshScanUi();
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', prepareScanFilePicker, { once: true });
+    document.addEventListener('DOMContentLoaded', refreshScanUi, { once: true });
   } else {
-    prepareScanFilePicker();
+    refreshScanUi();
   }
 })();
