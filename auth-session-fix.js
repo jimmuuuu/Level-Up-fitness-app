@@ -8,6 +8,7 @@
 
   let boundClient = null;
   let documentClickBound = false;
+  let recoveryPromise = null;
 
   function redirectUrl() {
     if (location.hostname === 'jimmuuuu.github.io') return GITHUB_PAGES_APP_URL;
@@ -54,10 +55,7 @@
     let owner = '';
     try { owner = localStorage.getItem(HISTORY_OWNER_KEY) || ''; } catch {}
 
-    if (!userId) {
-      clearVisibleHistory();
-      return;
-    }
+    if (!userId) return;
 
     const expectedOwner = `cloud:${userId}`;
     if (owner && owner !== expectedOwner && owner.startsWith('cloud:')) {
@@ -70,6 +68,53 @@
     }
 
     try { localStorage.setItem(HISTORY_OWNER_KEY, expectedOwner); } catch {}
+  }
+
+  function hideAuthGate() {
+    const gate = document.getElementById('authGate');
+    if (gate) gate.classList.add('hidden');
+  }
+
+  async function recoverSignedInSession(session) {
+    if (!session?.user) return false;
+    if (recoveryPromise) return recoveryPromise;
+
+    recoveryPromise = (async () => {
+      scopeVisibleHistoryToSession(session);
+      hideAuthGate();
+
+      try {
+        if (typeof window.handleCloudSession === 'function') {
+          await window.handleCloudSession(session);
+        } else if (typeof handleCloudSession === 'function') {
+          await handleCloudSession(session);
+        }
+      } catch {
+        // A valid Supabase session should remain signed in even if cloud profile
+        // hydration temporarily fails. The next auth event or resume will retry.
+      }
+
+      hideAuthGate();
+      try {
+        if (typeof initializeProfile === 'function') initializeProfile();
+      } catch {}
+      return true;
+    })().finally(() => {
+      recoveryPromise = null;
+    });
+
+    return recoveryPromise;
+  }
+
+  async function verifySessionOnResume() {
+    const client = getClient();
+    if (!client) return;
+    try {
+      const { data } = await client.auth.getSession();
+      if (data?.session?.user) await recoverSignedInSession(data.session);
+    } catch {
+      // Do not sign the person out just because a resume-time session check failed.
+    }
   }
 
   async function startGoogleSignIn(event) {
@@ -112,10 +157,6 @@
   }
 
   function installGlobalOverride() {
-    // app.js still contains an older sign-in function that redirects to the
-    // github.io domain root. Replace that global entry point so every Google
-    // sign-in path, including the dynamically-created "Switch to Google" button,
-    // uses the repository Pages URL instead.
     try { window.signInWithGoogle = startGoogleSignIn; } catch {}
     window.LevelUpGoogleRedirectUrl = redirectUrl;
   }
@@ -124,8 +165,6 @@
     if (documentClickBound) return;
     documentClickBound = true;
 
-    // Capture on document so this also catches buttons created later by app.js.
-    // Stopping propagation here prevents the legacy onclick from firing after us.
     document.addEventListener('click', event => {
       const target = event.target.closest?.('#googleSignIn, #switchToGoogle');
       if (!target) return;
@@ -139,19 +178,32 @@
     boundClient = client;
 
     client.auth.getSession().then(({ data }) => {
-      scopeVisibleHistoryToSession(data?.session || null);
-      if (data?.session) {
-        const gate = document.getElementById('authGate');
-        if (gate) gate.classList.add('hidden');
-      }
+      if (data?.session?.user) void recoverSignedInSession(data.session);
     }).catch(() => {});
 
     client.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        clearVisibleHistory();
+      if (session?.user) {
+        // app.js previously treated TOKEN_REFRESHED and other valid-session events
+        // like sign-outs. Rehydrate immediately so a token refresh can never kick
+        // the user back to the login screen.
+        void recoverSignedInSession(session);
         return;
       }
-      if (session?.user) scopeVisibleHistoryToSession(session);
+
+      if (event !== 'SIGNED_OUT') return;
+
+      // Confirm the session is truly gone before clearing account-scoped history.
+      // This protects against transient auth events during iPhone app resume.
+      window.setTimeout(async () => {
+        try {
+          const { data } = await client.auth.getSession();
+          if (data?.session?.user) {
+            await recoverSignedInSession(data.session);
+            return;
+          }
+        } catch {}
+        clearVisibleHistory();
+      }, 250);
     });
   }
 
@@ -159,10 +211,15 @@
     installGlobalOverride();
     bindGoogleSignIn();
     bindSessionIsolation();
+    void verifySessionOnResume();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
   window.addEventListener('pageshow', start);
+  window.addEventListener('focus', () => { void verifySessionOnResume(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void verifySessionOnResume();
+  });
   window.addEventListener('load', () => setTimeout(start, 0), { once: true });
 })();
