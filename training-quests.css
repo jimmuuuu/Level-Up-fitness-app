@@ -1,4 +1,4 @@
-/* Training XP and quests */
+/* Training quests */
 .training-quests-section { display: grid; gap: 10px; margin: 10px 0 18px; }
 .training-xp-card, .training-quests-card { padding: 14px; border: 1px solid #2c3238; border-radius: 16px; background: #111417; }
 .training-xp-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
@@ -7,10 +7,11 @@
 .training-xp-track { height: 8px; margin-top: 10px; overflow: hidden; border-radius: 999px; background: #272d32; }
 .training-xp-track span { display: block; height: 100%; border-radius: inherit; background: #ff4d57; }
 .training-xp-card p { margin: 8px 0 0; color: #89939b; font-size: 9px; line-height: 1.4; }
-.training-quests-heading h3 { margin: 3px 0 10px; color: #fff; font-size: 15px; }
-.training-quest { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 0; }
-.training-quest > span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid #394047; border-radius: 50%; color: #090b0d; background: transparent; font-size: 12px; font-weight: 900; }
+.training-quests-heading h3 { margin: 3px 0 10px; color: #fff; font-size: 16px; }
+.training-quest { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 9px 0; }
+.training-quest > span { display: grid; place-items: center; width: 25px; height: 25px; flex: 0 0 25px; border: 1px solid #394047; border-radius: 50%; color: #090b0d; background: transparent; font-size: 12px; font-weight: 900; }
 .training-quest.done > span { border-color: #ff4d57; background: #ff4d57; }
-.training-quest strong { display: block; color: #f5f7f8; font-size: 11px; }
-.training-quest small { display: block; margin-top: 2px; color: #89939b; font-size: 9px; }
+.training-quest strong { display: block; color: #f5f7f8; font-size: 12px; }
+.training-quest small { display: block; margin-top: 2px; color: #89939b; font-size: 10px; line-height: 1.35; }
 .training-quest-divider { height: 1px; margin: 4px 0; background: #272d32; }
+.training-quests-rest { margin: 4px 0 1px; color: #929ba3; font-size: 11px; line-height: 1.5; }
