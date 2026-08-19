@@ -29,6 +29,8 @@
   }
 
   function minutes(session) {
+    const explicit = Number(session?.durationMinutes);
+    if (Number.isFinite(explicit) && explicit > 0) return Math.round(explicit);
     const seconds = Number(session?.duration) || 0;
     if (seconds > 0) return Math.round(seconds / 60);
     const started = Number(session?.startedAt) || Date.parse(session?.started_at || '') || 0;
@@ -43,19 +45,22 @@
     const week = all.filter(session => stamp(session) >= weekStart);
     const month = all.filter(session => stamp(session) >= monthStart);
     const logs = all.flatMap(session => session?.logs || []);
+    const monthLogs = month.flatMap(session => session?.logs || []);
     const validLogs = logs.filter(log => Number(log?.reps) > 0);
     const muscles = new Map();
-    validLogs.forEach(log => {
+    monthLogs.filter(log => Number(log?.reps) > 0).forEach(log => {
       const targets = Array.isArray(log?.muscleTargets) ? log.muscleTargets : [];
       targets.forEach(target => muscles.set(String(target), (muscles.get(String(target)) || 0) + 1));
     });
     const topMuscles = [...muscles.entries()].sort((a,b) => b[1]-a[1]).slice(0,3);
+    const checkIns = all.map(session => session?.checkIn?.value).filter(Boolean);
     return {
       weekWorkouts: week.length,
       monthWorkouts: month.length,
       totalSets: validLogs.length,
       totalMinutes: all.reduce((sum, session) => sum + minutes(session), 0),
-      topMuscles
+      topMuscles,
+      checkIns: checkIns.length
     };
   }
 
@@ -86,14 +91,15 @@
         <div><span>Training time</span><strong>${Math.floor(data.totalMinutes / 60)}h ${data.totalMinutes % 60}m</strong><small>all time</small></div>
       </div>
       <div class="progress-muscle-insights">
-        <div><span>Most trained recently</span><strong>${data.topMuscles.length ? data.topMuscles.map(([name]) => name).join(' · ') : 'No muscle data yet'}</strong></div>
-        <p>These stats only summarize workouts and sets you logged. They do not compare your body or performance with other people.</p>
+        <div><span>Most trained this month</span><strong>${data.topMuscles.length ? data.topMuscles.map(([name]) => name).join(' · ') : 'No muscle data yet'}</strong></div>
+        <p>${data.checkIns ? `${data.checkIns} workout check-in${data.checkIns === 1 ? '' : 's'} logged. ` : ''}These stats only summarize workouts and sets you logged. They do not compare your body or performance with other people.</p>
       </div>`;
   }
 
   function start() {
     render();
     window.addEventListener('pageshow', render);
+    window.addEventListener('levelup:history-enriched', render);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
     setInterval(() => {
       const progress = document.getElementById('progress');
