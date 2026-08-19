@@ -1,7 +1,6 @@
 (() => {
   const FALLBACK_SECONDS = 90;
   let interval = null;
-  let lastSaveTrigger = 0;
   let timerObserver = null;
 
   function getDefaultSeconds() {
@@ -10,11 +9,6 @@
       if (Number.isFinite(value)) return Math.max(30, Math.min(600, Math.round(value)));
     } catch {}
     return FALLBACK_SECONDS;
-  }
-
-  function autoStartEnabled() {
-    try { return window.LevelUpExtraSettings?.get?.().autoStartRest !== false; }
-    catch { return true; }
   }
 
   function format(seconds) {
@@ -50,48 +44,12 @@
     timerObserver.observe(card, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
   }
 
-  function installCoreDefaultOverride() {
-    try {
-      if (typeof startRestTimer !== 'function') return;
-      if (startRestTimer.__levelUpSettingsDefault) return;
-      const replacement = function(seconds) {
-        if (!autoStartEnabled()) return;
-        const requested = Number(seconds);
-        const useDefault = !Number.isFinite(requested) || requested === FALLBACK_SECONDS;
-        const duration = useDefault ? getDefaultSeconds() : requested;
-        try { window.LevelUpRestTimerV3?.start?.(duration); } catch {}
-      };
-      replacement.__restTimerV3 = true;
-      replacement.__levelUpSettingsDefault = true;
-      startRestTimer = replacement;
-    } catch {}
-  }
-
-  function bindSaveFallback() {
-    if (document.body.dataset.restTimerSettingsBridgeBound === 'true') return;
-    document.body.dataset.restTimerSettingsBridgeBound = 'true';
-    document.addEventListener('click', event => {
-      const save = event.target.closest?.('#setList [data-log]');
-      if (!save || save.classList.contains('done') || !autoStartEnabled()) return;
-      const clickedAt = Date.now();
-      lastSaveTrigger = clickedAt;
-      window.setTimeout(() => {
-        if (lastSaveTrigger !== clickedAt || !save.classList.contains('done') || !autoStartEnabled()) return;
-        const seconds = getDefaultSeconds();
-        if (seconds === FALLBACK_SECONDS) return;
-        try { window.LevelUpRestTimerV3?.start?.(seconds); } catch {}
-      }, 260);
-    }, true);
-  }
-
   function refresh() {
-    installCoreDefaultOverride();
     observeTimerUi();
     applyDefaultToUi();
   }
 
   function start() {
-    bindSaveFallback();
     refresh();
     window.addEventListener('levelup:settings-changed', refresh);
     window.addEventListener('levelup:extra-settings-changed', refresh);
@@ -100,7 +58,7 @@
       if (document.visibilityState === 'visible') refresh();
     });
     if (interval) clearInterval(interval);
-    interval = setInterval(refresh, 1200);
+    interval = setInterval(refresh, 1500);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
