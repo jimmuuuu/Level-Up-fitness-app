@@ -80,7 +80,7 @@
   function loadRestTimerV3() { loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=6'); }
   function loadPersistentPause() { loadFeature('data-rest-timer-pause-visible-style', 'rest-timer-pause-visible.css?v=1', 'data-rest-timer-pause-visible', 'rest-timer-pause-visible.js?v=1'); }
   function loadActiveWorkoutCompanion() { loadFeature('data-active-workout-companion-style', 'active-workout-companion.css?v=1', 'data-active-workout-companion', 'active-workout-companion.js?v=1'); }
-  function loadRestAlertGuidance() { loadScript('data-rest-alert-guidance', 'rest-alert-guidance.js?v=1'); }
+  function loadRestAlertGuidance() { loadScript('data-rest-alert-guidance', 'rest-alert-guidance.js?v=2'); }
   function loadProfileSettingsPage() { loadFeature('data-profile-settings-page-style', 'profile-settings-page.css?v=1', 'data-profile-settings-page', 'profile-settings-page.js?v=1'); }
   function loadRestTimerSettingsBridge() { loadScript('data-rest-timer-settings-bridge', 'rest-timer-settings-bridge.js?v=5'); }
   function loadExerciseSwap() { loadFeature('data-exercise-swap-style', 'exercise-swap.css?v=2', 'data-exercise-swap', 'exercise-swap.js?v=3'); }
