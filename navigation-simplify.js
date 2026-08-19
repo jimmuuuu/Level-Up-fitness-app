@@ -76,7 +76,7 @@
   function loadGymSessionFixes() { loadFeature('data-gym-session-fixes-style', 'gym-session-fixes.css?v=2', 'data-gym-session-fixes', 'gym-session-fixes.js?v=1'); }
   function loadLegDayStartFix() { loadScript('data-leg-day-start-fix', 'leg-day-start-fix.js?v=2'); }
   function loadFinalFieldNotes() { loadFeature('data-field-notes-final-style', 'field-notes-final.css?v=1', 'data-field-notes-final', 'field-notes-final.js?v=1'); }
-  function loadFiveDayPlan() { loadScript('data-five-day-plan', 'five-day-plan.js?v=1'); }
+  function loadFiveDayPlan() { loadScript('data-five-day-plan', 'five-day-plan.js?v=2'); }
   function loadRestTimerV3() { loadFeature('data-rest-timer-v3-style', 'rest-timer-v3.css?v=2', 'data-rest-timer-v3', 'rest-timer-v3.js?v=6'); }
   function loadPersistentPause() { loadFeature('data-rest-timer-pause-visible-style', 'rest-timer-pause-visible.css?v=1', 'data-rest-timer-pause-visible', 'rest-timer-pause-visible.js?v=1'); }
   function loadProfileSettingsPage() { loadFeature('data-profile-settings-page-style', 'profile-settings-page.css?v=1', 'data-profile-settings-page', 'profile-settings-page.js?v=1'); }
