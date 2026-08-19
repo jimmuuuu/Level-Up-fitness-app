@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-scan-any-equipment-v35';
+const CACHE = 'level-up-fitness-20260819-launch-stability-v36';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
@@ -43,6 +43,7 @@ const CORE = [
 const SHELL = CORE.slice(0, 88);
 const ASSETS = CORE.slice(88);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
+const STARTUP_STYLE = '<style id="level-up-startup-theme">html,body{margin:0;min-height:100%;background:#050505!important;color-scheme:dark}body{min-height:100vh;min-height:100dvh}#appShell{background:#090909}</style>';
 
 async function cachePath(cache, path, requireImage = false) {
   const request = new Request(scopedUrl(path), { cache: 'reload' });
@@ -52,6 +53,24 @@ async function cachePath(cache, path, requireImage = false) {
     throw new Error(`Unable to cache ${path}`);
   }
   await cache.put(request, response);
+}
+
+async function themedHtmlResponse(response) {
+  if (!response) return response;
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('text/html')) return response;
+  let text = await response.text();
+  if (!text.includes('id="level-up-startup-theme"')) {
+    text = text.replace(/<head(\s[^>]*)?>/i, match => `${match}${STARTUP_STYLE}`);
+  }
+  const headers = new Headers(response.headers);
+  headers.set('content-type', 'text/html; charset=utf-8');
+  headers.delete('content-length');
+  return new Response(text, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 self.addEventListener('install', event => {
@@ -101,9 +120,10 @@ self.addEventListener('fetch', event => {
           const cache = await caches.open(CACHE);
           await cache.put(scopedUrl('./index.html'), response.clone());
         }
-        return response;
+        return themedHtmlResponse(response);
       } catch {
-        return caches.match(scopedUrl('./index.html'));
+        const cached = await caches.match(scopedUrl('./index.html'));
+        return themedHtmlResponse(cached);
       }
     })());
     return;
