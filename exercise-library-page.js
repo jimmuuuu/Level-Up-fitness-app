@@ -1,8 +1,7 @@
 (() => {
   const PAGE_ID = 'exerciseLibrary';
-  let selectedName = '';
 
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[ch]));
 
   function catalog() {
     try { return Array.isArray(exerciseCatalog) ? exerciseCatalog : []; }
@@ -84,11 +83,16 @@
     return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${name} proper form exercise tutorial`)}`;
   }
 
+  function savedPlans() {
+    try { return Array.isArray(userProfile?.customWorkouts) ? userProfile.customWorkouts : []; }
+    catch { return []; }
+  }
+
   function openDetail(name) {
     const item = catalog().find(entry => String(entry?.name || '') === String(name || ''));
     const detail = document.getElementById('exerciseLibraryDetail');
     if (!item || !detail) return;
-    selectedName = item.name;
+    const plans = savedPlans();
     detail.innerHTML = `
       <div class="exercise-library-detail-backdrop" data-detail-close></div>
       <section class="exercise-library-detail-sheet" role="dialog" aria-modal="true">
@@ -100,12 +104,15 @@
         ${item.note ? `<div class="exercise-library-note"><strong>How to do it</strong><p>${esc(item.note)}</p></div>` : ''}
         <div class="exercise-library-detail-actions">
           <button type="button" class="primary" data-add-active>Add to active workout</button>
+          ${plans.length ? `<button type="button" data-show-saved-plans>Add to saved workout</button>` : ''}
           <a href="${youtubeUrl(item.name)}" target="_blank" rel="noopener noreferrer">Watch form video</a>
+          <div id="exerciseLibraryPlanPicker" class="exercise-library-plan-picker hidden"></div>
         </div>
       </section>`;
     detail.classList.remove('hidden');
     detail.querySelectorAll('[data-detail-close]').forEach(button => button.onclick = () => detail.classList.add('hidden'));
     detail.querySelector('[data-add-active]').onclick = () => addToActive(item);
+    detail.querySelector('[data-show-saved-plans]')?.addEventListener('click', () => renderPlanPicker(item));
   }
 
   function makeExercise(item) {
@@ -124,8 +131,14 @@
     };
   }
 
+  function status(message, error = false) {
+    const actions = document.getElementById('exerciseLibraryDetail')?.querySelector('.exercise-library-detail-actions');
+    if (!actions) return;
+    actions.querySelectorAll('.exercise-library-status').forEach(node => node.remove());
+    actions.insertAdjacentHTML('beforeend', `<p class="exercise-library-status${error ? ' error' : ''}">${esc(message)}</p>`);
+  }
+
   function addToActive(item) {
-    const detail = document.getElementById('exerciseLibraryDetail');
     try {
       if (!activePlan || !activeSessionId) throw new Error('Start a workout first, then add this exercise.');
       const exercises = Array.isArray(activePlan.exercises) ? activePlan.exercises : [];
@@ -133,12 +146,37 @@
       activePlan = { ...activePlan, exercises: [...exercises, makeExercise(item)] };
       if (typeof persistActiveWorkout === 'function') persistActiveWorkout();
       if (typeof renderActiveWorkout === 'function') renderActiveWorkout();
-      const actions = detail?.querySelector('.exercise-library-detail-actions');
-      if (actions) actions.insertAdjacentHTML('beforeend', `<p class="exercise-library-status">${esc(item.name)} added to the active workout.</p>`);
-    } catch (error) {
-      const actions = detail?.querySelector('.exercise-library-detail-actions');
-      if (actions) actions.insertAdjacentHTML('beforeend', `<p class="exercise-library-status error">${esc(error?.message || 'Could not add exercise.')}</p>`);
-    }
+      status(`${item.name} added to the active workout.`);
+    } catch (error) { status(error?.message || 'Could not add exercise.', true); }
+  }
+
+  function renderPlanPicker(item) {
+    const picker = document.getElementById('exerciseLibraryPlanPicker');
+    if (!picker) return;
+    const plans = savedPlans();
+    picker.innerHTML = plans.map(plan => `<button type="button" data-library-plan-id="${esc(plan.id)}"><strong>${esc(plan.name)}</strong><small>${Array.isArray(plan.exercises) ? plan.exercises.length : 0} exercises</small></button>`).join('');
+    picker.classList.remove('hidden');
+    picker.querySelectorAll('[data-library-plan-id]').forEach(button => button.onclick = () => void addToSaved(button.dataset.libraryPlanId, item));
+  }
+
+  async function addToSaved(planId, item) {
+    try {
+      if (!userProfile) throw new Error('Sign in or create a profile first.');
+      const plans = savedPlans();
+      const target = plans.find(plan => String(plan.id) === String(planId));
+      if (!target) throw new Error('That workout could not be found.');
+      const exercises = Array.isArray(target.exercises) ? target.exercises : [];
+      if (exercises.some(ex => ex.name === item.name || ex.catalogId === item.id)) throw new Error('This exercise is already in that workout.');
+      const updated = { ...target, exercises: [...exercises, makeExercise(item)], revision: (Number(target.revision) || 0) + 1, updatedAt: Date.now() };
+      const next = plans.map(plan => String(plan.id) === String(planId) ? updated : plan);
+      userProfile.customWorkouts = typeof sanitizeCustomPlans === 'function' ? sanitizeCustomPlans(next) : next;
+      if (typeof markProfileDirty === 'function') markProfileDirty('customWorkout');
+      if (typeof saveUserProfile === 'function' && !saveUserProfile()) throw new Error('The workout could not be saved.');
+      try { if (typeof saveCloudProfile === 'function') await saveCloudProfile(); } catch {}
+      try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
+      status(`${item.name} added to ${target.name}.`);
+      document.getElementById('exerciseLibraryPlanPicker')?.classList.add('hidden');
+    } catch (error) { status(error?.message || 'Could not save that exercise.', true); }
   }
 
   function start() {
