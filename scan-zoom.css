@@ -2,19 +2,20 @@
   position: absolute;
   z-index: 6;
   left: 50%;
-  bottom: max(108px, calc(96px + env(safe-area-inset-bottom)));
+  bottom: calc(176px + max(10px, env(safe-area-inset-bottom)));
   display: grid;
   grid-template-columns: 38px minmax(100px, 170px) 38px 42px;
   align-items: center;
   gap: 7px;
-  width: min(calc(100% - 34px), 330px);
+  width: min(calc(100% - 28px), 340px);
   padding: 8px 10px;
   transform: translateX(-50%);
   border: 1px solid rgba(255,255,255,.16);
   border-radius: 999px;
-  background: rgba(8,10,12,.78);
+  background: rgba(8,10,12,.82);
   backdrop-filter: blur(14px);
 }
+
 .scan-zoom-controls button {
   width: 38px;
   height: 38px;
@@ -26,11 +27,13 @@
   font-size: 20px;
   font-weight: 800;
 }
+
 .scan-zoom-controls input[type="range"] {
   width: 100%;
   min-width: 0;
   accent-color: #ff4d57;
 }
+
 .scan-zoom-controls span {
   color: #f5f7f8;
   font-size: 11px;
@@ -38,84 +41,128 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-#scan .scan-shell { touch-action: pan-y; }
 
-/* Mobile/PWA scan layout.
-   Keep the camera locked to the visible viewport so the capture button never
-   falls below the screen, even with iOS Home Screen safe areas. */
-#scan.page {
-  position: fixed;
-  z-index: 10;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: min(480px, 100vw);
-  height: 100dvh;
-  min-height: 0 !important;
+/* Scan must use the actual phone viewport, not the padded/max-width app shell. */
+html:has(#scan.page:not(.hidden)),
+body:has(#scan.page:not(.hidden)) {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+#appShell:has(#scan.page:not(.hidden)) {
   padding: 0 !important;
   overflow: hidden !important;
-  transform: translateX(-50%);
+}
+
+#scan.page {
+  position: fixed !important;
+  z-index: 10;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100svh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
   background: #050708;
 }
 
 #scan .scan-shell {
-  width: 100%;
-  height: 100%;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   min-height: 0 !important;
-  overflow: hidden;
+  overflow: hidden !important;
+  touch-action: none;
 }
 
-/* Give the machine much more room in the frame. */
+#scan .scan-camera,
+#scan .scan-photo-preview {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+/* The red guide now fills almost all usable camera space. It is only a guide;
+   Scan still analyzes the full captured frame. */
 #scan .scan-reticle {
-  top: 46%;
-  width: min(calc(100% - 28px), 440px);
-  height: clamp(300px, 48dvh, 470px);
-  aspect-ratio: auto;
-  transform: translate(-50%, -50%);
-  border-radius: 30px;
+  top: calc(max(100px, env(safe-area-inset-top) + 86px)) !important;
+  right: 10px !important;
+  bottom: calc(238px + max(10px, env(safe-area-inset-bottom))) !important;
+  left: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  transform: none !important;
+  border: 2px solid rgba(255,77,87,.66) !important;
+  border-radius: 28px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,77,87,.18), 0 0 0 1px rgba(0,0,0,.22) !important;
 }
 
 #scan .scan-reticle::before,
 #scan .scan-reticle::after {
-  width: 68px;
-  height: 68px;
+  width: 76px !important;
+  height: 76px !important;
+  border-color: #ff4d57 !important;
+  border-width: 4px !important;
 }
 
-/* Keep the entire capture dock above the fixed bottom navigation. */
+#scan .scan-reticle::before {
+  border-width: 4px 0 0 4px !important;
+}
+
+#scan .scan-reticle::after {
+  border-width: 0 4px 4px 0 !important;
+}
+
+/* These controls stay inside the visible viewport. Scrolling is never needed. */
 #scan .scan-controls {
-  left: 18px;
-  right: 18px;
-  bottom: calc(82px + max(12px, env(safe-area-inset-bottom)));
-  grid-template-columns: 64px minmax(84px, 1fr) 64px;
-  gap: 12px;
+  position: absolute !important;
+  z-index: 8 !important;
+  right: 14px !important;
+  bottom: calc(72px + max(10px, env(safe-area-inset-bottom))) !important;
+  left: 14px !important;
+  grid-template-columns: 68px minmax(92px, 1fr) 68px !important;
+  gap: 12px !important;
+  margin: 0 !important;
 }
 
 #scan .scan-capture {
-  width: 84px;
-  height: 84px;
+  width: 88px !important;
+  height: 88px !important;
 }
 
 #scan .scan-control-small {
-  min-width: 62px;
-  min-height: 54px;
-  font-size: 11px;
-}
-
-/* Zoom sits directly above the capture dock instead of competing with it. */
-#scan .scan-zoom-controls {
-  bottom: calc(184px + max(12px, env(safe-area-inset-bottom)));
+  min-width: 64px !important;
+  min-height: 56px !important;
+  padding: 7px 8px !important;
+  font-size: 11px !important;
 }
 
 #scan .scan-status {
-  left: 18px;
-  right: 18px;
-  bottom: calc(244px + max(12px, env(safe-area-inset-bottom)));
+  right: 14px !important;
+  bottom: calc(230px + max(10px, env(safe-area-inset-bottom))) !important;
+  left: 14px !important;
+  margin: 0 !important;
 }
 
-/* The intro card should not steal too much camera space on shorter phones. */
+#scan .scan-topbar {
+  top: max(10px, env(safe-area-inset-top)) !important;
+  right: 12px !important;
+  left: 12px !important;
+}
+
 @media (max-height: 760px) {
   #scan .scan-copy-card {
-    max-width: calc(100% - 58px);
+    max-width: calc(100% - 56px);
     padding: 9px 11px;
   }
 
@@ -124,38 +171,44 @@
   }
 
   #scan .scan-reticle {
-    top: 43%;
-    height: clamp(250px, 42dvh, 340px);
+    top: calc(max(76px, env(safe-area-inset-top) + 64px)) !important;
+    bottom: calc(214px + max(8px, env(safe-area-inset-bottom))) !important;
   }
 
   #scan .scan-status {
-    bottom: calc(232px + max(10px, env(safe-area-inset-bottom)));
+    bottom: calc(206px + max(8px, env(safe-area-inset-bottom))) !important;
   }
 
   #scan .scan-zoom-controls {
-    bottom: calc(174px + max(10px, env(safe-area-inset-bottom)));
+    bottom: calc(158px + max(8px, env(safe-area-inset-bottom))) !important;
   }
 
   #scan .scan-controls {
-    bottom: calc(78px + max(10px, env(safe-area-inset-bottom)));
+    bottom: calc(64px + max(8px, env(safe-area-inset-bottom))) !important;
+  }
+
+  #scan .scan-capture {
+    width: 80px !important;
+    height: 80px !important;
   }
 }
 
 @media (max-width: 380px) {
   #scan .scan-reticle {
-    width: calc(100% - 20px);
-    border-radius: 24px;
+    right: 6px !important;
+    left: 6px !important;
+    border-radius: 22px !important;
   }
 
   #scan .scan-controls {
-    left: 12px;
-    right: 12px;
-    grid-template-columns: 58px minmax(82px, 1fr) 58px;
-    gap: 9px;
+    right: 9px !important;
+    left: 9px !important;
+    grid-template-columns: 58px minmax(82px, 1fr) 58px !important;
+    gap: 8px !important;
   }
 
   #scan .scan-control-small {
-    min-width: 56px;
-    padding-inline: 5px;
+    min-width: 56px !important;
+    padding-inline: 4px !important;
   }
 }
