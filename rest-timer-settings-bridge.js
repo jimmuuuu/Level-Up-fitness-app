@@ -12,6 +12,11 @@
     return FALLBACK_SECONDS;
   }
 
+  function autoStartEnabled() {
+    try { return window.LevelUpExtraSettings?.get?.().autoStartRest !== false; }
+    catch { return true; }
+  }
+
   function format(seconds) {
     const total = Math.max(0, Math.round(Number(seconds) || 0));
     const minutes = Math.floor(total / 60);
@@ -50,6 +55,7 @@
       if (typeof startRestTimer !== 'function') return;
       if (startRestTimer.__levelUpSettingsDefault) return;
       const replacement = function(seconds) {
+        if (!autoStartEnabled()) return;
         const requested = Number(seconds);
         const useDefault = !Number.isFinite(requested) || requested === FALLBACK_SECONDS;
         const duration = useDefault ? getDefaultSeconds() : requested;
@@ -66,11 +72,11 @@
     document.body.dataset.restTimerSettingsBridgeBound = 'true';
     document.addEventListener('click', event => {
       const save = event.target.closest?.('#setList [data-log]');
-      if (!save || save.classList.contains('done')) return;
+      if (!save || save.classList.contains('done') || !autoStartEnabled()) return;
       const clickedAt = Date.now();
       lastSaveTrigger = clickedAt;
       window.setTimeout(() => {
-        if (lastSaveTrigger !== clickedAt || !save.classList.contains('done')) return;
+        if (lastSaveTrigger !== clickedAt || !save.classList.contains('done') || !autoStartEnabled()) return;
         const seconds = getDefaultSeconds();
         if (seconds === FALLBACK_SECONDS) return;
         try { window.LevelUpRestTimerV3?.start?.(seconds); } catch {}
@@ -88,6 +94,7 @@
     bindSaveFallback();
     refresh();
     window.addEventListener('levelup:settings-changed', refresh);
+    window.addEventListener('levelup:extra-settings-changed', refresh);
     window.addEventListener('pageshow', refresh);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') refresh();
