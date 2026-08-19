@@ -93,7 +93,7 @@
   function loadExpandedSettings() { loadFeature('data-settings-expanded-style', 'settings-expanded.css?v=1', 'data-settings-expanded', 'settings-expanded.js?v=3'); }
   function loadHistoryEnrichment() { loadScript('data-history-enrichment', 'history-enrichment.js?v=2'); }
   function loadCompanionQuality() { loadFeature('data-companion-quality-style', 'companion-quality.css?v=1', 'data-companion-quality', 'companion-quality.js?v=1'); }
-  function loadNoEmDashes() { loadScript('data-no-em-dashes', 'no-em-dashes.js?v=1'); }
+  function loadNoEmDashes() { loadScript('data-no-em-dashes', 'no-em-dashes.js?v=2'); }
   function disableWeightRecommendations() { loadFeature('data-disable-weight-recommendations-style', 'disable-weight-recommendations.css?v=2', 'data-disable-weight-recommendations', 'disable-weight-recommendations.js?v=2'); }
 
   function start() {
