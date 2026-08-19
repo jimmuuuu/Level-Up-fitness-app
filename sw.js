@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-scan-upload-profile-v33';
+const CACHE = 'level-up-fitness-20260819-scan-stability-v34';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js',
