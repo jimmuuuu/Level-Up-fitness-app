@@ -18,41 +18,145 @@
   function video() { return document.getElementById('scanCamera'); }
   function shell() { return document.querySelector('#scan .scan-shell'); }
 
-  function ensureControls() {
-    const root = shell();
-    if (!root || document.getElementById('scanZoomControls')) return;
-    const controls = document.createElement('div');
-    controls.id = 'scanZoomControls';
-    controls.className = 'scan-zoom-controls';
-    controls.innerHTML = `
-      <button type="button" data-zoom-step="-1" aria-label="Zoom out">−</button>
-      <input id="scanZoomRange" type="range" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom">
-      <button type="button" data-zoom-step="1" aria-label="Zoom in">+</button>
-      <span id="scanZoomLabel">1.0×</span>`;
-    root.appendChild(controls);
+  function important(element, property, value) {
+    if (!element) return;
+    element.style.setProperty(property, value, 'important');
+  }
 
-    const range = document.getElementById('scanZoomRange');
-    range?.addEventListener('input', () => { void setZoom(Number(range.value)); });
-    controls.querySelectorAll('[data-zoom-step]').forEach(button => {
-      button.onclick = () => { void setZoom(zoom + Number(button.dataset.zoomStep) * Math.max(stepZoom, 0.25)); };
+  function alignScanLayout() {
+    const root = shell();
+    if (!root) return;
+
+    const narrow = window.innerWidth <= 380;
+    const compact = window.innerHeight <= 760;
+    const edge = narrow ? '14px' : '20px';
+    const statusBottom = compact
+      ? 'calc(228px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(252px + max(10px, env(safe-area-inset-bottom)))';
+    const zoomBottom = compact
+      ? 'calc(158px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(176px + max(10px, env(safe-area-inset-bottom)))';
+    const controlsBottom = compact
+      ? 'calc(64px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(72px + max(10px, env(safe-area-inset-bottom)))';
+
+    const topbar = root.querySelector('.scan-topbar');
+    important(topbar, 'left', edge);
+    important(topbar, 'right', edge);
+    important(topbar, 'top', 'calc(env(safe-area-inset-top) + 14px)');
+    important(topbar, 'display', 'grid');
+    important(topbar, 'grid-template-columns', narrow ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 46px');
+    important(topbar, 'gap', narrow ? '10px' : '12px');
+    important(topbar, 'align-items', 'start');
+
+    const copyCard = root.querySelector('.scan-copy-card');
+    important(copyCard, 'width', '100%');
+    important(copyCard, 'max-width', 'none');
+    important(copyCard, 'min-width', '0');
+    important(copyCard, 'box-sizing', 'border-box');
+    important(copyCard, 'margin', '0');
+    important(copyCard, 'filter', 'none');
+    important(copyCard, 'backdrop-filter', 'none');
+    important(copyCard, '-webkit-backdrop-filter', 'none');
+
+    const title = copyCard?.querySelector('strong');
+    important(title, 'text-shadow', 'none');
+    important(title, 'filter', 'none');
+
+    const about = document.getElementById('scanAbout');
+    const aboutSize = narrow ? '42px' : '46px';
+    important(about, 'width', aboutSize);
+    important(about, 'height', aboutSize);
+    important(about, 'min-width', aboutSize);
+    important(about, 'min-height', aboutSize);
+    important(about, 'justify-self', 'end');
+    important(about, 'align-self', 'start');
+
+    const status = document.getElementById('scanStatus');
+    important(status, 'left', edge);
+    important(status, 'right', edge);
+    important(status, 'width', 'auto');
+    important(status, 'max-width', 'none');
+    important(status, 'transform', 'none');
+    important(status, 'bottom', statusBottom);
+    important(status, 'box-sizing', 'border-box');
+    important(status, 'margin', '0');
+
+    const zoomControls = document.getElementById('scanZoomControls');
+    important(zoomControls, 'left', edge);
+    important(zoomControls, 'right', edge);
+    important(zoomControls, 'width', 'auto');
+    important(zoomControls, 'max-width', 'none');
+    important(zoomControls, 'transform', 'none');
+    important(zoomControls, 'bottom', zoomBottom);
+    important(zoomControls, 'box-sizing', 'border-box');
+    important(zoomControls, 'grid-template-columns', narrow
+      ? '38px minmax(0, 1fr) 38px 46px'
+      : '42px minmax(0, 1fr) 42px 52px');
+
+    const controls = root.querySelector('.scan-controls');
+    important(controls, 'left', edge);
+    important(controls, 'right', edge);
+    important(controls, 'bottom', controlsBottom);
+    important(controls, 'grid-template-columns', narrow
+      ? '62px minmax(0, 1fr) 62px'
+      : '72px minmax(0, 1fr) 72px');
+    important(controls, 'gap', narrow ? '10px' : '12px');
+    important(controls, 'margin', '0');
+
+    root.querySelectorAll('.scan-control-small').forEach(button => {
+      const sideSize = narrow ? '62px' : '72px';
+      important(button, 'width', sideSize);
+      important(button, 'min-width', sideSize);
+      important(button, 'box-sizing', 'border-box');
+      important(button, 'justify-self', 'center');
     });
 
-    root.addEventListener('touchstart', event => {
-      if (event.touches.length !== 2) return;
-      pinchStartDistance = distance(event.touches);
-      pinchStartZoom = zoom;
-    }, { passive: true });
+    const capture = document.getElementById('scanCapture');
+    important(capture, 'justify-self', 'center');
+  }
 
-    root.addEventListener('touchmove', event => {
-      if (event.touches.length !== 2 || !pinchStartDistance) return;
-      const ratio = distance(event.touches) / pinchStartDistance;
-      void setZoom(pinchStartZoom * ratio);
-      event.preventDefault();
-    }, { passive: false });
+  function ensureControls() {
+    const root = shell();
+    if (!root) return;
 
-    root.addEventListener('touchend', event => {
-      if (event.touches.length < 2) pinchStartDistance = 0;
-    }, { passive: true });
+    let controls = document.getElementById('scanZoomControls');
+    if (!controls) {
+      controls = document.createElement('div');
+      controls.id = 'scanZoomControls';
+      controls.className = 'scan-zoom-controls';
+      controls.innerHTML = `
+        <button type="button" data-zoom-step="-1" aria-label="Zoom out">−</button>
+        <input id="scanZoomRange" type="range" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom">
+        <button type="button" data-zoom-step="1" aria-label="Zoom in">+</button>
+        <span id="scanZoomLabel">1.0×</span>`;
+      root.appendChild(controls);
+
+      const range = document.getElementById('scanZoomRange');
+      range?.addEventListener('input', () => { void setZoom(Number(range.value)); });
+      controls.querySelectorAll('[data-zoom-step]').forEach(button => {
+        button.onclick = () => { void setZoom(zoom + Number(button.dataset.zoomStep) * Math.max(stepZoom, 0.25)); };
+      });
+
+      root.addEventListener('touchstart', event => {
+        if (event.touches.length !== 2) return;
+        pinchStartDistance = distance(event.touches);
+        pinchStartZoom = zoom;
+      }, { passive: true });
+
+      root.addEventListener('touchmove', event => {
+        if (event.touches.length !== 2 || !pinchStartDistance) return;
+        const ratio = distance(event.touches) / pinchStartDistance;
+        void setZoom(pinchStartZoom * ratio);
+        event.preventDefault();
+      }, { passive: false });
+
+      root.addEventListener('touchend', event => {
+        if (event.touches.length < 2) pinchStartDistance = 0;
+      }, { passive: true });
+    }
+
+    alignScanLayout();
   }
 
   function installCaptureZoom() {
@@ -154,15 +258,20 @@
   const observer = new MutationObserver(() => {
     ensureControls();
     installCaptureZoom();
+    alignScanLayout();
     void detectZoomSupport();
   });
 
   function start() {
     ensureControls();
     installCaptureZoom();
+    alignScanLayout();
     observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('resize', alignScanLayout, { passive: true });
+    window.addEventListener('orientationchange', alignScanLayout, { passive: true });
     setInterval(() => {
       installCaptureZoom();
+      alignScanLayout();
       void detectZoomSupport();
     }, 600);
   }
