@@ -41,23 +41,49 @@
       #scan .scan-shell {
         position: absolute !important;
         inset: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
+        width: 100vw !important;
+        max-width: none !important;
+        height: 100svh !important;
+        height: 100dvh !important;
+        min-width: 100vw !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
         overflow: hidden !important;
         touch-action: auto !important;
       }
 
+      /* iOS can occasionally fall back to the video's intrinsic portrait size.
+         Pin the live camera/preview directly to the viewport so it cannot pillarbox. */
       #scan .scan-camera,
       #scan .scan-photo-preview {
-        position: absolute !important;
-        inset: 0 !important;
-        width: 100% !important;
+        position: fixed !important;
+        z-index: 0 !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
         max-width: none !important;
-        height: 100% !important;
+        min-width: 100vw !important;
+        height: 100svh !important;
+        height: 100dvh !important;
+        max-height: none !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
         object-fit: cover !important;
-        object-position: center center !important;
+        object-position: 50% 50% !important;
+        border: 0 !important;
+        border-radius: 0 !important;
         transition: none !important;
+      }
+
+      #scan .scan-shade {
+        position: fixed !important;
+        z-index: 1 !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
       }
 
       #scan .scan-reticle,
@@ -170,6 +196,32 @@
     `;
   }
 
+  function forceCameraViewport() {
+    const scan = document.getElementById('scan');
+    if (!scan) return;
+    scan.querySelectorAll('.scan-camera, .scan-photo-preview').forEach(media => {
+      const props = {
+        position: 'fixed',
+        top: '0',
+        right: '0',
+        bottom: '0',
+        left: '0',
+        width: '100vw',
+        'max-width': 'none',
+        'min-width': '100vw',
+        height: '100dvh',
+        'max-height': 'none',
+        'min-height': '100dvh',
+        margin: '0',
+        padding: '0',
+        'object-fit': 'cover',
+        'object-position': '50% 50%',
+        'border-radius': '0'
+      };
+      Object.entries(props).forEach(([property, value]) => media.style.setProperty(property, value, 'important'));
+    });
+  }
+
   function prepareScanFilePicker() {
     const input = document.getElementById('scanFile');
     if (!input) return;
@@ -193,7 +245,7 @@
 
     const status = document.getElementById('scanStatus');
     if (status && /Center the machine/i.test(status.textContent || '')) {
-      status.textContent = 'Center the equipment in view, then tap the red scan button.';
+      status.textContent = 'Center the machine in the frame, then tap the red scan button.';
     }
   }
 
@@ -307,6 +359,7 @@
 
   function refreshScanUi() {
     installStabilityStyles();
+    forceCameraViewport();
     prepareScanFilePicker();
     updateScanCopy();
     updateResultCopy();
@@ -317,7 +370,8 @@
     if (event.target?.closest?.('#scanUpload')) prepareScanFilePicker();
     if (event.target?.closest?.('[data-page="scan"], #scanCapture, #scanUpload, [data-scan-retake]')) {
       setTimeout(refreshScanUi, 0);
-      setTimeout(refreshScanUi, 250);
+      setTimeout(refreshScanUi, 120);
+      setTimeout(refreshScanUi, 450);
     }
   }, true);
 
@@ -328,18 +382,30 @@
 
   window.addEventListener('pageshow', () => {
     refreshScanUi();
+    setTimeout(forceCameraViewport, 150);
+    setTimeout(forceCameraViewport, 500);
     resetSheet(resultSheet());
   });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     refreshScanUi();
+    setTimeout(forceCameraViewport, 150);
   });
+
+  window.addEventListener('resize', forceCameraViewport, { passive: true });
+  window.addEventListener('orientationchange', () => setTimeout(forceCameraViewport, 120), { passive: true });
 
   refreshScanUi();
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', refreshScanUi, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshScanUi();
+      setTimeout(forceCameraViewport, 150);
+      setTimeout(forceCameraViewport, 500);
+    }, { once: true });
   } else {
     refreshScanUi();
+    setTimeout(forceCameraViewport, 150);
+    setTimeout(forceCameraViewport, 500);
   }
 })();
