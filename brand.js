@@ -22,39 +22,38 @@
           min-height: 100dvh;
           overflow: hidden;
           background:
-            radial-gradient(circle at 50% 42%, rgba(255, 51, 70, .10), transparent 31%),
-            linear-gradient(180deg, #070809 0%, #030404 72%, #020202 100%);
+            radial-gradient(circle at 50% 43%, rgba(255, 45, 67, .12), transparent 30%),
+            linear-gradient(180deg, #070809 0%, #030404 74%, #020202 100%);
           opacity: 1;
-          transition: opacity .42s ease, transform .42s cubic-bezier(.22,.8,.32,1);
           transform: scale(1);
+          transition: opacity .4s ease, transform .4s cubic-bezier(.22,.8,.32,1);
           isolation: isolate;
         }
 
-        #levelUpOpeningSplash::before,
-        #levelUpOpeningSplash::after {
+        #levelUpOpeningSplash::before {
           content: '';
           position: absolute;
+          left: 50%;
+          top: 50%;
+          width: min(76vw, 420px);
+          height: 1px;
+          transform: translate(-50%, -50%) scaleX(.05);
+          transform-origin: center;
+          background: linear-gradient(90deg, transparent, rgba(255, 52, 71, .32), #ff3447, rgba(255, 52, 71, .32), transparent);
+          box-shadow: 0 0 18px rgba(255, 52, 71, .28);
+          opacity: 0;
+          animation: levelUpSplashLine 1.05s .36s cubic-bezier(.22,.8,.32,1) forwards;
           pointer-events: none;
         }
 
-        #levelUpOpeningSplash::before {
-          width: min(78vw, 430px);
-          height: 1px;
-          top: 51%;
-          left: 50%;
-          transform: translate(-50%, -50%) scaleX(.05);
-          transform-origin: center;
-          background: linear-gradient(90deg, transparent, rgba(255, 56, 75, .35), #ff3447, rgba(255, 56, 75, .35), transparent);
-          box-shadow: 0 0 18px rgba(255, 52, 71, .28);
-          opacity: 0;
-          animation: levelUpSplashLine 1.15s .28s cubic-bezier(.22,.8,.32,1) forwards;
-        }
-
         #levelUpOpeningSplash::after {
+          content: '';
+          position: absolute;
           inset: 0;
-          background: linear-gradient(112deg, transparent 34%, rgba(255,255,255,.026) 48%, transparent 61%);
-          transform: translateX(-70%);
-          animation: levelUpSplashSheen 1.45s .18s ease-out forwards;
+          background: linear-gradient(112deg, transparent 34%, rgba(255,255,255,.025) 49%, transparent 62%);
+          transform: translateX(-80%);
+          animation: levelUpSplashSheen 1.25s .22s ease-out forwards;
+          pointer-events: none;
         }
 
         .level-up-splash-inner {
@@ -66,27 +65,51 @@
           align-items: center;
           justify-content: center;
           text-align: center;
-          transform: translateY(-2vh);
+          transform: translateY(-1vh);
+        }
+
+        .level-up-splash-mark-wrap {
+          position: relative;
+          width: 112px;
+          height: 112px;
+          display: grid;
+          place-items: center;
+          perspective: 700px;
+        }
+
+        .level-up-splash-mark-wrap::after {
+          content: '';
+          position: absolute;
+          width: 78px;
+          height: 16px;
+          bottom: 4px;
+          border-radius: 50%;
+          background: rgba(255, 52, 71, .13);
+          filter: blur(10px);
+          opacity: 0;
+          animation: levelUpLogoShadow 1.05s .08s ease-out forwards;
         }
 
         .level-up-splash-mark {
-          width: 92px;
-          height: 92px;
+          width: 96px;
+          height: 96px;
           object-fit: contain;
           opacity: 0;
-          filter: drop-shadow(0 10px 24px rgba(0,0,0,.42));
-          animation: levelUpSplashMark .72s .08s cubic-bezier(.16,1,.3,1) forwards;
+          transform-origin: center;
+          filter: drop-shadow(0 12px 28px rgba(0,0,0,.48));
+          animation: levelUpLogoMove 1.12s .02s cubic-bezier(.16,1,.3,1) forwards;
+          will-change: transform, opacity, filter;
         }
 
         .level-up-splash-wordmark {
           display: flex;
-          margin-top: 20px;
+          margin-top: 14px;
           flex-direction: column;
           align-items: center;
           line-height: 1;
           opacity: 0;
           transform: translateY(12px);
-          animation: levelUpSplashWords .55s .42s cubic-bezier(.16,1,.3,1) forwards;
+          animation: levelUpSplashWords .5s .58s cubic-bezier(.16,1,.3,1) forwards;
         }
 
         .level-up-splash-wordmark strong {
@@ -111,12 +134,12 @@
           position: relative;
           width: 108px;
           height: 3px;
-          margin-top: 27px;
+          margin-top: 26px;
           overflow: hidden;
           border-radius: 99px;
           background: rgba(255,255,255,.07);
           opacity: 0;
-          animation: levelUpSplashLoaderShow .25s .62s ease forwards;
+          animation: levelUpSplashLoaderShow .2s .74s ease forwards;
         }
 
         .level-up-splash-loader::after {
@@ -126,7 +149,7 @@
           border-radius: inherit;
           background: linear-gradient(90deg, #ff263e, #ff5c69);
           transform: translateX(-102%);
-          animation: levelUpSplashLoad 1.05s .66s cubic-bezier(.25,.75,.3,1) forwards;
+          animation: levelUpSplashLoad .92s .76s cubic-bezier(.25,.75,.3,1) forwards;
           box-shadow: 0 0 12px rgba(255,52,71,.4);
         }
 
@@ -136,10 +159,43 @@
           pointer-events: none;
         }
 
-        @keyframes levelUpSplashMark {
-          0% { opacity: 0; transform: translateY(14px) scale(.82); filter: blur(4px) drop-shadow(0 10px 24px rgba(0,0,0,.42)); }
-          62% { opacity: 1; transform: translateY(-2px) scale(1.035); filter: blur(0) drop-shadow(0 10px 24px rgba(0,0,0,.42)); }
-          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) drop-shadow(0 10px 24px rgba(0,0,0,.42)); }
+        #levelUpOpeningSplash.is-leaving .level-up-splash-mark {
+          animation: none;
+          opacity: 1;
+          transform: translateY(-8px) scale(1.06);
+          transition: transform .36s cubic-bezier(.22,.8,.32,1);
+        }
+
+        @keyframes levelUpLogoMove {
+          0% {
+            opacity: 0;
+            transform: translate3d(-42px, 70px, 0) rotate(-16deg) scale(.64);
+            filter: blur(7px) drop-shadow(0 12px 28px rgba(0,0,0,.48));
+          }
+          42% {
+            opacity: 1;
+            transform: translate3d(10px, -10px, 0) rotate(5deg) scale(1.12);
+            filter: blur(0) drop-shadow(0 12px 28px rgba(0,0,0,.48));
+          }
+          68% {
+            opacity: 1;
+            transform: translate3d(-4px, 4px, 0) rotate(-2deg) scale(.97);
+          }
+          84% {
+            opacity: 1;
+            transform: translate3d(2px, -2px, 0) rotate(.7deg) scale(1.025);
+          }
+          100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) rotate(0) scale(1);
+            filter: blur(0) drop-shadow(0 12px 28px rgba(0,0,0,.48));
+          }
+        }
+
+        @keyframes levelUpLogoShadow {
+          0% { opacity: 0; transform: scale(.45); }
+          46% { opacity: .7; transform: scale(1.2); }
+          100% { opacity: .3; transform: scale(1); }
         }
 
         @keyframes levelUpSplashWords {
@@ -148,21 +204,18 @@
 
         @keyframes levelUpSplashLine {
           0% { opacity: 0; transform: translate(-50%, -50%) scaleX(.05); }
-          32% { opacity: .85; }
-          75% { opacity: .45; transform: translate(-50%, -50%) scaleX(1); }
+          30% { opacity: .85; }
+          72% { opacity: .45; transform: translate(-50%, -50%) scaleX(1); }
           100% { opacity: 0; transform: translate(-50%, -50%) scaleX(1); }
         }
 
         @keyframes levelUpSplashSheen {
-          0% { transform: translateX(-70%); opacity: 0; }
+          0% { transform: translateX(-80%); opacity: 0; }
           35% { opacity: 1; }
-          100% { transform: translateX(70%); opacity: 0; }
+          100% { transform: translateX(80%); opacity: 0; }
         }
 
-        @keyframes levelUpSplashLoaderShow {
-          to { opacity: 1; }
-        }
-
+        @keyframes levelUpSplashLoaderShow { to { opacity: 1; } }
         @keyframes levelUpSplashLoad {
           0% { transform: translateX(-102%); }
           68% { transform: translateX(-18%); }
@@ -173,11 +226,10 @@
           #levelUpOpeningSplash::before,
           #levelUpOpeningSplash::after,
           .level-up-splash-mark,
+          .level-up-splash-mark-wrap::after,
           .level-up-splash-wordmark,
           .level-up-splash-loader,
-          .level-up-splash-loader::after {
-            animation: none !important;
-          }
+          .level-up-splash-loader::after { animation: none !important; }
           .level-up-splash-mark,
           .level-up-splash-wordmark,
           .level-up-splash-loader { opacity: 1; transform: none; }
@@ -192,7 +244,9 @@
     splash.setAttribute('aria-hidden', 'true');
     splash.innerHTML = `
       <div class="level-up-splash-inner">
-        <img class="level-up-splash-mark" src="${EMBLEM}" alt="">
+        <div class="level-up-splash-mark-wrap">
+          <img class="level-up-splash-mark" src="${EMBLEM}" alt="">
+        </div>
         <div class="level-up-splash-wordmark">
           <strong>LEVEL UP</strong>
           <span>FITNESS</span>
@@ -203,15 +257,15 @@
     document.body.prepend(splash);
 
     const startedAt = performance.now();
-    const minimumVisibleMs = 1250;
-    const maximumVisibleMs = 2800;
+    const minimumVisibleMs = 1350;
+    const maximumVisibleMs = 2850;
     let dismissed = false;
 
     const dismiss = () => {
       if (dismissed) return;
       dismissed = true;
       splash.classList.add('is-leaving');
-      window.setTimeout(() => splash.remove(), 460);
+      window.setTimeout(() => splash.remove(), 440);
     };
 
     const dismissAfterMinimum = () => {
@@ -221,7 +275,6 @@
 
     if (document.readyState === 'complete') dismissAfterMinimum();
     else window.addEventListener('load', dismissAfterMinimum, { once: true });
-
     window.setTimeout(dismiss, maximumVisibleMs);
   }
 
@@ -238,8 +291,17 @@
     if (document.querySelector('script[data-level-up-simple-workout-names]')) return;
     const script = document.createElement('script');
     script.async = false;
-    script.src = 'simple-workout-names.js?v=4';
+    script.src = 'simple-workout-names.js?v=6';
     script.setAttribute('data-level-up-simple-workout-names', 'true');
+    document.body.appendChild(script);
+  }
+
+  function ensureWorkoutCardArtFix() {
+    if (document.querySelector('script[data-level-up-workout-card-art-fix]')) return;
+    const script = document.createElement('script');
+    script.async = false;
+    script.src = 'workout-card-art-fix.js?v=1';
+    script.setAttribute('data-level-up-workout-card-art-fix', 'true');
     document.body.appendChild(script);
   }
 
@@ -330,6 +392,7 @@
   function applyBranding() {
     ensureExerciseCatalogExpansion();
     ensureSimpleWorkoutNames();
+    ensureWorkoutCardArtFix();
     ensureHeadBranding();
     brandAuthGate();
     brandWorkoutPage();
