@@ -7,19 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Level Up Fitness">
-  <title>The Fitness Club</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/app-icon-180.png">
-  <script>
-    try {
-      const rememberedPage = sessionStorage.getItem('levelUpFitnessLastPage');
-      const validPages = ['home', 'workout', 'progress', 'profile', 'builder', 'active'];
-      if (validPages.includes(rememberedPage) && rememberedPage !== 'home') {
-        document.documentElement.setAttribute('data-restoring-page', rememberedPage);
-      }
-    } catch {}
-  </script>
-  <style>html[data-restoring-page] #appShell { visibility: hidden; }</style>
+  <title>Level Up Fitness</title>
+  <link rel="manifest" href="manifest.webmanifest?v=shield-20260820">
+  <!-- A versioned URL makes Safari fetch the current shield icon for new Home Screen installs. -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/app-icon-180.png?v=shield-20260820">
+  <link rel="apple-touch-icon-precomposed" sizes="180x180" href="assets/app-icon-180.png?v=shield-20260820">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png?v=shield-20260820">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -187,10 +180,40 @@
           <strong id="savedSetCount" aria-live="polite">0 of 0 sets saved</strong>
         </div>
         <progress id="workoutProgress" value="0" max="1" aria-label="Workout sets saved"></progress>
-        <p id="finishHint">Save at least one set to end and record this workout.</p>
-        <button id="finish" class="primary" type="button" disabled>End workout &amp; save</button>
+        <p id="finishHint">End anytime. Only saved working sets count toward your workout grade.</p>
+        <button id="finish" class="primary" type="button">End workout &amp; save</button>
         <button id="discardWorkout" class="discard-workout" type="button">Discard workout</button>
       </section>
+    </section>
+
+    <section id="summary" class="page workout-summary hidden" aria-labelledby="workoutSummaryTitle">
+      <header class="summary-header">
+        <div class="over">WORKOUT COMPLETE</div>
+        <h1 id="workoutSummaryTitle" tabindex="-1">Workout summary</h1>
+        <p id="workoutSummaryMeta" class="summary-meta"></p>
+      </header>
+
+      <article id="workoutGradeCard" class="workout-grade-card grade-f" aria-label="Workout grade">
+        <div class="grade-score" aria-hidden="true">
+          <strong id="workoutGradeLetter">F</strong>
+          <span id="workoutGradePercent">0%</span>
+        </div>
+        <p id="workoutGradeLabel">Workout recorded</p>
+      </article>
+      <p id="workoutGradeAnnouncement" class="sr-only" role="status" aria-live="polite"></p>
+
+      <section class="grade-details" aria-labelledby="gradeWhyTitle">
+        <div class="over">YOUR RESULT</div>
+        <h2 id="gradeWhyTitle">Why this grade?</h2>
+        <p id="workoutGradeExplanation"></p>
+        <div id="workoutGradeBreakdown" class="grade-breakdown"></div>
+      </section>
+
+      <section id="workoutSummaryStats" class="summary-stats" aria-label="Workout totals"></section>
+      <div class="summary-actions">
+        <button id="summaryToProgress" class="primary" type="button">View progress</button>
+        <button id="summaryToWorkouts" class="secondary-button" type="button">Back to workouts</button>
+      </div>
     </section>
 
     <section id="builder" class="page hidden">
@@ -318,6 +341,10 @@
       <p id="profileEmail" class="profile-email"></p>
       <div id="syncStatus" class="sync-status hidden"></div>
       <section id="profileOverview" class="profile-overview" aria-label="Account overview"></section>
+      <section id="profilePerformance" class="profile-performance" aria-label="Recent training performance">
+        <div id="overallGradeCard"></div>
+        <div id="workoutStreakCard"></div>
+      </section>
       <section class="profile-section" aria-labelledby="profileMaxesTitle">
         <div class="section-heading compact-heading">
           <div><div class="over">PERSONAL RECORDS</div><h2 id="profileMaxesTitle">Your maxes</h2></div>
@@ -347,30 +374,34 @@
           </details>
         </div>
       </section>
-      <div id="rankSummary"></div>
+      <details class="legacy-progression">
+        <summary>Training ranks</summary>
+        <p class="legacy-progression-copy">Ranks are a secondary view of long-term training. Your Overall Grade is the main progression score.</p>
+        <div id="rankSummary"></div>
 
-      <section class="rank-section" aria-labelledby="muscleRankTitle">
-        <div class="section-heading rank-heading">
-          <div>
-            <div class="over">MUSCLE GROUP RANKS</div>
-            <h2 id="muscleRankTitle">Your training board</h2>
+        <section class="rank-section" aria-labelledby="muscleRankTitle">
+          <div class="section-heading rank-heading">
+            <div>
+              <div class="over">MUSCLE GROUP RANKS</div>
+              <h2 id="muscleRankTitle">Your training board</h2>
+            </div>
           </div>
-        </div>
-        <div id="muscleRanks" class="muscle-rank-list"></div>
-      </section>
+          <div id="muscleRanks" class="muscle-rank-list"></div>
+        </section>
 
-      <section class="rank-section" aria-labelledby="rankLadderTitle">
-        <div class="section-heading rank-heading">
-          <div>
-            <div class="over">RANK LADDER</div>
-            <h2 id="rankLadderTitle">Train your way up</h2>
+        <section class="rank-section" aria-labelledby="rankLadderTitle">
+          <div class="section-heading rank-heading">
+            <div>
+              <div class="over">RANK LADDER</div>
+              <h2 id="rankLadderTitle">Train your way up</h2>
+            </div>
           </div>
-        </div>
-        <div id="rankLadder" class="rank-ladder"></div>
-      </section>
+          <div id="rankLadder" class="rank-ladder"></div>
+        </section>
+      </details>
 
       <button id="signOut" class="secondary-button" type="button">Sign out</button>
-      <p class="signout-note">Google accounts sync completed workouts across your devices.</p>
+      <p id="accountStorageNote" class="signout-note">Your account storage status appears here.</p>
     </section>
 
     <nav class="tabs" aria-label="Main navigation">

@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-03058eb7e793';
+const CACHE = 'level-up-fitness-d49a5b768836';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
@@ -8,12 +8,7 @@ const CORE = [
   './assets/workouts/bench-press.png', './assets/workouts/lat-pulldown.png',
   './assets/workouts/hip-thrust.png', './assets/workouts/ab-wheel.png',
   './assets/workouts/dumbbell.png', './assets/workouts/machine.png',
-  './assets/workouts/treadmill.png', './assets/workouts/timer.png',
-  './assets/ranks/foundation.png', './assets/ranks/iron.png',
-  './assets/ranks/bronze.png', './assets/ranks/silver.png',
-  './assets/ranks/gold.png', './assets/ranks/platinum.png',
-  './assets/ranks/diamond.png', './assets/ranks/champion.png',
-  './assets/ranks/mythic.png', './assets/ranks/apex.png'
+  './assets/workouts/treadmill.png', './assets/workouts/timer.png'
 ];
 const SHELL = CORE.slice(0, 6);
 const ASSETS = CORE.slice(6);
