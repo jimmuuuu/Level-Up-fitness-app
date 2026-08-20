@@ -1,144 +1,239 @@
 (() => {
   const basicWorkoutOrder = [
-    { source: ['Strong Start', 'Full Body'], name: 'Full Body' },
-    { source: ['Upper Body Strength', 'Upper Body'], name: 'Upper Body' },
-    { source: ['Lower Body Strength', 'Lower Body'], name: 'Lower Body' },
-    { source: ['Push Day', 'Push'], name: 'Push' },
-    { source: ['Pull Day', 'Pull'], name: 'Pull' },
-    { source: ['Core Builder', 'Core'], name: 'Core' },
-    { source: ['Cardio Starter', 'Cardio'], name: 'Cardio' }
+    { source: ['Strong Start', 'Full Body'], name: 'Full Body', art: 'assets/workouts/full-body-visual.svg' },
+    { source: ['Upper Body Strength', 'Upper Body'], name: 'Upper Body', art: 'assets/workouts/upper-body-visual.svg' },
+    { source: ['Lower Body Strength', 'Lower Body'], name: 'Lower Body', art: 'assets/workouts/lower-body-visual.svg' },
+    { source: ['Push Day', 'Push'], name: 'Push', art: 'assets/workouts/push-visual.svg' },
+    { source: ['Pull Day', 'Pull'], name: 'Pull', art: 'assets/workouts/pull-visual.svg' },
+    { source: ['Core Builder', 'Core'], name: 'Core', art: 'assets/workouts/core-visual.svg' },
+    { source: ['Cardio Starter', 'Cardio'], name: 'Cardio', art: 'assets/workouts/cardio-visual.svg' }
   ];
 
-  const focusLabels = {
-    'Full Body': ['FULL', 'BODY'],
-    'Upper Body': ['UPPER', 'BODY'],
-    'Lower Body': ['LOWER', 'BODY'],
-    'Push': ['PUSH'],
-    'Pull': ['PULL'],
-    'Core': ['CORE'],
-    'Cardio': ['CARDIO']
-  };
+  const artByName = Object.fromEntries(basicWorkoutOrder.map(item => [item.name, item.art]));
+  let decorating = false;
+  let queued = false;
 
   function ensureStyles() {
-    if (document.getElementById('levelUpWorkoutFocusBadgeStyles')) return;
+    if (document.getElementById('levelUpPremadeVisualStyles')) return;
     const style = document.createElement('style');
-    style.id = 'levelUpWorkoutFocusBadgeStyles';
+    style.id = 'levelUpPremadeVisualStyles';
     style.textContent = `
-      #planList .plan-icon.workout-focus-visual,
-      #homePlanList .home-plan-icon.workout-focus-visual {
-        display: grid;
-        place-items: center;
-        flex: 0 0 auto;
-        width: 58px;
-        height: 58px;
-        padding: 0;
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,.09);
-        border-radius: 16px;
-        background:
-          radial-gradient(circle at 28% 22%, rgba(255,255,255,.07), transparent 42%),
-          linear-gradient(145deg, #15181c, #0c0e11 72%);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      #premadeWorkoutIntro {
+        margin: 6px 0 2px;
+        color: #92979f;
+        font-size: 14px;
+        line-height: 1.45;
       }
 
-      #homePlanList .home-plan-icon.workout-focus-visual {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+      #planList.premade-visual-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+        margin-top: 14px !important;
       }
 
-      .workout-focus-badge {
-        display: flex;
-        width: 100%;
-        height: 100%;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1px;
-        color: #f5f7f8;
-        text-align: center;
-        letter-spacing: .045em;
-        line-height: .95;
+      #planList .plan-card.premade-visual-card {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 44px !important;
+        grid-template-rows: auto auto !important;
+        gap: 0 !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: 1px solid #252a2f !important;
+        border-radius: 20px !important;
+        background: linear-gradient(180deg, #101316, #0b0d0f) !important;
+        box-shadow: 0 10px 26px rgba(0,0,0,.22) !important;
       }
 
-      .workout-focus-badge::before {
-        content: '';
-        width: 15px;
-        height: 2px;
-        margin-bottom: 4px;
-        border-radius: 999px;
-        background: #ff3447;
-        box-shadow: 0 0 10px rgba(255,52,71,.28);
+      #planList .plan-card.premade-visual-card .plan-icon.workout-exercise-visual {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 4 / 3 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #090b0d center / cover no-repeat !important;
+        overflow: hidden !important;
       }
 
-      .workout-focus-badge strong {
-        display: block;
-        font-size: 10px;
-        font-weight: 850;
+      #planList .plan-card.premade-visual-card .plan-icon img { display: none !important; }
+
+      #planList .plan-card.premade-visual-card > div {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        padding: 13px 6px 14px 13px !important;
+        align-self: center !important;
       }
 
-      .workout-focus-badge.one-line strong {
-        font-size: 11px;
+      #planList .plan-card.premade-visual-card > div b {
+        display: block !important;
+        color: #f6f7f8 !important;
+        font-size: 17px !important;
+        line-height: 1.15 !important;
+        letter-spacing: -.01em !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
 
-      #homePlanList .workout-focus-badge strong {
-        font-size: 9px;
+      #planList .plan-card.premade-visual-card > div small {
+        display: block !important;
+        margin-top: 5px !important;
+        color: #8f959d !important;
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
 
-      #homePlanList .workout-focus-badge.one-line strong {
-        font-size: 10px;
+      #planList .plan-card.premade-visual-card .edit {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        align-self: center !important;
+        justify-self: center !important;
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        padding: 0 !important;
+        margin: 0 7px 0 0 !important;
+        border: 1px solid #282d32 !important;
+        border-radius: 999px !important;
+        background: #171a1e !important;
+        color: #ff5563 !important;
+        font-size: 23px !important;
+        line-height: 1 !important;
+        font-weight: 500 !important;
+        box-shadow: none !important;
+      }
+
+      #planList .plan-card.premade-visual-card .edit:active {
+        transform: scale(.96) !important;
+        background: #20242a !important;
+      }
+
+      #homePlanList .home-plan-icon.workout-exercise-visual {
+        display: block !important;
+        width: 56px !important;
+        height: 48px !important;
+        flex: 0 0 56px !important;
+        border: 1px solid #252a2f !important;
+        border-radius: 12px !important;
+        background: #090b0d center / cover no-repeat !important;
+        overflow: hidden !important;
+      }
+
+      #homePlanList .home-plan-icon.workout-exercise-visual img { display: none !important; }
+
+      @media (min-width: 700px) {
+        #planList.premade-visual-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 14px !important;
+        }
+      }
+
+      @media (min-width: 1040px) {
+        #planList.premade-visual-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+      }
+
+      @media (max-width: 345px) {
+        #planList.premade-visual-grid { grid-template-columns: 1fr !important; }
       }
     `;
     document.head.appendChild(style);
   }
 
-  function badgeMarkup(name) {
-    const lines = focusLabels[name] || [String(name || 'WORKOUT').toUpperCase()];
-    const oneLine = lines.length === 1 ? ' one-line' : '';
-    return `<span class="workout-focus-badge${oneLine}" aria-hidden="true">${lines.map(line => `<strong>${line}</strong>`).join('')}</span>`;
+  function planForName(name) {
+    try { return Array.isArray(plans) ? plans.find(plan => String(plan?.name || '') === name) || null : null; }
+    catch { return null; }
   }
 
-  function decorateContainer(containerSelector, cardSelector, iconSelector) {
-    const container = document.querySelector(containerSelector);
-    if (!container) return;
+  function ensureIntro() {
+    const title = document.getElementById('libraryTitle');
+    if (!title) return;
+    let intro = document.getElementById('premadeWorkoutIntro');
+    if (!intro) {
+      intro = document.createElement('p');
+      intro.id = 'premadeWorkoutIntro';
+      title.insertAdjacentElement('afterend', intro);
+    }
+    const text = 'Pick a workout and get started. Simple, effective, and ready to go.';
+    if (intro.textContent !== text) intro.textContent = text;
+  }
 
-    container.querySelectorAll(cardSelector).forEach(card => {
-      const name = card.querySelector('b')?.textContent?.trim() || '';
-      if (!focusLabels[name]) return;
-      const icon = card.querySelector(iconSelector);
-      if (!icon || icon.classList.contains('workout-focus-visual')) return;
-      icon.classList.add('workout-focus-visual');
-      icon.innerHTML = badgeMarkup(name);
-    });
+  function paintIcon(icon, art) {
+    if (!icon || !art) return;
+    icon.classList.add('workout-exercise-visual');
+    if (icon.dataset.workoutArt !== art) {
+      icon.dataset.workoutArt = art;
+      icon.innerHTML = '';
+      icon.style.backgroundImage = `url("${art}")`;
+    }
   }
 
   function decorateWorkoutVisuals() {
-    ensureStyles();
-    decorateContainer('#planList', '.plan-card', '.plan-icon');
-    decorateContainer('#homePlanList', '.home-plan', '.home-plan-icon');
+    if (decorating) return;
+    decorating = true;
+    try {
+      ensureStyles();
+      ensureIntro();
+
+      const list = document.getElementById('planList');
+      if (list) {
+        list.classList.add('premade-visual-grid');
+        list.querySelectorAll('.plan-card').forEach(card => {
+          const name = String(card.querySelector('b')?.textContent || '').trim();
+          const art = artByName[name];
+          if (!art) return;
+          card.classList.add('premade-visual-card');
+          paintIcon(card.querySelector('.plan-icon'), art);
+
+          const plan = planForName(name);
+          const meta = card.querySelector('small');
+          if (plan && meta) {
+            const next = `${plan.exercises.length} exercises · ${plan.time}`;
+            if (meta.textContent !== next) meta.textContent = next;
+          }
+
+          const button = card.querySelector('.edit');
+          if (button) {
+            if (button.textContent !== '→') button.textContent = '→';
+            button.setAttribute('aria-label', `Open ${name} workout`);
+          }
+        });
+      }
+
+      const home = document.getElementById('homePlanList');
+      if (home) {
+        home.querySelectorAll('.home-plan').forEach(card => {
+          const name = String(card.querySelector('b')?.textContent || '').trim();
+          paintIcon(card.querySelector('.home-plan-icon'), artByName[name]);
+        });
+      }
+    } finally {
+      decorating = false;
+    }
   }
 
   function applyBasicWorkoutLibrary() {
     try {
       if (!Array.isArray(plans)) return;
-
-      const selected = basicWorkoutOrder
-        .map(config => {
-          const plan = plans.find(candidate => config.source.includes(candidate?.name));
-          if (!plan) return null;
-          plan.name = config.name;
-          return plan;
-        })
-        .filter(Boolean);
-
+      const selected = basicWorkoutOrder.map(config => {
+        const plan = plans.find(candidate => config.source.includes(candidate?.name));
+        if (!plan) return null;
+        plan.name = config.name;
+        return plan;
+      }).filter(Boolean);
       if (!selected.length) return;
-
       plans.splice(0, plans.length, ...selected);
-
       try { if (typeof renderPlans === 'function') renderPlans(); } catch {}
       try { if (typeof renderHome === 'function') renderHome(); } catch {}
-      decorateWorkoutVisuals();
-
       if (selectedPlan && !plans.includes(selectedPlan)) selectedPlan = null;
       if (selectedPlan && typeof populatePlanDetail === 'function') {
         try { populatePlanDetail(selectedPlan); } catch {}
@@ -148,15 +243,24 @@
     }
   }
 
-  const observer = new MutationObserver(() => decorateWorkoutVisuals());
+  function queueDecorate() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      decorateWorkoutVisuals();
+    });
+  }
 
   function start() {
     applyBasicWorkoutLibrary();
     decorateWorkoutVisuals();
+    const observer = new MutationObserver(queueDecorate);
     const workout = document.getElementById('workout');
     const home = document.getElementById('home');
     if (workout) observer.observe(workout, { childList: true, subtree: true });
     if (home) observer.observe(home, { childList: true, subtree: true });
+    window.addEventListener('pageshow', queueDecorate);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
