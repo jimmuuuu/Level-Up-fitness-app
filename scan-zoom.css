@@ -316,3 +316,96 @@ body:has(#scan.page:not(.hidden)) {
     font-size: 12px !important;
   }
 }
+
+/* v41: put every Scan overlay on one clean mobile alignment grid. */
+#scan {
+  --scan-edge: 20px;
+  --scan-stack-width: min(calc(100vw - 40px), 620px);
+}
+
+#scan .scan-topbar {
+  left: var(--scan-edge) !important;
+  right: var(--scan-edge) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 46px !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+#scan .scan-copy-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+}
+
+#scan .scan-about-button {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  justify-self: end !important;
+  align-self: start !important;
+}
+
+#scan .scan-status,
+#scan .scan-zoom-controls {
+  left: 50% !important;
+  right: auto !important;
+  width: var(--scan-stack-width) !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  transform: translateX(-50%) !important;
+}
+
+#scan .scan-controls {
+  left: var(--scan-edge) !important;
+  right: var(--scan-edge) !important;
+  grid-template-columns: 72px minmax(0, 1fr) 72px !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+#scan .scan-control-small {
+  width: 72px !important;
+  min-width: 72px !important;
+  justify-self: center !important;
+  box-sizing: border-box !important;
+}
+
+#scan .scan-capture {
+  justify-self: center !important;
+}
+
+@media (max-width: 380px) {
+  #scan {
+    --scan-edge: 14px;
+    --scan-stack-width: calc(100vw - 28px);
+  }
+
+  #scan .scan-topbar {
+    grid-template-columns: minmax(0, 1fr) 42px !important;
+    gap: 10px !important;
+  }
+
+  #scan .scan-about-button {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+
+  #scan .scan-controls {
+    grid-template-columns: 62px minmax(0, 1fr) 62px !important;
+    gap: 10px !important;
+  }
+
+  #scan .scan-control-small {
+    width: 62px !important;
+    min-width: 62px !important;
+  }
+}
