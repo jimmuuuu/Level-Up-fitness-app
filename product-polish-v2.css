@@ -1,0 +1,274 @@
+/* Level Up Fitness product polish v2
+   Keeps the existing product redesign, but makes the bottom navigation feel
+   native and adds restrained motion/interaction feedback throughout the app. */
+
+:root {
+  --lu-motion-fast: 120ms cubic-bezier(.2,.8,.2,1);
+  --lu-motion: 190ms cubic-bezier(.2,.8,.2,1);
+  --lu-motion-soft: 280ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Bottom navigation should feel attached to the phone, not like a floating card. */
+.tabs {
+  right: auto !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  width: min(520px, 100%) !important;
+  min-height: calc(64px + env(safe-area-inset-bottom)) !important;
+  margin: 0 !important;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 18px 18px 0 0 !important;
+  background: rgba(11,14,17,.97) !important;
+  box-shadow: 0 -12px 32px rgba(0,0,0,.32) !important;
+  transform: translateX(-50%) !important;
+  backdrop-filter: blur(24px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(135%) !important;
+}
+
+.tabs button {
+  min-height: 52px !important;
+  transition:
+    color var(--lu-motion-fast),
+    background var(--lu-motion-fast),
+    transform var(--lu-motion-fast),
+    opacity var(--lu-motion-fast) !important;
+}
+
+.tabs button:active {
+  transform: scale(.94) !important;
+}
+
+.tabs button.active::before {
+  animation: lu-v2-nav-pop 190ms cubic-bezier(.2,.9,.25,1.25);
+}
+
+.tabs button.active::after {
+  bottom: 0 !important;
+  animation: lu-v2-indicator-in 180ms ease-out;
+}
+
+/* Make content transitions feel intentional without slowing the app down. */
+.page:not(.hidden):not(#scan) {
+  animation: lu-v2-page-in var(--lu-motion) both;
+}
+
+.page:not(.hidden):not(#scan) > h1,
+.page:not(.hidden):not(#scan) > .progress-intro,
+.page:not(.hidden):not(#scan) > .profile-email {
+  animation: lu-v2-title-in 230ms both;
+}
+
+.page:not(.hidden):not(#scan) > section,
+.page:not(.hidden):not(#scan) > .progress-overview,
+.page:not(.hidden):not(#scan) > #progressRank,
+.page:not(.hidden):not(#scan) > #rankSummary {
+  animation: lu-v2-section-in 260ms both;
+}
+
+.page:not(.hidden):not(#scan) > section:nth-of-type(2) { animation-delay: 30ms; }
+.page:not(.hidden):not(#scan) > section:nth-of-type(3) { animation-delay: 55ms; }
+.page:not(.hidden):not(#scan) > section:nth-of-type(4) { animation-delay: 80ms; }
+.page:not(.hidden):not(#scan) > section:nth-of-type(n+5) { animation-delay: 100ms; }
+
+/* Lists enter with a small stagger so screens feel assembled, not dumped in. */
+#planList > *,
+.program-week > *,
+.custom-plan-list > *,
+.recent-workouts > *,
+.muscle-rank-list > * {
+  animation: lu-v2-row-in 220ms both;
+}
+
+#planList > *:nth-child(2),
+.program-week > *:nth-child(2),
+.custom-plan-list > *:nth-child(2),
+.recent-workouts > *:nth-child(2),
+.muscle-rank-list > *:nth-child(2) { animation-delay: 24ms; }
+
+#planList > *:nth-child(3),
+.program-week > *:nth-child(3),
+.custom-plan-list > *:nth-child(3),
+.recent-workouts > *:nth-child(3),
+.muscle-rank-list > *:nth-child(3) { animation-delay: 48ms; }
+
+#planList > *:nth-child(n+4),
+.program-week > *:nth-child(n+4),
+.custom-plan-list > *:nth-child(n+4),
+.recent-workouts > *:nth-child(n+4),
+.muscle-rank-list > *:nth-child(n+4) { animation-delay: 68ms; }
+
+/* Tactile interaction feedback. */
+button,
+a,
+summary,
+.profile-photo-button,
+.scan-plan-option,
+.scan-manual-option {
+  transition:
+    transform var(--lu-motion-fast),
+    background var(--lu-motion-fast),
+    border-color var(--lu-motion-fast),
+    color var(--lu-motion-fast),
+    opacity var(--lu-motion-fast) !important;
+}
+
+button:not(:disabled):active,
+a:active,
+summary:active,
+.profile-photo-button:active {
+  transform: scale(.975);
+}
+
+/* Exercise logging gets a clear but quiet focus state. */
+#active .set-row,
+#active .set-card {
+  transition:
+    border-color var(--lu-motion),
+    background var(--lu-motion),
+    transform var(--lu-motion),
+    box-shadow var(--lu-motion);
+}
+
+#active .set-row:focus-within,
+#active .set-card:focus-within {
+  border-color: rgba(255,70,88,.28) !important;
+  background: rgba(255,70,88,.035) !important;
+  box-shadow: 0 0 0 1px rgba(255,70,88,.06);
+  transform: translateY(-1px);
+}
+
+#active input:focus,
+#active textarea:focus,
+#active select:focus {
+  box-shadow: 0 0 0 3px rgba(255,70,88,.08) !important;
+}
+
+/* Set save / success feedback. */
+.set-save-notice.success,
+.workout-checkin-success,
+.save-success {
+  animation: lu-v2-success 320ms cubic-bezier(.2,.9,.25,1.15);
+}
+
+/* Timers should feel live without distracting motion. */
+.active-session-clock strong,
+#activeWorkoutCompanion strong,
+#restTimerV3Time,
+.progress-overview strong,
+.home-stats strong,
+.profile-maxes strong,
+#profileTrainingLevel strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.active-session-clock span::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--lu-accent, #ff4658);
+  box-shadow: 0 0 0 0 rgba(255,70,88,.28);
+  vertical-align: 1px;
+  content: '';
+  animation: lu-v2-live-dot 2.2s ease-out infinite;
+}
+
+/* Progress changes feel smoother. */
+progress {
+  overflow: hidden;
+}
+
+progress::-webkit-progress-value {
+  transition: width 420ms cubic-bezier(.2,.8,.2,1);
+}
+
+progress::-moz-progress-bar {
+  transition: width 420ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Opened details feel less abrupt. */
+details[open] > *:not(summary) {
+  animation: lu-v2-details-in 170ms ease-out both;
+}
+
+/* Small polish for utility rows and profile actions. */
+.profile-settings-shortcut::after,
+.custom-plan-actions button,
+.text-button {
+  transition: transform var(--lu-motion-fast), color var(--lu-motion-fast), opacity var(--lu-motion-fast);
+}
+
+.profile-settings-shortcut:active::after {
+  transform: translateX(3px);
+}
+
+@keyframes lu-v2-page-in {
+  from { opacity: .72; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lu-v2-title-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lu-v2-section-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lu-v2-row-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lu-v2-nav-pop {
+  0% { transform: scale(.84); opacity: .65; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes lu-v2-indicator-in {
+  from { opacity: 0; transform: scaleX(.35); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes lu-v2-success {
+  0% { transform: scale(.985); opacity: .72; }
+  55% { transform: scale(1.012); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes lu-v2-live-dot {
+  0%, 55%, 100% { box-shadow: 0 0 0 0 rgba(255,70,88,.2); }
+  20% { box-shadow: 0 0 0 6px rgba(255,70,88,0); }
+}
+
+@keyframes lu-v2-details-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Keep motion respectful and make sure Scan remains camera-stable. */
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .page *,
+  .tabs button,
+  .tabs button::before,
+  .tabs button::after,
+  details[open] > *:not(summary) {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (min-width: 521px) {
+  .tabs {
+    border-right: 1px solid rgba(255,255,255,.07) !important;
+    border-left: 1px solid rgba(255,255,255,.07) !important;
+  }
+}
