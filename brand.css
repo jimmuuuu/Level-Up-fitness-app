@@ -235,9 +235,9 @@
 
 .lu-premade-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 70px;
+  grid-template-columns: minmax(0, 1fr) 92px;
   align-items: start;
-  gap: 13px;
+  gap: 14px;
 }
 
 .lu-premade-title {
@@ -260,33 +260,33 @@
   line-height: 1.35;
 }
 
-/* Cleaner anatomy targets: use crisp athletic SVGs instead of the old blob figure. */
+/* Production anatomy art: direct JPG rendering avoids Safari's nested-SVG image issue. */
 .lu-muscle-map {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 68px;
-  height: 68px;
-  border: 1px solid #272d32;
-  border-radius: 50%;
-  background-color: #0b0e10;
+  display: block;
+  width: 90px;
+  height: 82px;
+  overflow: hidden;
+  border: 1px solid #2b3239;
+  border-radius: 18px;
+  background-color: #080b0e;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 52px 62px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+  background-position: center center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 8px 18px rgba(0,0,0,.24);
 }
 
 .lu-muscle-map svg {
   display: none !important;
 }
 
-.lu-muscle-map[data-target="full"] { background-image: url('assets/anatomy/full.svg'); }
-.lu-muscle-map[data-target="upper"] { background-image: url('assets/anatomy/upper.svg'); }
-.lu-muscle-map[data-target="lower"] { background-image: url('assets/anatomy/lower.svg'); }
-.lu-muscle-map[data-target="push"] { background-image: url('assets/anatomy/push.svg'); }
-.lu-muscle-map[data-target="pull"] { background-image: url('assets/anatomy/pull.svg'); }
-.lu-muscle-map[data-target="core"] { background-image: url('assets/anatomy/core.svg'); }
-.lu-muscle-map[data-target="cardio"] { background-image: url('assets/anatomy/cardio.svg'); }
+.lu-muscle-map[data-target="full"] { background-image: url('assets/anatomy/full.jpg?v=48'); }
+.lu-muscle-map[data-target="upper"] { background-image: url('assets/anatomy/upper.jpg?v=48'); }
+.lu-muscle-map[data-target="lower"] { background-image: url('assets/anatomy/lower.jpg?v=48'); }
+.lu-muscle-map[data-target="push"] { background-image: url('assets/anatomy/push.jpg?v=48'); }
+.lu-muscle-map[data-target="pull"] { background-image: url('assets/anatomy/pull.jpg?v=48'); }
+.lu-muscle-map[data-target="core"] { background-image: url('assets/anatomy/core.jpg?v=48'); }
+.lu-muscle-map[data-target="cardio"] { background-image: url('assets/anatomy/cardio.jpg?v=48'); }
 
 .lu-premade-preview {
   display: grid;
@@ -350,7 +350,6 @@
   content: '  →';
 }
 
-/* Make the surrounding workout sections feel like one clean training screen. */
 #workout #accountProgramLibrary,
 #workout #customWorkoutLibrary {
   margin-top: 24px !important;
@@ -419,13 +418,14 @@
   }
 
   .lu-premade-head {
-    grid-template-columns: minmax(0, 1fr) 64px;
+    grid-template-columns: minmax(0, 1fr) 84px;
+    gap: 12px;
   }
 
   .lu-muscle-map {
-    width: 62px;
-    height: 62px;
-    background-size: 48px 58px;
+    width: 82px;
+    height: 76px;
+    border-radius: 16px;
   }
 
   .lu-premade-title h3 {
