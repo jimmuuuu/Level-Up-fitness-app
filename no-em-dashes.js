@@ -6,13 +6,7 @@
   function cleanCopy(value) {
     const text = String(value ?? '');
     if (!text.includes(EM_DASH)) return text;
-
-    // A standalone em dash is being used as an empty-value placeholder,
-    // not as sentence punctuation. Show a clear N/A instead.
     if (text.trim() === EM_DASH) return text.replace(EM_DASH, 'N/A');
-
-    // Only remove actual em dashes. Normal hyphens (-), en dashes (–),
-    // minus signs (−), ranges, and hyphenated words are left untouched.
     return text
       .replace(/\s*\u2014\s*/g, ', ')
       .replace(/\s+,/g, ',')
@@ -51,9 +45,7 @@
       NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
       {
         acceptNode(node) {
-          if (node.nodeType === Node.ELEMENT_NODE && SKIP_TAGS.has(node.tagName)) {
-            return NodeFilter.FILTER_REJECT;
-          }
+          if (node.nodeType === Node.ELEMENT_NODE && SKIP_TAGS.has(node.tagName)) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         }
       }
@@ -67,8 +59,33 @@
     }
   }
 
+  function loadWorkoutArtworkHelpers() {
+    const loadArtwork = () => {
+      if (document.querySelector('script[data-workout-card-art-fix]')) return;
+      const artwork = document.createElement('script');
+      artwork.src = 'workout-card-art-fix.js?v=56';
+      artwork.async = false;
+      artwork.dataset.workoutCardArtFix = 'true';
+      document.body.appendChild(artwork);
+    };
+
+    const existingNames = document.querySelector('script[data-simple-workout-names]');
+    if (existingNames) {
+      loadArtwork();
+      return;
+    }
+
+    const names = document.createElement('script');
+    names.src = 'simple-workout-names.js?v=56';
+    names.async = false;
+    names.dataset.simpleWorkoutNames = 'true';
+    names.addEventListener('load', loadArtwork, { once: true });
+    document.body.appendChild(names);
+  }
+
   function start() {
     cleanTree(document.body);
+    loadWorkoutArtworkHelpers();
 
     const observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
@@ -92,17 +109,20 @@
       attributeFilter: VISIBLE_ATTRIBUTES
     });
 
-    window.addEventListener('pageshow', () => cleanTree(document.body));
+    window.addEventListener('pageshow', () => {
+      cleanTree(document.body);
+      loadWorkoutArtworkHelpers();
+    });
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') cleanTree(document.body);
+      if (document.visibilityState === 'visible') {
+        cleanTree(document.body);
+        loadWorkoutArtworkHelpers();
+      }
     });
   }
 
   window.LevelUpCopyCleanup = { clean: () => cleanTree(document.body) };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start, { once: true });
-  } else {
-    start();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
