@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260820-logo-motion-art-fix-v52';
+const CACHE = 'level-up-fitness-20260820-individual-workout-art-v53';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js', './product-redesign.css', './product-nav-icons.css', './product-polish-v2.css',
