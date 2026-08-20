@@ -29,27 +29,23 @@
 
     const narrow = window.innerWidth <= 380;
     const compact = window.innerHeight <= 760;
-    const topEdge = narrow ? '14px' : '20px';
-    const controlEdge = narrow ? '14px' : '22px';
-    const stackWidth = narrow ? 'calc(100vw - 44px)' : 'min(calc(100vw - 72px), 360px)';
+    const edge = narrow ? '14px' : '20px';
     const statusBottom = compact
-      ? 'calc(218px + max(8px, env(safe-area-inset-bottom)))'
-      : 'calc(250px + max(10px, env(safe-area-inset-bottom)))';
+      ? 'calc(228px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(252px + max(10px, env(safe-area-inset-bottom)))';
     const zoomBottom = compact
-      ? 'calc(152px + max(8px, env(safe-area-inset-bottom)))'
-      : 'calc(178px + max(10px, env(safe-area-inset-bottom)))';
+      ? 'calc(158px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(176px + max(10px, env(safe-area-inset-bottom)))';
     const controlsBottom = compact
-      ? 'calc(54px + max(8px, env(safe-area-inset-bottom)))'
-      : 'calc(64px + max(10px, env(safe-area-inset-bottom)))';
+      ? 'calc(64px + max(8px, env(safe-area-inset-bottom)))'
+      : 'calc(72px + max(10px, env(safe-area-inset-bottom)))';
 
     const topbar = root.querySelector('.scan-topbar');
-    important(topbar, 'left', topEdge);
-    important(topbar, 'right', topEdge);
-    important(topbar, 'top', compact
-      ? 'calc(env(safe-area-inset-top) + 10px)'
-      : 'calc(env(safe-area-inset-top) + 14px)');
+    important(topbar, 'left', edge);
+    important(topbar, 'right', edge);
+    important(topbar, 'top', 'calc(env(safe-area-inset-top) + 14px)');
     important(topbar, 'display', 'grid');
-    important(topbar, 'grid-template-columns', narrow ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 44px');
+    important(topbar, 'grid-template-columns', narrow ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 46px');
     important(topbar, 'gap', narrow ? '10px' : '12px');
     important(topbar, 'align-items', 'start');
 
@@ -67,13 +63,8 @@
     important(title, 'text-shadow', 'none');
     important(title, 'filter', 'none');
 
-    const body = copyCard?.querySelector('span');
-    if (body) {
-      body.textContent = 'Point your camera at a machine or workout tool. Level Up will identify it and explain how to use it.';
-    }
-
     const about = document.getElementById('scanAbout');
-    const aboutSize = narrow ? '42px' : '44px';
+    const aboutSize = narrow ? '42px' : '46px';
     important(about, 'width', aboutSize);
     important(about, 'height', aboutSize);
     important(about, 'min-width', aboutSize);
@@ -82,42 +73,39 @@
     important(about, 'align-self', 'start');
 
     const status = document.getElementById('scanStatus');
-    if (status?.textContent?.startsWith('Center the machine in the frame')) {
-      status.textContent = 'Center the machine, then tap scan.';
-    }
-    important(status, 'left', '50%');
-    important(status, 'right', 'auto');
-    important(status, 'width', stackWidth);
+    important(status, 'left', edge);
+    important(status, 'right', edge);
+    important(status, 'width', 'auto');
     important(status, 'max-width', 'none');
-    important(status, 'transform', 'translateX(-50%)');
+    important(status, 'transform', 'none');
     important(status, 'bottom', statusBottom);
     important(status, 'box-sizing', 'border-box');
     important(status, 'margin', '0');
 
     const zoomControls = document.getElementById('scanZoomControls');
-    important(zoomControls, 'left', '50%');
-    important(zoomControls, 'right', 'auto');
-    important(zoomControls, 'width', stackWidth);
+    important(zoomControls, 'left', edge);
+    important(zoomControls, 'right', edge);
+    important(zoomControls, 'width', 'auto');
     important(zoomControls, 'max-width', 'none');
-    important(zoomControls, 'transform', 'translateX(-50%)');
+    important(zoomControls, 'transform', 'none');
     important(zoomControls, 'bottom', zoomBottom);
     important(zoomControls, 'box-sizing', 'border-box');
     important(zoomControls, 'grid-template-columns', narrow
-      ? '36px minmax(0, 1fr) 36px 44px'
-      : '36px minmax(0, 1fr) 36px 46px');
+      ? '38px minmax(0, 1fr) 38px 46px'
+      : '42px minmax(0, 1fr) 42px 52px');
 
     const controls = root.querySelector('.scan-controls');
-    important(controls, 'left', controlEdge);
-    important(controls, 'right', controlEdge);
+    important(controls, 'left', edge);
+    important(controls, 'right', edge);
     important(controls, 'bottom', controlsBottom);
     important(controls, 'grid-template-columns', narrow
-      ? '60px minmax(0, 1fr) 60px'
-      : '66px minmax(0, 1fr) 66px');
-    important(controls, 'gap', narrow ? '10px' : '14px');
+      ? '62px minmax(0, 1fr) 62px'
+      : '72px minmax(0, 1fr) 72px');
+    important(controls, 'gap', narrow ? '10px' : '12px');
     important(controls, 'margin', '0');
 
     root.querySelectorAll('.scan-control-small').forEach(button => {
-      const sideSize = narrow ? '60px' : '66px';
+      const sideSize = narrow ? '62px' : '72px';
       important(button, 'width', sideSize);
       important(button, 'min-width', sideSize);
       important(button, 'box-sizing', 'border-box');
@@ -125,9 +113,6 @@
     });
 
     const capture = document.getElementById('scanCapture');
-    const captureSize = compact ? '74px' : '80px';
-    important(capture, 'width', captureSize);
-    important(capture, 'height', captureSize);
     important(capture, 'justify-self', 'center');
   }
 
