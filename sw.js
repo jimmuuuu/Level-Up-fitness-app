@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-20260819-premade-visuals-v49';
+const CACHE = 'level-up-fitness-20260819-premade-visuals-v50';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './theme.css', './navigation-simplify.css', './navigation-simplify.js', './product-redesign.css', './product-nav-icons.css', './product-polish-v2.css',
@@ -38,8 +38,7 @@ const CORE = [
   './assets/workouts/dumbbell.png', './assets/workouts/machine.png', './assets/workouts/treadmill.png', './assets/workouts/timer.png',
   './assets/ranks/foundation.png', './assets/ranks/iron.png', './assets/ranks/bronze.png', './assets/ranks/silver.png',
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
-  './assets/ranks/mythic.png', './assets/ranks/apex.png',
-  './assets/workouts/premade-sprite-v2.svg'
+  './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
 const SHELL = CORE.slice(0, 91);
 const ASSETS = CORE.slice(91);
