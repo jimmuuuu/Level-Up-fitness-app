@@ -1,7 +1,7 @@
-const CACHE = 'level-up-fitness-20260819-launch-stability-v36';
+const CACHE = 'level-up-fitness-20260819-product-redesign-v37';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
-  './theme.css', './navigation-simplify.css', './navigation-simplify.js',
+  './theme.css', './navigation-simplify.css', './navigation-simplify.js', './product-redesign.css', './product-nav-icons.css',
   './set-history.css', './set-history.js', './set-history-v6.js', './cloud-history-v5.js', './workout-summary.css', './workout-summary.js',
   './summary-red-override.css', './post-workout-auto-summary.js',
   './weight-recommendations.css', './weight-recommendations.js',
@@ -40,8 +40,8 @@ const CORE = [
   './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 88);
-const ASSETS = CORE.slice(88);
+const SHELL = CORE.slice(0, 90);
+const ASSETS = CORE.slice(90);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 const STARTUP_STYLE = '<style id="level-up-startup-theme">html,body{margin:0;min-height:100%;background:#050505!important;color-scheme:dark}body{min-height:100vh;min-height:100dvh}#appShell{background:#090909}</style>';
 
