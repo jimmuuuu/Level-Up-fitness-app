@@ -2,6 +2,15 @@
   const EMBLEM = 'assets/level-up-emblem.svg';
   const APP_ICON = 'assets/level-up-app-icon.svg';
 
+  function ensureExerciseCatalogExpansion() {
+    if (document.querySelector('script[data-level-up-exercise-catalog-expansion]')) return;
+    const script = document.createElement('script');
+    script.async = false;
+    script.src = 'exercise-catalog-expansion.js?v=1';
+    script.setAttribute('data-level-up-exercise-catalog-expansion', 'true');
+    document.body.appendChild(script);
+  }
+
   function ensureHeadBranding() {
     document.title = 'Level Up Fitness';
 
@@ -87,6 +96,7 @@
   }
 
   function applyBranding() {
+    ensureExerciseCatalogExpansion();
     ensureHeadBranding();
     brandAuthGate();
     brandWorkoutPage();
