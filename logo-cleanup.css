@@ -1,10 +1,20 @@
-/* Keep the Level Up logo as the installed app icon, not repeated inside app cards. */
+/* Keep the Level Up mark as the installed app icon, not as repeated in-app artwork. */
+#levelUpOpeningSplash,
+.level-up-auth-brand,
+.level-up-workout-brand,
+.level-up-profile-brand,
+.level-up-splash-inner,
+.level-up-splash-mark-wrap,
+.level-up-splash-mark,
+.level-up-splash-wordmark,
+.level-up-splash-loader,
 .home-rank-card img,
 .rank-summary img,
 .muscle-rank img,
 .profile-rank-mini img,
 .rank-tier img {
   display: none !important;
+  visibility: hidden !important;
 }
 
 .home-rank-card,
@@ -13,7 +23,7 @@
 }
 
 .muscle-rank {
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
 }
 
 .profile-rank-mini {
@@ -22,6 +32,20 @@
 
 .rank-tier {
   grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.rank-word-badge,
+.rank-text-badge {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 14px;
+  color: #fff;
+  background: #111;
+  font-weight: 900;
+  letter-spacing: .08em;
 }
 
 .home-rank-card > div,

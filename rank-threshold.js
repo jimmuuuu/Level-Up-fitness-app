@@ -1,5 +1,14 @@
 (() => {
   const REQUIRED_WORKOUTS_FOR_RANK = 5;
+  const escapeRankText = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[character]));
+
+  function rankTextBadge(rank) {
+    const label = rank?.name || 'Unranked';
+    const initials = label.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'UR';
+    return `<span class="rank-word-badge" aria-label="${escapeRankText(label)} rank">${escapeRankText(initials)}</span>`;
+  }
 
   overallRank = function () {
     const trainedMuscles = Object.keys(muscleMaps).filter(muscle => muscleTraining(muscle).sessions.length);
@@ -28,8 +37,8 @@
         ? `${training.sessions.length} of ${minimumMuscleSessions} muscle sessions recorded`
         : 'Record a workout that targets this muscle group';
     return `<article class="muscle-rank">
-      ${rank ? `<img src="${rankImage(rank)}" alt="${rank.name} emblem">` : '<div class="rank-placeholder small" aria-hidden="true">—</div>'}
-      <div><b>${map.label}</b><small>${rank ? rank.name : 'Unranked'} &middot; ${detail}</small></div>
+      ${rankTextBadge(rank)}
+      <div><b>${escapeRankText(map.label)}</b><small>${rank ? escapeRankText(rank.name) : 'Unranked'} &middot; ${detail}</small></div>
       ${status}
     </article>`;
   };

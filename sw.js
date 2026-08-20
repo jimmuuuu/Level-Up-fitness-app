@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-logo-cleanup-20260820';
+const CACHE = 'level-up-fitness-a8f44c90e121';
 const CORE = [
   './', './index.html', './app.css', './logo-cleanup.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
@@ -8,12 +8,7 @@ const CORE = [
   './assets/workouts/bench-press.png', './assets/workouts/lat-pulldown.png',
   './assets/workouts/hip-thrust.png', './assets/workouts/ab-wheel.png',
   './assets/workouts/dumbbell.png', './assets/workouts/machine.png',
-  './assets/workouts/treadmill.png', './assets/workouts/timer.png',
-  './assets/ranks/foundation.png', './assets/ranks/iron.png',
-  './assets/ranks/bronze.png', './assets/ranks/silver.png',
-  './assets/ranks/gold.png', './assets/ranks/platinum.png',
-  './assets/ranks/diamond.png', './assets/ranks/champion.png',
-  './assets/ranks/mythic.png', './assets/ranks/apex.png'
+  './assets/workouts/treadmill.png', './assets/workouts/timer.png'
 ];
 const SHELL = CORE.slice(0, 7);
 const ASSETS = CORE.slice(7);
