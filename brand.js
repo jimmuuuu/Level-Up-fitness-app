@@ -15,7 +15,7 @@
     if (document.querySelector('script[data-level-up-simple-workout-names]')) return;
     const script = document.createElement('script');
     script.async = false;
-    script.src = 'simple-workout-names.js?v=2';
+    script.src = 'simple-workout-names.js?v=3';
     script.setAttribute('data-level-up-simple-workout-names', 'true');
     document.body.appendChild(script);
   }
