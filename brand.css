@@ -112,6 +112,302 @@
   line-height: 1.35;
 }
 
+/* Training library redesign */
+#workout.page {
+  padding-top: 18px !important;
+}
+
+#workout > .over {
+  margin-top: 2px !important;
+  color: #737b84 !important;
+  font-size: 9px !important;
+  letter-spacing: 1.7px !important;
+}
+
+#workout > h1 {
+  margin: 4px 0 5px !important;
+  color: #f7f8f9 !important;
+  font-size: clamp(29px, 8vw, 38px) !important;
+  line-height: .98 !important;
+  letter-spacing: -1.1px !important;
+}
+
+.lu-training-intro {
+  max-width: 420px;
+  margin: 0 0 26px;
+  color: #8e969e;
+  font-size: 12px;
+  line-height: 1.48;
+}
+
+#workout .library-heading {
+  margin: 30px 0 12px !important;
+}
+
+#workout .library-heading .over {
+  color: #737b84 !important;
+  font-size: 9px !important;
+  letter-spacing: 1.6px !important;
+}
+
+#workout .library-heading h2 {
+  margin: 4px 0 0 !important;
+  color: #f7f8f9 !important;
+  font-size: 21px !important;
+  line-height: 1.1 !important;
+  letter-spacing: -.35px !important;
+}
+
+#workout #create {
+  min-height: 46px !important;
+  margin: 0 0 22px !important;
+  border: 1px solid #2b3035 !important;
+  border-radius: 14px !important;
+  color: #f3f5f6 !important;
+  background: #121518 !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+}
+
+#workout #create::before {
+  content: '+ ';
+  color: #ff4d57;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.lu-training-filters {
+  display: flex;
+  gap: 8px;
+  margin: 0 -2px 14px;
+  padding: 2px 2px 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lu-training-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.lu-training-filter {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid #272c31;
+  border-radius: 999px;
+  color: #949ca4;
+  background: #0e1113;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.lu-training-filter.active {
+  border-color: rgba(255,77,87,.55);
+  color: #fff;
+  background: rgba(255,77,87,.13);
+}
+
+#planList.lu-premade-list {
+  display: grid !important;
+  gap: 14px !important;
+  margin: 0 !important;
+}
+
+.lu-premade-card {
+  position: relative;
+  display: grid;
+  gap: 17px;
+  padding: 18px 18px 15px;
+  overflow: hidden;
+  border: 1px solid #252a2f;
+  border-radius: 22px;
+  background: #121518;
+  box-shadow: 0 10px 26px rgba(0,0,0,.16);
+}
+
+.lu-premade-card[hidden] {
+  display: none !important;
+}
+
+.lu-premade-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px;
+  align-items: start;
+  gap: 13px;
+}
+
+.lu-premade-title {
+  min-width: 0;
+}
+
+.lu-premade-title h3 {
+  margin: 0;
+  color: #f8f9fa;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -.45px;
+}
+
+.lu-premade-title p {
+  margin: 5px 0 0;
+  color: #8d959d;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.lu-muscle-map {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border: 1px solid #272d32;
+  border-radius: 50%;
+  background: #0b0e10;
+}
+
+.lu-muscle-map svg {
+  width: 50px;
+  height: 58px;
+  overflow: visible;
+}
+
+.lu-muscle-map .body-base,
+.lu-muscle-map .body-part {
+  fill: #555c63;
+}
+
+.lu-muscle-map .body-line {
+  stroke: #727980;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.lu-muscle-map[data-target="full"] .body-part,
+.lu-muscle-map[data-target="upper"] .part-chest,
+.lu-muscle-map[data-target="upper"] .part-shoulder,
+.lu-muscle-map[data-target="upper"] .part-arm,
+.lu-muscle-map[data-target="upper"] .part-lat,
+.lu-muscle-map[data-target="push"] .part-chest,
+.lu-muscle-map[data-target="push"] .part-shoulder,
+.lu-muscle-map[data-target="push"] .part-triceps,
+.lu-muscle-map[data-target="pull"] .part-lat,
+.lu-muscle-map[data-target="pull"] .part-arm,
+.lu-muscle-map[data-target="pull"] .part-shoulder,
+.lu-muscle-map[data-target="lower"] .part-quad,
+.lu-muscle-map[data-target="lower"] .part-calf,
+.lu-muscle-map[data-target="lower"] .part-glute,
+.lu-muscle-map[data-target="core"] .part-core,
+.lu-muscle-map[data-target="cardio"] .part-quad,
+.lu-muscle-map[data-target="cardio"] .part-calf {
+  fill: #ff4d57;
+}
+
+.lu-premade-preview {
+  display: grid;
+  gap: 10px;
+}
+
+.lu-premade-exercise {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.lu-premade-exercise span {
+  min-width: 0;
+  overflow: hidden;
+  color: #e8ebed;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lu-premade-exercise b {
+  color: #8e969e;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lu-premade-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.lu-premade-footer small {
+  color: #737b83;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.lu-premade-view {
+  min-height: 34px;
+  padding: 0 !important;
+  border: 0 !important;
+  color: #ff5b64 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+}
+
+.lu-premade-view::after {
+  content: '  →';
+}
+
+/* Make the surrounding workout sections feel like one clean training screen. */
+#workout #accountProgramLibrary,
+#workout #customWorkoutLibrary {
+  margin-top: 24px !important;
+}
+
+#workout #accountProgramLibrary .section-heading,
+#workout #customWorkoutLibrary .section-heading {
+  margin-bottom: 10px !important;
+}
+
+#workout #accountProgramLibrary h2,
+#workout #customWorkoutLibrary h2 {
+  color: #f6f7f8 !important;
+  font-size: 19px !important;
+  letter-spacing: -.3px !important;
+}
+
+#workout #accountProgramLibrary .over,
+#workout #customWorkoutLibrary .over {
+  color: #757d85 !important;
+  font-size: 8px !important;
+  letter-spacing: 1.45px !important;
+}
+
+#workout .program-intro {
+  margin: 0 0 12px !important;
+  color: #858d95 !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+@media (min-width: 720px) {
+  #planList.lu-premade-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 420px) {
   .level-up-auth-brand {
     gap: 11px;
@@ -126,5 +422,41 @@
 
   .level-up-auth-brand-copy strong {
     font-size: 19px;
+  }
+
+  .level-up-workout-brand {
+    margin-bottom: 11px;
+  }
+
+  .lu-training-intro {
+    margin-bottom: 22px;
+  }
+
+  .lu-premade-card {
+    gap: 15px;
+    padding: 17px 16px 14px;
+    border-radius: 20px;
+  }
+
+  .lu-premade-head {
+    grid-template-columns: minmax(0, 1fr) 64px;
+  }
+
+  .lu-muscle-map {
+    width: 62px;
+    height: 62px;
+  }
+
+  .lu-muscle-map svg {
+    width: 46px;
+    height: 54px;
+  }
+
+  .lu-premade-title h3 {
+    font-size: 19px;
+  }
+
+  .lu-premade-exercise span {
+    font-size: 11.5px;
   }
 }
