@@ -1,13 +1,12 @@
 (() => {
-  // Exact highlighted-muscle artwork is loaded from dedicated files in assets/workouts.
   const ART_BY_NAME = {
-    'Full Body': 'assets/workouts/full-body-highlight.jpg?v=55',
-    'Upper Body': 'assets/workouts/upper-body-highlight.jpg?v=55',
-    'Lower Body': 'assets/workouts/lower-body-highlight.jpg?v=55',
-    'Push': 'assets/workouts/push-highlight.jpg?v=55',
-    'Pull': 'assets/workouts/pull-highlight.jpg?v=55',
-    'Core': 'assets/workouts/core-highlight.jpg?v=55',
-    'Cardio': 'assets/workouts/cardio-highlight.jpg?v=55'
+    'Full Body': 'assets/workouts/full-body-highlight.webp?v=56',
+    'Upper Body': 'assets/workouts/upper-body-highlight.webp?v=56',
+    'Lower Body': 'assets/workouts/lower-body-highlight.webp?v=56',
+    'Push': 'assets/workouts/push-highlight.webp?v=56',
+    'Pull': 'assets/workouts/pull-highlight.webp?v=56',
+    'Core': 'assets/workouts/core-highlight.webp?v=56',
+    'Cardio': 'assets/workouts/cardio-highlight.webp?v=56'
   };
 
   const SOURCE_ALIASES = new Map([
