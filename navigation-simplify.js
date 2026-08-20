@@ -70,6 +70,7 @@
     document.body.appendChild(script);
   }
 
+  function loadBranding() { loadFeature('data-level-up-brand-style', 'brand.css?v=1', 'data-level-up-brand-script', 'brand.js?v=1'); }
   function loadScanFeature() { loadFeature('data-scan-feature-style', 'scan-feature.css?v=1', 'data-scan-feature', 'scan-feature.js?v=1'); }
   function loadScanZoom() { loadFeature('data-scan-zoom-style', 'scan-zoom.css?v=4', 'data-scan-zoom', 'scan-zoom.js?v=2'); }
   function loadScanUploadFix() { loadScript('data-scan-upload-fix', 'scan-upload-fix.js?v=1'); }
@@ -109,6 +110,7 @@
     } catch {}
 
     setupProfileSettings();
+    loadBranding();
     loadScanFeature();
     loadScanZoom();
     loadScanUploadFix();
