@@ -1,0 +1,33 @@
+/* Keep the Level Up logo as the installed app icon, not repeated inside app cards. */
+.home-rank-card img,
+.rank-summary img,
+.muscle-rank img,
+.profile-rank-mini img,
+.rank-tier img {
+  display: none !important;
+}
+
+.home-rank-card,
+.rank-summary {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.muscle-rank {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.profile-rank-mini {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.rank-tier {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.home-rank-card > div,
+.rank-summary > div,
+.muscle-rank > div,
+.profile-rank-mini > div,
+.rank-tier > div {
+  min-width: 0;
+}

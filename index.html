@@ -9,29 +9,20 @@
   <meta name="apple-mobile-web-app-title" content="Level Up Fitness">
   <title>The Fitness Club</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/app-icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/app-icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png">
   <script>
     try {
-      const lastPageKey = 'levelUpFitnessLastPage';
-      const rememberedPage = sessionStorage.getItem(lastPageKey);
-      const validPages = ['workout', 'progress', 'profile', 'builder', 'active'];
-      const destination = validPages.includes(rememberedPage) ? rememberedPage : 'workout';
-      sessionStorage.setItem(lastPageKey, destination);
-      document.documentElement.setAttribute('data-restoring-page', destination);
-    } catch {
-      document.documentElement.setAttribute('data-restoring-page', 'workout');
-    }
+      const rememberedPage = sessionStorage.getItem('levelUpFitnessLastPage');
+      const validPages = ['home', 'workout', 'progress', 'profile', 'builder', 'active'];
+      if (validPages.includes(rememberedPage) && rememberedPage !== 'home') {
+        document.documentElement.setAttribute('data-restoring-page', rememberedPage);
+      }
+    } catch {}
   </script>
-  <style>
-    html[data-restoring-page] #appShell { visibility: hidden; }
-    #home,
-    .tabs button[data-page="home"],
-    #workout > .back,
-    #progress > .back,
-    #profile > .back { display: none !important; }
-    .tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  </style>
+  <style>html[data-restoring-page] #appShell { visibility: hidden; }</style>
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="logo-cleanup.css">
 </head>
 <body>
   <section id="authGate" class="auth-gate hidden" aria-labelledby="authTitle">
@@ -69,7 +60,7 @@
   </section>
 
   <main id="appShell" class="app">
-    <section id="home" class="page hidden">
+    <section id="home" class="page">
       <header class="home-top">
         <div>
           <div class="over">YOUR TRAINING</div>
@@ -119,7 +110,7 @@
       <button id="browse" class="primary">Browse all workouts</button>
     </section>
 
-    <section id="workout" class="page">
+    <section id="workout" class="page hidden">
       <button class="back" data-page="home">Back</button>
       <div class="over">YOUR WORKOUTS</div>
       <h1>Workout library</h1>
@@ -385,7 +376,8 @@
     </section>
 
     <nav class="tabs" aria-label="Main navigation">
-      <button class="active" data-page="workout">Workout</button>
+      <button class="active" data-page="home">Home</button>
+      <button data-page="workout">Workout</button>
       <button data-page="progress">Progress</button>
       <button data-page="profile">Profile</button>
     </nav>

@@ -1,49 +1,23 @@
-const CACHE = 'level-up-fitness-20260820-individual-workout-art-v53';
+const CACHE = 'level-up-fitness-logo-cleanup-20260820';
 const CORE = [
-  './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
-  './theme.css', './navigation-simplify.css', './navigation-simplify.js', './product-redesign.css', './product-nav-icons.css', './product-polish-v2.css',
-  './set-history.css', './set-history.js', './set-history-v6.js', './cloud-history-v5.js', './workout-summary.css', './workout-summary.js',
-  './summary-red-override.css', './post-workout-auto-summary.js',
-  './weight-recommendations.css', './weight-recommendations.js',
-  './weekly-workout-review.css', './weekly-workout-review.js', './rank-threshold.js',
-  './weekly-plan-onboarding.css', './weekly-plan-onboarding-v2.css', './weekly-plan-onboarding.js',
-  './gym-category-labels.js', './weekly-onboarding-interactions.js', './weekly-plan-personalization-v3.js',
-  './weekly-preview-editor.js', './start-workout-navigation-fix.js', './account-history-isolation.js', './account-history-truth.js',
-  './authoritative-history-sync.js', './auth-session-fix.js', './account-switch-fix-v2.js',
-  './scan-feature.css', './scan-feature.js', './scan-zoom.css', './scan-zoom.js', './scan-upload-fix.js',
-  './gym-passes.css', './gym-passes.js', './gym-session-fixes.css', './gym-session-fixes.js', './leg-day-start-fix.js',
-  './field-notes-final.css', './field-notes-final.js', './five-day-plan.js', './rest-timer-v3.css', './rest-timer-v3.js',
-  './rest-timer-pause-visible.css', './rest-timer-pause-visible.js',
-  './active-workout-companion.css', './active-workout-companion.js', './rest-alert-guidance.js',
-  './profile-settings-page.css', './profile-settings-page.js', './rest-timer-settings-bridge.js',
-  './disable-weight-recommendations.css', './disable-weight-recommendations.js',
-  './exercise-swap.css', './exercise-swap.js',
-  './exercise-history-facts.css', './exercise-history-facts.js',
-  './workout-calendar.css', './workout-calendar.js',
-  './exercise-library-page.css', './exercise-library-page.js',
-  './gym-profiles.css', './gym-profiles.js', './gym-onboarding-integration.js',
-  './workout-checkin.css', './workout-checkin.js',
-  './progress-insights.css', './progress-insights.js',
-  './training-quests.css', './training-quests.js',
-  './profile-level-avatar.css', './profile-level-avatar.js', './profile-photo-save-fix.js',
-  './workout-notes.css', './workout-notes.js',
-  './settings-expanded.css', './settings-expanded.js', './history-enrichment.js',
-  './companion-quality.css', './companion-quality.js', './no-em-dashes.js',
+  './', './index.html', './app.css', './logo-cleanup.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
   './assets/workouts/upper-body-tower.png', './assets/workouts/barbell.png',
   './assets/workouts/bench-press.png', './assets/workouts/lat-pulldown.png',
   './assets/workouts/hip-thrust.png', './assets/workouts/ab-wheel.png',
-  './assets/workouts/dumbbell.png', './assets/workouts/machine.png', './assets/workouts/treadmill.png', './assets/workouts/timer.png',
-  './assets/ranks/foundation.png', './assets/ranks/iron.png', './assets/ranks/bronze.png', './assets/ranks/silver.png',
-  './assets/ranks/gold.png', './assets/ranks/platinum.png', './assets/ranks/diamond.png', './assets/ranks/champion.png',
+  './assets/workouts/dumbbell.png', './assets/workouts/machine.png',
+  './assets/workouts/treadmill.png', './assets/workouts/timer.png',
+  './assets/ranks/foundation.png', './assets/ranks/iron.png',
+  './assets/ranks/bronze.png', './assets/ranks/silver.png',
+  './assets/ranks/gold.png', './assets/ranks/platinum.png',
+  './assets/ranks/diamond.png', './assets/ranks/champion.png',
   './assets/ranks/mythic.png', './assets/ranks/apex.png'
 ];
-const SHELL = CORE.slice(0, 91);
-const ASSETS = CORE.slice(91);
+const SHELL = CORE.slice(0, 7);
+const ASSETS = CORE.slice(7);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
-const STARTUP_STYLE = '<style id="level-up-startup-theme">html,body{margin:0;min-height:100%;background:#050505!important;color-scheme:dark}body{min-height:100vh;min-height:100dvh}#appShell{background:#090909}</style>';
 
 async function cachePath(cache, path, requireImage = false) {
   const request = new Request(scopedUrl(path), { cache: 'reload' });
@@ -53,24 +27,6 @@ async function cachePath(cache, path, requireImage = false) {
     throw new Error(`Unable to cache ${path}`);
   }
   await cache.put(request, response);
-}
-
-async function themedHtmlResponse(response) {
-  if (!response) return response;
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('text/html')) return response;
-  let text = await response.text();
-  if (!text.includes('id="level-up-startup-theme"')) {
-    text = text.replace(/<head(\s[^>]*)?>/i, match => `${match}${STARTUP_STYLE}`);
-  }
-  const headers = new Headers(response.headers);
-  headers.set('content-type', 'text/html; charset=utf-8');
-  headers.delete('content-length');
-  return new Response(text, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
 }
 
 self.addEventListener('install', event => {
@@ -90,21 +46,6 @@ self.addEventListener('activate', event => {
   })());
 });
 
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil((async () => {
-    const target = new URL(event.notification?.data?.url || './', self.registration.scope).href;
-    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    const existing = windows.find(client => client.url.startsWith(self.registration.scope));
-    if (existing) {
-      try { await existing.navigate(target); } catch {}
-      await existing.focus();
-      return;
-    }
-    await self.clients.openWindow(target);
-  })());
-});
-
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -114,16 +55,14 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       try {
-        const freshRequest = new Request(request, { cache: 'reload' });
-        const response = await fetch(freshRequest);
+        const response = await fetch(request);
         if (response.ok) {
           const cache = await caches.open(CACHE);
           await cache.put(scopedUrl('./index.html'), response.clone());
         }
-        return themedHtmlResponse(response);
+        return response;
       } catch {
-        const cached = await caches.match(scopedUrl('./index.html'));
-        return themedHtmlResponse(cached);
+        return caches.match(scopedUrl('./index.html'));
       }
     })());
     return;
@@ -146,8 +85,7 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     try {
-      const freshRequest = new Request(request, { cache: 'reload' });
-      const response = await fetch(freshRequest);
+      const response = await fetch(request);
       if (response.ok) {
         const cache = await caches.open(CACHE);
         await cache.put(request, response.clone());
