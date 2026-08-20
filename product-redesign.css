@@ -1,0 +1,1174 @@
+/* Level Up Fitness product redesign
+   Visual and UX layer only. Existing IDs, DOM hooks, auth, workout logic, data,
+   navigation and Supabase behavior remain owned by the existing application. */
+
+:root {
+  --lu-bg: #070809;
+  --lu-bg-elevated: #0b0d0f;
+  --lu-surface: #101317;
+  --lu-surface-2: #15191e;
+  --lu-surface-3: #1a1f25;
+  --lu-text: #f6f7f8;
+  --lu-text-soft: #c7cbd0;
+  --lu-muted: #858c94;
+  --lu-muted-2: #626971;
+  --lu-accent: #ff4658;
+  --lu-accent-strong: #e92d43;
+  --lu-accent-soft: rgba(255, 70, 88, .11);
+  --lu-accent-faint: rgba(255, 70, 88, .06);
+  --lu-line: rgba(255, 255, 255, .085);
+  --lu-line-strong: rgba(255, 255, 255, .14);
+  --lu-success: #72d89b;
+  --lu-warning: #f4c86b;
+  --lu-danger: #ff6575;
+  --lu-radius-sm: 10px;
+  --lu-radius-md: 14px;
+  --lu-radius-lg: 18px;
+  --lu-radius-xl: 24px;
+  --lu-space-1: 4px;
+  --lu-space-2: 8px;
+  --lu-space-3: 12px;
+  --lu-space-4: 16px;
+  --lu-space-5: 20px;
+  --lu-space-6: 24px;
+  --lu-space-7: 32px;
+  --lu-space-8: 40px;
+  --lu-shadow-low: 0 10px 28px rgba(0, 0, 0, .18);
+  --lu-shadow-high: 0 22px 56px rgba(0, 0, 0, .34);
+  --lu-fast: 140ms cubic-bezier(.2, .8, .2, 1);
+  --lu-normal: 220ms cubic-bezier(.2, .8, .2, 1);
+
+  /* Keep legacy variables mapped into the same system. */
+  --ink: var(--lu-text);
+  --muted: var(--lu-muted);
+  --green: var(--lu-accent);
+  --green-deep: var(--lu-accent-strong);
+  --green-soft: var(--lu-accent-soft);
+  --cream: var(--lu-bg);
+  --paper: var(--lu-bg-elevated);
+  --surface: var(--lu-surface);
+  --surface-high: var(--lu-surface-2);
+  --line: var(--lu-line);
+  --orange: #ffd4da;
+}
+
+/* 1. Global design system */
+html {
+  background: #030405;
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--lu-text);
+  background: #030405;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.48;
+  letter-spacing: -.005em;
+  text-rendering: optimizeLegibility;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  color: #fff;
+  background: rgba(255, 70, 88, .45);
+}
+
+/* 2. Typography */
+h1,
+h2,
+h3,
+strong,
+b {
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 6px 0 0;
+  color: var(--lu-text);
+  font-size: clamp(31px, 8vw, 40px);
+  font-weight: 780;
+  line-height: 1.02;
+  letter-spacing: -.045em;
+}
+
+h2 {
+  margin: 4px 0 0;
+  color: var(--lu-text);
+  font-size: 21px;
+  font-weight: 730;
+  line-height: 1.12;
+  letter-spacing: -.025em;
+}
+
+h3 {
+  color: var(--lu-text);
+  font-weight: 700;
+  letter-spacing: -.018em;
+}
+
+.over {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--lu-muted);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.over::before {
+  width: 14px;
+  height: 1px;
+  flex: 0 0 14px;
+  background: var(--lu-accent);
+  content: '';
+}
+
+small,
+.progress-intro,
+.builder-intro,
+.profile-email,
+.signout-note {
+  color: var(--lu-muted);
+}
+
+/* 3. App shell and page rhythm */
+.app {
+  width: min(520px, 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-right: max(18px, env(safe-area-inset-right));
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-left: max(18px, env(safe-area-inset-left));
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 50% -80px, rgba(255, 70, 88, .055), transparent 260px),
+    var(--lu-bg-elevated);
+  box-shadow: none;
+}
+
+.page:not(#scan) {
+  animation: lu-page-enter var(--lu-normal) both;
+}
+
+.page:not(#scan) > .over:first-of-type {
+  margin-top: 4px;
+}
+
+.page:not(#scan) > h1 {
+  margin-bottom: 28px;
+}
+
+.section-heading,
+.library-heading,
+.rank-heading,
+.end-workout-heading {
+  align-items: end;
+}
+
+.section-heading,
+.library-heading {
+  margin-bottom: 14px;
+}
+
+.home-section,
+.profile-section,
+.progress-section,
+.rank-section,
+.builder-selected-section,
+.builder-catalog-section,
+.builder-save {
+  margin-top: var(--lu-space-8);
+}
+
+/* 4. Navigation */
+.tabs {
+  position: fixed;
+  z-index: 40;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: max(10px, env(safe-area-inset-left));
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  width: min(calc(100% - 20px), 500px);
+  min-height: 66px;
+  margin: 0 auto;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 20px;
+  background: rgba(12, 15, 18, .91);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .38);
+  transform: none !important;
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+}
+
+.tabs button {
+  position: relative;
+  display: grid;
+  grid-template-rows: 25px 14px;
+  place-items: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 5px 3px 4px;
+  color: #737a82;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: .02em;
+  transition: color var(--lu-fast), background var(--lu-fast), transform var(--lu-fast);
+}
+
+.tabs button:active {
+  transform: scale(.96);
+}
+
+.tabs button.active,
+.tabs .active {
+  color: var(--lu-text) !important;
+  background: rgba(255, 255, 255, .055) !important;
+  border-radius: 15px !important;
+}
+
+.tabs button.active::after {
+  position: absolute;
+  right: 28%;
+  bottom: 1px;
+  left: 28%;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--lu-accent);
+  content: '';
+}
+
+.tabs .lu-nav-icon {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+}
+
+.tabs .lu-nav-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.tabs button.active .lu-nav-icon {
+  color: var(--lu-accent);
+}
+
+.tabs .lu-nav-label {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 5. Home and personalized dashboard */
+.home-top {
+  margin-bottom: 30px;
+}
+
+.avatar {
+  border: 1px solid var(--lu-line-strong) !important;
+  background-color: var(--lu-surface-2) !important;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .025);
+}
+
+.home-stats {
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid var(--lu-line);
+  border-radius: var(--lu-radius-lg);
+  background: var(--lu-line);
+}
+
+.home-stats > * {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--lu-surface) !important;
+}
+
+.home-plan,
+.program-today-card,
+.program-next-card {
+  border-color: var(--lu-line) !important;
+}
+
+.program-today-card {
+  border-left: 2px solid var(--lu-accent) !important;
+}
+
+/* 6. Buttons */
+button,
+a,
+label,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primary,
+.secondary-button,
+.text-button,
+.back,
+.discard-workout,
+.profile-settings-shortcut,
+.profile-photo-button,
+.profile-photo-actions button,
+.scan-actions button,
+.scan-actions a {
+  transition: transform var(--lu-fast), border-color var(--lu-fast), background var(--lu-fast), color var(--lu-fast), opacity var(--lu-fast);
+}
+
+.primary {
+  min-height: 52px;
+  padding: 0 18px;
+  border: 1px solid var(--lu-accent) !important;
+  border-radius: var(--lu-radius-md) !important;
+  color: #fff !important;
+  background: var(--lu-accent) !important;
+  box-shadow: 0 8px 22px rgba(255, 70, 88, .16);
+  font-size: 14px;
+  font-weight: 780;
+  letter-spacing: -.01em;
+}
+
+.primary:active,
+.secondary-button:active,
+.text-button:active,
+.profile-settings-shortcut:active {
+  transform: scale(.98);
+}
+
+.primary:disabled,
+button:disabled {
+  cursor: default;
+  opacity: .42;
+  box-shadow: none;
+}
+
+.secondary-button {
+  min-height: 48px;
+  border: 1px solid var(--lu-line-strong) !important;
+  border-radius: var(--lu-radius-md) !important;
+  color: var(--lu-text) !important;
+  background: var(--lu-surface-2) !important;
+  font-weight: 720;
+}
+
+.text-button,
+.back {
+  min-height: 42px;
+  color: var(--lu-text-soft) !important;
+  background: transparent !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.discard-workout,
+#signOut {
+  color: var(--lu-danger) !important;
+  border-color: rgba(255, 101, 117, .2) !important;
+  background: rgba(255, 101, 117, .055) !important;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid rgba(255, 70, 88, .6) !important;
+  outline-offset: 3px;
+}
+
+/* 7. Form controls */
+input,
+select,
+textarea {
+  border-color: var(--lu-line) !important;
+  border-radius: 12px !important;
+  color: var(--lu-text) !important;
+  background: #0c0f12 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .02);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(255, 70, 88, .48) !important;
+  background: #101317 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #616871;
+}
+
+/* 8. Workout library */
+#workout > h1 {
+  margin-bottom: 22px;
+}
+
+#workout #create {
+  margin-top: 14px;
+}
+
+.library-heading {
+  margin-top: 38px;
+  padding-top: 25px;
+  border-top: 1px solid var(--lu-line);
+}
+
+#planList,
+.home-plan-list,
+.custom-plan-list,
+.program-week {
+  gap: 0 !important;
+}
+
+#workout .home-plan,
+#workout .plan-card {
+  position: relative;
+  min-height: 86px;
+  padding: 14px 4px !important;
+  border-width: 0 0 1px !important;
+  border-style: solid !important;
+  border-color: var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#workout .home-plan:first-child,
+#workout .plan-card:first-child {
+  border-top: 1px solid var(--lu-line) !important;
+}
+
+#workout .home-plan:active,
+#workout .plan-card:active {
+  background: rgba(255, 255, 255, .025) !important;
+}
+
+.plan-icon {
+  overflow: hidden;
+  width: 54px !important;
+  height: 54px !important;
+  border: 1px solid var(--lu-line) !important;
+  border-radius: 14px !important;
+  background: var(--lu-surface) !important;
+}
+
+.plan-icon img {
+  object-fit: contain;
+}
+
+.account-program,
+.library-program,
+.custom-workout-library {
+  overflow: hidden;
+  border: 1px solid var(--lu-line) !important;
+  border-radius: var(--lu-radius-xl) !important;
+  background: var(--lu-surface) !important;
+  box-shadow: var(--lu-shadow-low);
+}
+
+.library-program,
+.custom-workout-library {
+  padding: 20px !important;
+}
+
+.program-day,
+.program-today-card,
+.program-next-card {
+  border-width: 0 0 1px !important;
+  border-color: var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.program-day:last-child,
+.program-next-card:last-child {
+  border-bottom: 0 !important;
+}
+
+.program-day.today {
+  background: var(--lu-accent-faint) !important;
+  box-shadow: inset 2px 0 0 var(--lu-accent) !important;
+}
+
+.day-badge {
+  border-color: var(--lu-line) !important;
+  background: var(--lu-surface-2) !important;
+}
+
+.custom-plan-card {
+  margin: 0 !important;
+  padding: 16px 0 !important;
+  border-width: 0 0 1px !important;
+  border-radius: 0 !important;
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+}
+
+.custom-plan-card:last-child {
+  border-bottom: 0 !important;
+}
+
+/* 9. Workout details and active logging */
+#detail .detail,
+.plan-guidance {
+  border: 0 !important;
+  border-left: 2px solid var(--lu-accent) !important;
+  border-radius: 0 14px 14px 0 !important;
+  background: var(--lu-accent-faint) !important;
+}
+
+.focus-shell,
+.anatomy-section {
+  border-color: var(--lu-line) !important;
+}
+
+#active > h1 {
+  margin-bottom: 16px;
+}
+
+.active-session-clock {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 14px 0 12px !important;
+  padding: 12px 0 !important;
+  border-width: 1px 0 !important;
+  border-style: solid !important;
+  border-color: var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.active-session-clock span {
+  color: var(--lu-muted) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em;
+}
+
+.active-session-clock strong,
+#activeElapsed {
+  color: var(--lu-text) !important;
+  font-size: 24px !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+}
+
+#activeWorkoutCompanion {
+  border: 1px solid var(--lu-line) !important;
+  border-radius: 18px !important;
+  background: rgba(13, 16, 19, .94) !important;
+  box-shadow: var(--lu-shadow-low) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.rest-timer,
+#restTimerV3 {
+  border-color: rgba(255, 70, 88, .2) !important;
+  background: var(--lu-accent-soft) !important;
+  box-shadow: none !important;
+}
+
+.set-save-notice {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--lu-muted) !important;
+}
+
+.set-save-notice.success {
+  color: var(--lu-success) !important;
+  background: transparent !important;
+}
+
+#setList {
+  margin-top: 8px;
+}
+
+#setList > .set-row,
+#setList > .set-card,
+#active .set-row,
+#active .set-card {
+  margin: 0 !important;
+  padding: 22px 0 !important;
+  border-width: 0 0 1px !important;
+  border-style: solid !important;
+  border-color: var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#active .set-row h3,
+#active .set-card h3,
+#active .exercise-title {
+  margin-bottom: 5px;
+  font-size: 19px;
+  font-weight: 740;
+  letter-spacing: -.025em;
+}
+
+#active input[type="number"] {
+  min-height: 50px;
+  font-size: 18px !important;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+#active .save-set,
+#active [data-save-set] {
+  min-height: 48px;
+  border-color: var(--lu-accent) !important;
+  color: #fff !important;
+  background: var(--lu-accent) !important;
+}
+
+.exercise-personal-note {
+  border: 0 !important;
+  border-top: 1px solid var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.exercise-personal-note summary {
+  color: var(--lu-muted) !important;
+}
+
+.end-workout-section {
+  margin-top: 36px !important;
+  padding: 22px 0 4px !important;
+  border-width: 1px 0 0 !important;
+  border-style: solid !important;
+  border-color: var(--lu-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.end-workout-section progress {
+  height: 5px !important;
+  border-radius: 999px !important;
+  background: var(--lu-surface-3) !important;
+}
+
+/* 10. Progress and statistics */
+.progress-intro {
+  max-width: 390px;
+  margin-top: -18px;
+  margin-bottom: 26px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.progress-overview {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid var(--lu-line);
+  border-radius: 20px;
+  background: var(--lu-line);
+}
+
+.progress-metric {
+  min-height: 118px;
+  padding: 16px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--lu-surface) !important;
+  box-shadow: none !important;
+}
+
+.progress-metric.time-wide,
+.progress-metric:first-child {
+  grid-column: 1 / -1;
+  min-height: 106px;
+  background: linear-gradient(135deg, rgba(255, 70, 88, .10), var(--lu-surface) 58%) !important;
+}
+
+.progress-metric > span,
+.progress-metric small {
+  color: var(--lu-muted) !important;
+}
+
+.progress-metric > span {
+  font-size: 9px !important;
+  font-weight: 820 !important;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.progress-metric strong {
+  margin: 8px 0 4px !important;
+  color: var(--lu-text) !important;
+  font-size: clamp(24px, 7vw, 32px) !important;
+  font-weight: 770 !important;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.progress-metric.highlight strong {
+  color: var(--lu-accent) !important;
+}
+
+.progress-section,
+.rank-section {
+  padding-top: 24px;
+  border-top: 1px solid var(--lu-line);
+}
+
+.volume-card,
+.rank-summary,
+.exercise-record,
+.muscle-rank,
+.rank-tier,
+.history-row {
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.volume-card {
+  padding: 18px 0 !important;
+  border-width: 0 !important;
+  border-radius: 0 !important;
+}
+
+.volume-column i {
+  border-radius: 4px 4px 1px 1px !important;
+  background: var(--lu-accent) !important;
+}
+
+.exercise-record,
+.history-row,
+.muscle-rank {
+  margin: 0 !important;
+  padding: 16px 0 !important;
+  border-width: 0 0 1px !important;
+  border-radius: 0 !important;
+}
+
+.exercise-record:last-child,
+.history-row:last-child,
+.muscle-rank:last-child {
+  border-bottom: 0 !important;
+}
+
+.exercise-record .record-stats strong,
+.history-row > strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-badge,
+.record-gain {
+  border-color: rgba(255, 70, 88, .25) !important;
+  color: #ff9eaa !important;
+  background: var(--lu-accent-soft) !important;
+}
+
+.rank-summary {
+  position: relative;
+  overflow: hidden;
+  padding: 20px !important;
+  border: 1px solid var(--lu-line) !important;
+  border-radius: 20px !important;
+  background: var(--lu-surface) !important;
+}
+
+.rank-summary::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at top right, rgba(255, 70, 88, .12), transparent 68%);
+  pointer-events: none;
+  content: '';
+}
+
+.rank-tier {
+  border-radius: 0 !important;
+}
+
+/* 11. Profile */
+#profile > h1 {
+  margin-bottom: 2px;
+}
+
+.profile-email {
+  margin: 0 0 24px;
+  font-size: 12px;
+}
+
+.profile-overview {
+  margin: 0 0 30px !important;
+}
+
+.profile-account-card {
+  position: relative;
+  padding: 20px 0 22px !important;
+  border-width: 0 0 1px !important;
+  border-radius: 0 !important;
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.profile-photo {
+  width: 78px !important;
+  height: 78px !important;
+  border: 1px solid var(--lu-line-strong) !important;
+  border-radius: 24px !important;
+  background: var(--lu-surface-2) !important;
+}
+
+.profile-photo-button {
+  min-height: 38px !important;
+  border-color: var(--lu-line) !important;
+  background: var(--lu-surface) !important;
+  font-size: 10px !important;
+}
+
+.profile-account-card strong {
+  font-size: 20px !important;
+  letter-spacing: -.025em;
+}
+
+.profile-rank-mini {
+  color: var(--lu-accent) !important;
+}
+
+.profile-training-level,
+.profile-level-card {
+  border-color: var(--lu-line) !important;
+}
+
+.profile-level-card {
+  padding: 20px !important;
+  border: 1px solid var(--lu-line) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(255, 70, 88, .09), var(--lu-surface) 48%) !important;
+  box-shadow: var(--lu-shadow-low);
+}
+
+.profile-level-card h2 {
+  font-size: 28px !important;
+  letter-spacing: -.04em !important;
+}
+
+.profile-level-track {
+  height: 5px !important;
+  background: var(--lu-surface-3) !important;
+}
+
+.profile-level-track span {
+  background: var(--lu-accent) !important;
+}
+
+.profile-section,
+.rank-section {
+  margin-top: 34px !important;
+}
+
+.profile-maxes {
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid var(--lu-line);
+  border-radius: 18px;
+  background: var(--lu-line);
+}
+
+.profile-maxes article,
+.profile-empty {
+  padding: 15px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--lu-surface) !important;
+}
+
+.profile-maxes strong {
+  font-size: 22px !important;
+  letter-spacing: -.035em;
+}
+
+.home-gym-card {
+  padding: 16px 0 !important;
+  border-width: 1px 0 !important;
+  border-radius: 0 !important;
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+}
+
+.profile-settings-shortcut {
+  position: relative;
+  min-height: 54px !important;
+  margin: 10px 0 0 !important;
+  padding: 0 0 !important;
+  border-width: 1px 0 !important;
+  border-radius: 0 !important;
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+}
+
+.profile-settings-shortcut::after {
+  color: var(--lu-muted) !important;
+  font-size: 22px;
+}
+
+.profile-settings-panel {
+  padding: 20px 0 0 !important;
+  border-width: 1px 0 0 !important;
+  border-radius: 0 !important;
+  border-color: var(--lu-line) !important;
+  background: transparent !important;
+}
+
+/* 12. Builder and settings surfaces */
+.builder-setup,
+.builder-selected-card,
+.builder-catalog-card,
+.builder-save,
+.settings-card,
+.settings-section,
+.workout-note-card {
+  border-color: var(--lu-line) !important;
+  background: var(--lu-surface) !important;
+  box-shadow: none !important;
+}
+
+.builder-setup,
+.builder-save {
+  border-radius: 18px !important;
+}
+
+.builder-selected-card,
+.builder-catalog-card {
+  border-radius: 14px !important;
+}
+
+.builder-add-button,
+.custom-plan-actions button:first-child {
+  color: #fff !important;
+  border-color: var(--lu-accent) !important;
+  background: var(--lu-accent) !important;
+}
+
+/* 13. Authentication */
+.auth-gate {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 70, 88, .10), transparent 280px),
+    var(--lu-bg) !important;
+}
+
+.auth-panel {
+  position: relative;
+  width: min(410px, 100%);
+  padding: 34px 24px 26px !important;
+  overflow: hidden;
+  border: 1px solid var(--lu-line) !important;
+  border-radius: 28px !important;
+  background: rgba(13, 16, 19, .96) !important;
+  box-shadow: var(--lu-shadow-high) !important;
+}
+
+.auth-panel::before {
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin-bottom: 26px;
+  border-radius: 999px;
+  background: var(--lu-accent);
+  content: '';
+}
+
+.auth-panel h1 {
+  max-width: 330px;
+  font-size: 34px;
+  letter-spacing: -.045em;
+}
+
+.auth-copy {
+  margin-bottom: 24px !important;
+  color: var(--lu-muted) !important;
+}
+
+.provider-button.google-provider,
+.provider-button.apple-provider,
+.provider-button.active-provider {
+  min-height: 54px !important;
+  border: 1px solid var(--lu-line-strong) !important;
+  border-radius: 14px !important;
+  color: var(--lu-text) !important;
+  background: var(--lu-surface-2) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.provider-button:active {
+  transform: scale(.985);
+  background: var(--lu-surface-3) !important;
+}
+
+.auth-divider::before {
+  background: var(--lu-line) !important;
+}
+
+.auth-divider span {
+  color: var(--lu-muted-2) !important;
+  background: #0d1013 !important;
+}
+
+/* 14. Empty, loading and status states */
+.progress-empty,
+.profile-empty,
+.scan-picker-empty,
+.builder-empty,
+.exercise-library-empty {
+  padding: 22px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: var(--lu-muted) !important;
+  background: transparent !important;
+  text-align: left !important;
+}
+
+.scan-loading-card {
+  border-color: var(--lu-line-strong) !important;
+  background: rgba(14, 17, 20, .97) !important;
+  box-shadow: var(--lu-shadow-high);
+}
+
+.scan-spinner {
+  border-color: #30363c !important;
+  border-top-color: var(--lu-accent) !important;
+}
+
+/* 15. Micro-interactions */
+@keyframes lu-page-enter {
+  from { opacity: .55; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lu-success-pop {
+  0% { transform: scale(.985); }
+  55% { transform: scale(1.012); }
+  100% { transform: scale(1); }
+}
+
+.set-save-notice.success,
+.pr-badge,
+.record-gain {
+  animation: lu-success-pop 240ms cubic-bezier(.2, .9, .2, 1);
+}
+
+button:not(:disabled):hover,
+a:hover {
+  border-color: var(--lu-line-strong);
+}
+
+/* 16. Mobile and large-screen polish */
+@media (max-width: 390px) {
+  .app {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  h1 {
+    font-size: 31px;
+  }
+
+  .progress-overview {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .progress-metric {
+    min-height: 110px;
+    padding: 14px !important;
+  }
+
+  .tabs {
+    right: 7px;
+    left: 7px;
+    width: calc(100% - 14px);
+  }
+
+  .tabs button {
+    font-size: 8px;
+  }
+}
+
+@media (min-width: 760px) {
+  body {
+    background: #030405;
+  }
+
+  .app {
+    width: min(720px, calc(100% - 40px));
+    margin: 20px auto;
+    padding-right: 32px;
+    padding-left: 32px;
+    border: 1px solid rgba(255, 255, 255, .05);
+    border-radius: 28px;
+  }
+
+  .tabs {
+    width: min(620px, calc(100% - 60px));
+  }
+
+  .progress-overview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .progress-metric.time-wide,
+  .progress-metric:first-child {
+    grid-column: span 2;
+  }
+
+  .profile-maxes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
