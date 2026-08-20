@@ -11,6 +11,15 @@
     document.body.appendChild(script);
   }
 
+  function ensureSimpleWorkoutNames() {
+    if (document.querySelector('script[data-level-up-simple-workout-names]')) return;
+    const script = document.createElement('script');
+    script.async = false;
+    script.src = 'simple-workout-names.js?v=1';
+    script.setAttribute('data-level-up-simple-workout-names', 'true');
+    document.body.appendChild(script);
+  }
+
   function ensureHeadBranding() {
     document.title = 'Level Up Fitness';
 
@@ -97,6 +106,7 @@
 
   function applyBranding() {
     ensureExerciseCatalogExpansion();
+    ensureSimpleWorkoutNames();
     ensureHeadBranding();
     brandAuthGate();
     brandWorkoutPage();
