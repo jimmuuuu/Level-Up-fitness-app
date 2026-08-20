@@ -224,3 +224,95 @@ body:has(#scan.page:not(.hidden)) {
     -webkit-line-clamp: 2;
   }
 }
+
+/* Scan readability fix: keep both instruction areas sharp and unobstructed. */
+#scan .scan-topbar {
+  top: calc(env(safe-area-inset-top) + 14px) !important;
+}
+
+#scan .scan-copy-card {
+  background: #0b0e11 !important;
+  border-color: rgba(255,255,255,.16) !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.32) !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#scan .scan-copy-card strong {
+  color: #ffffff !important;
+  font-size: 15px !important;
+  line-height: 1.22 !important;
+}
+
+#scan .scan-copy-card span {
+  display: block !important;
+  margin-top: 5px !important;
+  overflow: visible !important;
+  color: #d2d7dc !important;
+  font-size: 12px !important;
+  font-weight: 550 !important;
+  line-height: 1.42 !important;
+  opacity: 1 !important;
+  -webkit-box-orient: initial !important;
+  -webkit-line-clamp: unset !important;
+}
+
+#scan .scan-about-button {
+  background: #0b0e11 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#scan .scan-status {
+  z-index: 9 !important;
+  right: 14px !important;
+  bottom: calc(252px + max(10px, env(safe-area-inset-bottom))) !important;
+  left: 14px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 10px 14px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  background: rgba(8,10,12,.94) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+@media (max-height: 760px) {
+  #scan .scan-copy-card span {
+    display: block !important;
+    overflow: visible !important;
+    font-size: 11.5px !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  #scan .scan-status {
+    bottom: calc(228px + max(8px, env(safe-area-inset-bottom))) !important;
+    padding: 8px 12px !important;
+    font-size: 12.5px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #scan .scan-copy-card span {
+    display: block !important;
+    overflow: visible !important;
+    font-size: 11.5px !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  #scan .scan-status {
+    right: 10px !important;
+    left: 10px !important;
+    font-size: 12px !important;
+  }
+}
