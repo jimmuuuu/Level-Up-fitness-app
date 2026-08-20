@@ -1,15 +1,16 @@
 (() => {
+  const SPRITE = 'assets/workouts/premade-sprite-v2.svg';
   const basicWorkoutOrder = [
-    { source: ['Strong Start', 'Full Body'], name: 'Full Body', art: 'assets/workouts/full-body-visual.svg' },
-    { source: ['Upper Body Strength', 'Upper Body'], name: 'Upper Body', art: 'assets/workouts/upper-body-visual.svg' },
-    { source: ['Lower Body Strength', 'Lower Body'], name: 'Lower Body', art: 'assets/workouts/lower-body-visual.svg' },
-    { source: ['Push Day', 'Push'], name: 'Push', art: 'assets/workouts/push-visual.svg' },
-    { source: ['Pull Day', 'Pull'], name: 'Pull', art: 'assets/workouts/pull-visual.svg' },
-    { source: ['Core Builder', 'Core'], name: 'Core', art: 'assets/workouts/core-visual.svg' },
-    { source: ['Cardio Starter', 'Cardio'], name: 'Cardio', art: 'assets/workouts/cardio-visual.svg' }
+    { source: ['Strong Start', 'Full Body'], name: 'Full Body', pos: '0% 0%' },
+    { source: ['Upper Body Strength', 'Upper Body'], name: 'Upper Body', pos: '33.333% 0%' },
+    { source: ['Lower Body Strength', 'Lower Body'], name: 'Lower Body', pos: '66.666% 0%' },
+    { source: ['Push Day', 'Push'], name: 'Push', pos: '100% 0%' },
+    { source: ['Pull Day', 'Pull'], name: 'Pull', pos: '0% 100%' },
+    { source: ['Core Builder', 'Core'], name: 'Core', pos: '33.333% 100%' },
+    { source: ['Cardio Starter', 'Cardio'], name: 'Cardio', pos: '66.666% 100%' }
   ];
 
-  const artByName = Object.fromEntries(basicWorkoutOrder.map(item => [item.name, item.art]));
+  const positionByName = Object.fromEntries(basicWorkoutOrder.map(item => [item.name, item.pos]));
   let decorating = false;
   let queued = false;
 
@@ -57,7 +58,9 @@
         padding: 0 !important;
         border: 0 !important;
         border-radius: 0 !important;
-        background: #090b0d center / cover no-repeat !important;
+        background-color: #090b0d !important;
+        background-repeat: no-repeat !important;
+        background-size: 400% 200% !important;
         overflow: hidden !important;
       }
 
@@ -125,7 +128,9 @@
         flex: 0 0 56px !important;
         border: 1px solid #252a2f !important;
         border-radius: 12px !important;
-        background: #090b0d center / cover no-repeat !important;
+        background-color: #090b0d !important;
+        background-repeat: no-repeat !important;
+        background-size: 400% 200% !important;
         overflow: hidden !important;
       }
 
@@ -167,14 +172,15 @@
     if (intro.textContent !== text) intro.textContent = text;
   }
 
-  function paintIcon(icon, art) {
-    if (!icon || !art) return;
+  function paintIcon(icon, name) {
+    const pos = positionByName[name];
+    if (!icon || !pos) return;
     icon.classList.add('workout-exercise-visual');
-    if (icon.dataset.workoutArt !== art) {
-      icon.dataset.workoutArt = art;
-      icon.innerHTML = '';
-      icon.style.backgroundImage = `url("${art}")`;
-    }
+    icon.innerHTML = '';
+    icon.style.backgroundImage = `url("${SPRITE}")`;
+    icon.style.backgroundPosition = pos;
+    icon.style.backgroundSize = '400% 200%';
+    icon.style.backgroundRepeat = 'no-repeat';
   }
 
   function decorateWorkoutVisuals() {
@@ -189,21 +195,17 @@
         list.classList.add('premade-visual-grid');
         list.querySelectorAll('.plan-card').forEach(card => {
           const name = String(card.querySelector('b')?.textContent || '').trim();
-          const art = artByName[name];
-          if (!art) return;
+          if (!positionByName[name]) return;
           card.classList.add('premade-visual-card');
-          paintIcon(card.querySelector('.plan-icon'), art);
+          paintIcon(card.querySelector('.plan-icon'), name);
 
           const plan = planForName(name);
           const meta = card.querySelector('small');
-          if (plan && meta) {
-            const next = `${plan.exercises.length} exercises · ${plan.time}`;
-            if (meta.textContent !== next) meta.textContent = next;
-          }
+          if (plan && meta) meta.textContent = `${plan.exercises.length} exercises · ${plan.time}`;
 
           const button = card.querySelector('.edit');
           if (button) {
-            if (button.textContent !== '→') button.textContent = '→';
+            button.textContent = '→';
             button.setAttribute('aria-label', `Open ${name} workout`);
           }
         });
@@ -213,7 +215,7 @@
       if (home) {
         home.querySelectorAll('.home-plan').forEach(card => {
           const name = String(card.querySelector('b')?.textContent || '').trim();
-          paintIcon(card.querySelector('.home-plan-icon'), artByName[name]);
+          paintIcon(card.querySelector('.home-plan-icon'), name);
         });
       }
     } finally {
