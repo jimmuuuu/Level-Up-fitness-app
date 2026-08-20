@@ -14,21 +14,21 @@
   bottom: 0 !important;
   left: 50% !important;
   width: min(520px, 100%) !important;
-  min-height: calc(64px + env(safe-area-inset-bottom)) !important;
+  min-height: calc(58px + env(safe-area-inset-bottom)) !important;
   margin: 0 !important;
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) !important;
+  padding: 4px 8px max(4px, calc(env(safe-area-inset-bottom) - 10px)) !important;
   border: 0 !important;
   border-top: 1px solid rgba(255,255,255,.09) !important;
-  border-radius: 18px 18px 0 0 !important;
-  background: rgba(11,14,17,.97) !important;
-  box-shadow: 0 -12px 32px rgba(0,0,0,.32) !important;
+  border-radius: 16px 16px 0 0 !important;
+  background: rgba(11,14,17,.985) !important;
+  box-shadow: 0 -10px 28px rgba(0,0,0,.30) !important;
   transform: translateX(-50%) !important;
   backdrop-filter: blur(24px) saturate(135%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(135%) !important;
 }
 
 .tabs button {
-  min-height: 52px !important;
+  min-height: 50px !important;
   transition:
     color var(--lu-motion-fast),
     background var(--lu-motion-fast),
