@@ -35,6 +35,66 @@
   --red-dark: #8e2733;
 }
 
+/* Final visual refresh overrides (kept last so legacy theme rules cannot undo them). */
+:root {
+  --streak-gold: #f2f2f2;
+  --streak-gold-soft: rgba(255,255,255,.08);
+}
+
+.profile-performance { gap: 16px; }
+.overall-grade-card,
+.workout-streak-card,
+.schedule-streak-card {
+  border: 1px solid #303030 !important;
+  border-top: 0 !important;
+  border-radius: 18px !important;
+  background: linear-gradient(140deg, #191919, #0d0d0d) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.3) !important;
+}
+.overall-grade-card { border-left: 3px solid var(--grade-accent) !important; }
+.overall-grade-score {
+  border: 0 !important;
+  background: #050505 !important;
+  box-shadow: inset 0 0 0 2px var(--grade-accent), 0 0 0 5px var(--grade-soft) !important;
+}
+.workout-streak-card,
+.schedule-streak-card { border-left: 3px solid #e8e8e8 !important; }
+.streak-flame,
+.flame-icon {
+  border: 1px solid #777 !important;
+  border-radius: 14px !important;
+  background: #0a0a0a !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.streak-flame::before,
+.flame-icon::before {
+  content: "" !important;
+  left: 15px !important;
+  top: 10px !important;
+  width: 16px !important;
+  height: 23px !important;
+  border: 2px solid #f2f2f2 !important;
+  border-radius: 12px 12px 10px 10px !important;
+  background: transparent !important;
+  transform: rotate(18deg) !important;
+}
+.streak-flame::after,
+.flame-icon::after {
+  content: "" !important;
+  left: 20px !important;
+  top: 23px !important;
+  width: 7px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  background: #f2f2f2 !important;
+}
+
+@media (max-width: 390px) {
+  .overall-grade-card { grid-template-columns: 72px minmax(0,1fr) !important; padding: 16px !important; }
+  .workout-streak-card, .schedule-streak-card { grid-template-columns: 52px minmax(0,1fr) !important; padding: 16px !important; }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2795,6 +2855,17 @@ input,
   }
 }
 
+/* End-of-file visual override: ensures the refreshed monochrome treatment wins. */
+:root { --streak-gold:#f2f2f2; --streak-gold-soft:rgba(255,255,255,.08); }
+.overall-grade-card,.workout-streak-card,.schedule-streak-card { border:1px solid #303030 !important; border-top:0 !important; border-radius:18px !important; background:linear-gradient(140deg,#191919,#0d0d0d) !important; box-shadow:0 14px 34px rgba(0,0,0,.3) !important; }
+.overall-grade-card { border-left:3px solid var(--grade-accent) !important; }
+.overall-grade-score { border:0 !important; background:#050505 !important; box-shadow:inset 0 0 0 2px var(--grade-accent),0 0 0 5px var(--grade-soft) !important; }
+.workout-streak-card,.schedule-streak-card { border-left:3px solid #e8e8e8 !important; }
+.streak-flame,.flame-icon { border:1px solid #777 !important; border-radius:14px !important; background:#0a0a0a !important; box-shadow:none !important; transform:none !important; }
+.streak-flame::before,.flame-icon::before { content:"" !important; left:15px !important; top:10px !important; width:16px !important; height:23px !important; border:2px solid #f2f2f2 !important; border-radius:12px 12px 10px 10px !important; background:transparent !important; transform:rotate(18deg) !important; }
+.streak-flame::after,.flame-icon::after { content:"" !important; left:20px !important; top:23px !important; width:7px !important; height:9px !important; border-radius:50% !important; background:#f2f2f2 !important; }
+@media (max-width:390px) { .overall-grade-card { grid-template-columns:72px minmax(0,1fr) !important; padding:16px !important; } .workout-streak-card,.schedule-streak-card { grid-template-columns:52px minmax(0,1fr) !important; padding:16px !important; } }
+
 .end-workout-section {
   margin: 32px 0 20px;
   padding: 22px;
@@ -3120,6 +3191,102 @@ input,
   * {
     scroll-behavior: auto !important;
   }
+}
+
+/* Visual refresh: the performance surfaces are the product, not decoration. */
+.profile-performance {
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.overall-grade-card,
+.workout-streak-card,
+.schedule-streak-card {
+  border: 1px solid #2b2b2b;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #171717 0%, #101010 100%);
+  box-shadow: 0 10px 28px rgba(0,0,0,.24);
+}
+
+.overall-grade-card {
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  min-height: 112px;
+  padding: 20px;
+  border-top: 0;
+  border-left: 3px solid var(--grade-accent);
+}
+
+.overall-grade-score {
+  width: 80px;
+  height: 80px;
+  border: 0;
+  border-radius: 50%;
+  background: #0a0a0a;
+  box-shadow: inset 0 0 0 2px var(--grade-accent), 0 0 0 5px var(--grade-soft);
+}
+
+.overall-grade-score strong { font-size: 40px; }
+.overall-grade-score span { color: var(--text-secondary); }
+
+.overall-grade-copy h2 { font-size: clamp(20px, 6vw, 27px); letter-spacing: -.03em; }
+.overall-grade-copy p { max-width: 34ch; font-size: 13px; }
+
+.workout-streak-card,
+.schedule-streak-card {
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  min-height: 88px;
+  border-top: 0;
+  border-left: 3px solid #d8d8d8;
+}
+
+/* Replace the cartoon flame with a restrained streak mark. */
+.streak-flame,
+.flame-icon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #777;
+  border-radius: 14px;
+  background: #0b0b0b;
+  transform: none;
+  box-shadow: none;
+}
+
+.streak-flame::before,
+.flame-icon::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  width: 16px;
+  height: 23px;
+  border: 2px solid #f2f2f2;
+  border-radius: 12px 12px 10px 10px;
+  transform: rotate(18deg);
+  background: transparent;
+}
+
+.streak-flame::after,
+.flame-icon::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 23px;
+  width: 7px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f2f2f2;
+}
+
+.workout-streak-card > div > strong,
+.schedule-streak-card > div > strong { font-size: 20px; }
+
+@media (max-width: 390px) {
+  .overall-grade-card { grid-template-columns: 72px minmax(0,1fr); padding: 16px; }
+  .overall-grade-score { width: 66px; height: 66px; }
+  .overall-grade-score strong { font-size: 34px; }
+  .overall-grade-card > button,
+  .overall-grade-card .grade-trend { grid-column: 2; justify-self: start; }
+  .workout-streak-card, .schedule-streak-card { grid-template-columns: 52px minmax(0,1fr); padding: 16px; }
 }
 
 .how-it-works {
@@ -4265,3 +4432,13 @@ input,
     transform: none !important;
   }
 }
+
+/* Last-pass monochrome treatment for performance cards. */
+:root { --streak-gold:#f2f2f2; --streak-gold-soft:rgba(255,255,255,.08); }
+.overall-grade-card,.workout-streak-card,.schedule-streak-card { border:1px solid #303030 !important; border-top:0 !important; border-radius:18px !important; background:linear-gradient(140deg,#191919,#0d0d0d) !important; box-shadow:0 14px 34px rgba(0,0,0,.3) !important; }
+.overall-grade-card { border-left:3px solid var(--grade-accent) !important; }
+.overall-grade-score { border:0 !important; background:#050505 !important; box-shadow:inset 0 0 0 2px var(--grade-accent),0 0 0 5px var(--grade-soft) !important; }
+.workout-streak-card,.schedule-streak-card { border-left:3px solid #e8e8e8 !important; }
+.streak-flame,.flame-icon { border:1px solid #777 !important; border-radius:14px !important; background:#0a0a0a !important; box-shadow:none !important; transform:none !important; }
+.streak-flame::before,.flame-icon::before { content:"" !important; left:15px !important; top:10px !important; width:16px !important; height:23px !important; border:2px solid #f2f2f2 !important; border-radius:12px 12px 10px 10px !important; background:transparent !important; transform:rotate(18deg) !important; }
+.streak-flame::after,.flame-icon::after { content:"" !important; left:20px !important; top:23px !important; width:7px !important; height:9px !important; border-radius:50% !important; background:#f2f2f2 !important; }
