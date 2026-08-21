@@ -1,4 +1,4 @@
-const CACHE = 'level-up-fitness-d49a5b768836';
+const CACHE = 'level-up-fitness-23e46e288f48';
 const CORE = [
   './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',

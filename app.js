@@ -126,6 +126,7 @@ const personalProgram = {
   id: 'weekly-beginner-v1',
   ownerAccountKey: '89c029b6945267ddffbef6106a1ba4c8ffa156d0e3808730f094ce7fb15565d1',
   name: 'Weekly Beginner Workout Plan',
+  scheduleStartedOn: '2026-08-10',
   instructions: [
     'For the first one or two weeks, keep the weights comfortable while learning each movement.',
     'Use slow, controlled repetitions and good technique.',
@@ -468,7 +469,9 @@ const PENDING_CLOUD_SESSIONS_KEY = 'levelUpFitnessPendingCloudSessions';
 const PENDING_CLOUD_SESSIONS_PREFIX = 'levelUpFitnessPendingCloudSessions:';
 const LEGACY_ACCOUNT_STORAGE_MIGRATION_PREFIX = 'levelUpFitnessAccountStorageMigrated:';
 const LEGACY_ACCOUNT_STORAGE_OWNER_KEY = 'levelUpFitnessLegacyStorageOwner';
+const LEGACY_LOCAL_HISTORY_OWNER_KEY = 'levelUpFitnessLegacyLocalHistoryOwner';
 const CUSTOM_WORKOUT_DRAFT_PREFIX = 'levelUpFitnessCustomWorkoutDraft:';
+const SCHEDULE_ACTIVATION_PREFIX = 'levelUpFitnessScheduleActivation:';
 const MAX_CUSTOM_WORKOUTS = 12;
 const MAX_CUSTOM_EXERCISES = 20;
 const MINUTE_MS = 60 * 1000;
@@ -480,6 +483,7 @@ let cloudReady = false;
 let cloudSessionHydration = null;
 let cloudSessionHydrationUserId = '';
 let cloudSessionUserId = '';
+let cloudAuthSessionUserId = '';
 let cloudAuthEpoch = 0;
 let cloudProfileSaveQueue = Promise.resolve();
 
@@ -488,7 +492,11 @@ function loadAccountHistory(userId = cloudUser?.id) {
 }
 
 function historyOwnerId() {
-  return cloudUser?.id || userProfile?.cloudUserId || '';
+  const cloudId = cloudUser?.id || userProfile?.cloudUserId || '';
+  if (cloudId) return cloudId;
+  if (userProfile?.provider !== 'email-test') return '';
+  const localIdentity = String(userProfile.accountKey || userProfile.email || '').trim().toLowerCase();
+  return localIdentity ? `local:${localIdentity}` : '';
 }
 
 function historyStorageKey(userId = historyOwnerId()) {
@@ -497,6 +505,22 @@ function historyStorageKey(userId = historyOwnerId()) {
 
 function pendingCloudSessionsKey(userId = historyOwnerId()) {
   return userId ? `${PENDING_CLOUD_SESSIONS_PREFIX}${userId}` : PENDING_CLOUD_SESSIONS_KEY;
+}
+
+function migrateLegacyLocalHistory(userId = historyOwnerId()) {
+  if (!String(userId).startsWith('local:')) return;
+  const scopedKey = historyStorageKey(userId);
+  const legacyHistory = localStorageReadArray(WORKOUT_HISTORY_KEY);
+  if (!legacyHistory.length) return;
+  if (localStorage.getItem(LEGACY_ACCOUNT_STORAGE_OWNER_KEY)) return;
+  const existingOwner = localStorage.getItem(LEGACY_LOCAL_HISTORY_OWNER_KEY) || '';
+  if (existingOwner && existingOwner !== userId) return;
+  const scopedHistory = localStorageReadArray(scopedKey);
+  const mergedHistory = mergeHistory(scopedHistory, legacyHistory);
+  if (localStorageWriteArray(scopedKey, mergedHistory)) {
+    localStorage.setItem(LEGACY_LOCAL_HISTORY_OWNER_KEY, userId);
+    localStorage.removeItem(WORKOUT_HISTORY_KEY);
+  }
 }
 
 function supabaseConfigured() {
@@ -1173,13 +1197,26 @@ function workoutGradeLabel(letter) {
   })[letter] || 'Workout recorded';
 }
 
+function exerciseIdentitySlug(value) {
+  return safeCustomText(value, 100)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 function gradeExerciseKey(exercise, log = null) {
-  const stableId = safeCustomText(
-    log?.exerciseId || exercise?.catalogId || exercise?.targetKey || exercise?.instanceId,
-    100
-  );
-  if (stableId) return `id:${stableId.toLowerCase()}`;
-  return `name:${safeCustomText(log?.exercise || exercise?.name, 100).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const catalogId = safeCustomText(log?.exerciseId || exercise?.catalogId, 100);
+  const catalogExercise = catalogExerciseById(catalogId);
+  const movementName = catalogExercise?.name
+    || safeCustomText(log?.exercise || exercise?.name || exercise?.targetKey, 100);
+  const movementSlug = exerciseIdentitySlug(movementName);
+  if (movementSlug) return `movement:${movementSlug}`;
+
+  // Older cloud rows can occasionally contain only an exercise ID. Catalog
+  // IDs use an `exercise-` prefix, so normalize that legacy shape to the same
+  // movement key used by library, personal, and custom plans.
+  const legacyIdSlug = exerciseIdentitySlug(catalogId).replace(/^exercise-/, '');
+  return legacyIdSlug ? `movement:${legacyIdSlug}` : 'movement:unknown';
 }
 
 function workingGradeLogs(plan, sourceLogs) {
@@ -1200,6 +1237,10 @@ function workingGradeLogs(plan, sourceLogs) {
       && Number(log.reps) >= 1
     );
   });
+}
+
+function completedWorkingSetCount(plan, sourceLogs) {
+  return new Set(workingGradeLogs(plan, sourceLogs).map(log => `${Number(log.exerciseIndex)}-${Number(log.set)}`)).size;
 }
 
 function median(values) {
@@ -1401,13 +1442,15 @@ function cloudProfileFromUser(user) {
 }
 
 function assertCloudIdentity(userId, authEpoch = cloudAuthEpoch) {
-  if (!userId || !cloudReady || cloudUser?.id !== userId || cloudAuthEpoch !== authEpoch) {
+  if (!userId || !cloudReady || cloudUser?.id !== userId
+    || cloudAuthSessionUserId !== userId || cloudAuthEpoch !== authEpoch) {
     throw new Error('The signed-in account changed while cloud data was syncing.');
   }
 }
 
 function invalidateCloudSession() {
   cloudAuthEpoch += 1;
+  cloudAuthSessionUserId = '';
   cloudUser = null;
   cloudReady = false;
   cloudSessionUserId = '';
@@ -1705,16 +1748,20 @@ async function syncPendingCloudSessions(userId = cloudUser?.id, authEpoch = clou
   const pending = localStorageReadArray(key)
     .filter(session => !session.ownerUserId || session.ownerUserId === userId);
   if (!pending.length) return;
-  const remaining = [];
+  const uploadedIds = new Set();
   for (const session of pending) {
     try {
       const uploaded = await uploadCloudWorkoutSession(session, 'completed', userId, authEpoch);
       if (!uploaded) throw new Error('Workout upload did not start.');
+      uploadedIds.add(session.id);
     } catch {
-      remaining.push(session);
+      // Failed items remain in the latest queue and retry on the next sync.
     }
   }
-  localStorageWriteArray(key, remaining);
+  // Another workout can finish while an upload is awaiting the network. Re-read
+  // the queue before committing so that newly queued sessions are never erased.
+  const latestPending = localStorageReadArray(key);
+  localStorageWriteArray(key, latestPending.filter(session => !uploadedIds.has(session.id)));
 }
 
 function migrateLegacyAccountStorage(userId, deviceProfile) {
@@ -1814,7 +1861,11 @@ async function refreshCloudHistory(userId = cloudUser?.id, authEpoch = cloudAuth
       // The merged device copy remains available until the next cloud refresh.
     }
     assertCloudIdentity(userId, authEpoch);
-    mergedHistory = mergeHistory(mergedHistory, cloudHistory);
+    // A workout can be completed locally while either cloud request is in
+    // flight. Merge the newest account-scoped device copy at the last possible
+    // moment so a refresh cannot overwrite that just-finished workout.
+    const latestDeviceHistory = localStorageReadArray(historyStorageKey(userId));
+    mergedHistory = mergeHistory(latestDeviceHistory, mergeHistory(mergedHistory, cloudHistory));
     localStorageWriteArray(historyStorageKey(userId), mergedHistory);
     workoutHistory = mergedHistory;
     renderHome();
@@ -1827,9 +1878,14 @@ async function refreshCloudHistory(userId = cloudUser?.id, authEpoch = cloudAuth
   }
 }
 
-async function handleCloudSession(session) {
+async function handleCloudSession(session, expectedAuthEpoch = cloudAuthEpoch) {
   if (!session?.user) return false;
   const userId = session.user.id;
+  // Auth callbacks are intentionally deferred to avoid Supabase's auth lock.
+  // Refuse work captured before a later SIGNED_OUT/account-change event.
+  if (expectedAuthEpoch !== cloudAuthEpoch) return false;
+  if (cloudAuthSessionUserId && cloudAuthSessionUserId !== userId) return false;
+  cloudAuthSessionUserId = userId;
   if (cloudSessionHydration && cloudSessionHydrationUserId === userId) return cloudSessionHydration;
   if (cloudReady && cloudSessionUserId === userId) {
     cloudUser = session.user;
@@ -1916,11 +1972,14 @@ async function initializeCloudAuth() {
   if (!client) return false;
   client.auth.onAuthStateChange((event, session) => {
     if (session?.user && ['INITIAL_SESSION', 'SIGNED_IN', 'USER_UPDATED'].includes(event)) {
+      const eventAuthEpoch = cloudAuthEpoch;
+      cloudAuthSessionUserId = session.user.id;
       // Supabase dispatches this callback while it holds its auth lock. Starting
       // database work inside it can stall app startup, so defer hydration until
       // the callback has returned.
       setTimeout(() => {
-        void handleCloudSession(session).catch(error => {
+        if (eventAuthEpoch !== cloudAuthEpoch || cloudAuthSessionUserId !== session.user.id) return;
+        void handleCloudSession(session, eventAuthEpoch).catch(error => {
           console.warn('Cloud session hydration failed; the device app remains available.', error);
         });
       }, 0);
@@ -1938,10 +1997,15 @@ async function initializeCloudAuth() {
       initializeProfile();
     }
   });
+  const sessionCheckEpoch = cloudAuthEpoch;
   try {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
-    return data?.session ? await handleCloudSession(data.session) : false;
+    if (sessionCheckEpoch !== cloudAuthEpoch) return false;
+    if (!data?.session?.user) return false;
+    if (cloudAuthSessionUserId && cloudAuthSessionUserId !== data.session.user.id) return false;
+    cloudAuthSessionUserId = data.session.user.id;
+    return await handleCloudSession(data.session, sessionCheckEpoch);
   } catch (error) {
     console.warn('Cloud auth check failed; the device app remains available.', error);
     return false;
@@ -2966,13 +3030,17 @@ function setSaveMessage(message, tone = '') {
 
 function updateWorkoutFinishState() {
   const total = activePlan ? totalSetsFor(activePlan) : 0;
-  const saved = logs.length;
-  el('savedSetCount').textContent = `${saved} of ${total} sets saved`;
+  const saved = activePlan ? completedWorkingSetCount(activePlan, logs) : 0;
+  const warmups = logs.filter(log => sanitizeSetType(log.setType) === 'Warmup').length;
+  const warmupText = warmups ? ` · ${warmups} warmup ${warmups === 1 ? 'set' : 'sets'}` : '';
+  el('savedSetCount').textContent = `${saved} of ${total} working sets saved${warmupText}`;
   el('workoutProgress').max = Math.max(total, 1);
   el('workoutProgress').value = saved;
   el('finish').disabled = false;
   if (saved === 0) {
-    el('finishHint').textContent = 'End anytime. An empty workout is recorded as incomplete and receives a very low grade.';
+    el('finishHint').textContent = warmups
+      ? 'Only warmup sets are saved. Ending now records an incomplete workout and a very low grade.'
+      : 'End anytime. An empty workout is recorded as incomplete and receives a very low grade.';
   } else if (saved >= total) {
     el('finishHint').textContent = 'Workout complete ✅';
   } else {
@@ -3234,21 +3302,83 @@ function scheduledOccurrenceId(program, slot, scheduledFor) {
   return `${program.id}:${slot.id}:${scheduledFor}`;
 }
 
-function sessionHasWorkingSets(session) {
-  return (session?.logs || []).some(log => sanitizeSetType(log.setType) !== 'Warmup');
+function scheduleActivationStorageKey(program) {
+  const owner = draftAccountKey() || userProfile?.cloudUserId || 'device';
+  const programId = safeCustomText(program?.id, 100);
+  return programId ? `${SCHEDULE_ACTIVATION_PREFIX}${owner}:${programId}` : '';
+}
+
+function scheduleActivationDay(program, now = Date.now()) {
+  const configured = [program?.scheduleStartedOn, program?.activatedOn, program?.startsOn]
+    .find(value => /^\d{4}-\d{2}-\d{2}$/.test(value || ''));
+  if (configured) return configured;
+  const key = scheduleActivationStorageKey(program);
+  if (key) {
+    try {
+      const stored = localStorage.getItem(key) || '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(stored)) return stored;
+      const activation = dayKey(now);
+      if (activation) localStorage.setItem(key, activation);
+      return activation;
+    } catch {
+      // A schedule still starts today when browser storage is unavailable.
+    }
+  }
+  return dayKey(now);
+}
+
+function scheduledPlanForSession(session, program, slot) {
+  if (session?.planSnapshot?.exercises?.length) return session.planSnapshot;
+  const planId = safeCustomText(session?.planId || slot?.planId, 100);
+  return (program?.plans || []).find(plan => planIdFor(plan) === planId) || null;
+}
+
+function sessionWorkingSetLogs(session) {
+  return (Array.isArray(session?.logs) ? session.logs : []).filter(log => (
+    sanitizeSetType(log?.setType) !== 'Warmup'
+    && Number.isFinite(Number(log?.weight))
+    && Number(log.weight) >= 0
+    && Number.isInteger(Number(log?.reps))
+    && Number(log.reps) >= 1
+  ));
+}
+
+function scheduledSessionMeetsCompletionThreshold(session, program, slot) {
+  const workingLogs = sessionWorkingSetLogs(session);
+  const completedSets = new Set(workingLogs.map((log, index) => {
+    const exerciseIndex = Number(log.exerciseIndex);
+    const set = Number(log.set);
+    return Number.isInteger(exerciseIndex) && Number.isInteger(set)
+      ? `${exerciseIndex}-${set}`
+      : `legacy-${index}`;
+  })).size;
+  if (!completedSets) return false;
+  const gradePlannedSets = Number(session?.grade?.components?.setCompletion?.planned);
+  const scheduledPlan = scheduledPlanForSession(session, program, slot);
+  const plannedSets = Number.isFinite(gradePlannedSets) && gradePlannedSets > 0
+    ? Math.round(gradePlannedSets)
+    : scheduledPlan?.exercises?.length
+      ? totalSetsFor(scheduledPlan)
+      : 0;
+  if (!plannedSets) return false;
+  return completedSets >= Math.max(1, Math.ceil(plannedSets * .5));
 }
 
 function sessionScheduledFor(session, program, slots) {
-  if (!sessionHasWorkingSets(session)) return null;
   const explicitDate = /^\d{4}-\d{2}-\d{2}$/.test(session.scheduledFor || '') ? session.scheduledFor : '';
   if (explicitDate && session.scheduleId === program.id && slots.some(slot => slot.id === session.scheduleSlotId)) {
-    return { scheduledFor: explicitDate, slotId: session.scheduleSlotId };
+    const slot = slots.find(candidate => candidate.id === session.scheduleSlotId);
+    return scheduledSessionMeetsCompletionThreshold(session, program, slot)
+      ? { scheduledFor: explicitDate, slotId: session.scheduleSlotId }
+      : null;
   }
   if (session.program !== program.name || !session.planId || !validTimestamp(session.completedAt)) return null;
   const legacyDate = dayKey(session.completedAt);
   const weekday = weekdayForDayKey(legacyDate);
   const slot = slots.find(candidate => candidate.planId === session.planId && candidate.day === weekday);
-  return slot ? { scheduledFor: legacyDate, slotId: slot.id } : null;
+  return slot && scheduledSessionMeetsCompletionThreshold(session, program, slot)
+    ? { scheduledFor: legacyDate, slotId: slot.id }
+    : null;
 }
 
 function scheduleContextForPlan(plan, startedAt, history = workoutHistory) {
@@ -3276,7 +3406,18 @@ function scheduledWorkoutStats({
   now = Date.now()
 } = {}) {
   if (!program?.schedule?.length) {
-    return { hasSchedule: false, streak: 0, consistencyPercent: null, completedSlots: 0, resolvedSlots: 0, milestone: 0, restDayToday: false };
+    return {
+      hasSchedule: false,
+      streak: 0,
+      consistencyPercent: null,
+      latestConsistencyPercent: null,
+      priorConsistencyPercent: null,
+      completedSlots: 0,
+      resolvedSlots: 0,
+      milestone: 0,
+      restDayToday: false,
+      activatedOn: ''
+    };
   }
   const slots = program.schedule.filter(entry => entry.planId && entry.id);
   const completions = new Set();
@@ -3285,21 +3426,8 @@ function scheduledWorkoutStats({
     if (!match) return;
     completions.add(scheduledOccurrenceId(program, { id: match.slotId }, match.scheduledFor));
   });
-  const completedDates = [...completions].map(id => id.slice(id.lastIndexOf(':') + 1)).filter(Boolean);
-  if (!completedDates.length) {
-    const weekday = weekdayForDayKey(dayKey(now));
-    return {
-      hasSchedule: true,
-      streak: 0,
-      consistencyPercent: null,
-      completedSlots: 0,
-      resolvedSlots: 0,
-      milestone: 0,
-      restDayToday: Boolean(program.schedule.find(entry => entry.day === weekday)?.rest)
-    };
-  }
   const today = dayKey(now);
-  const startKey = completedDates.sort()[0];
+  const startKey = scheduleActivationDay(program, now);
   const cursor = dateFromDayKey(startKey);
   const end = dateFromDayKey(today);
   const occurrences = [];
@@ -3327,16 +3455,27 @@ function scheduledWorkoutStats({
   const recent = resolved.slice(-10);
   const completedSlots = recent.filter(item => item.complete).length;
   const consistencyPercent = recent.length ? (completedSlots / recent.length) * 100 : null;
+  const latest = recent.slice(-5);
+  const prior = recent.slice(-10, -5);
+  const latestConsistencyPercent = latest.length
+    ? (latest.filter(item => item.complete).length / latest.length) * 100
+    : null;
+  const priorConsistencyPercent = prior.length
+    ? (prior.filter(item => item.complete).length / prior.length) * 100
+    : null;
   const milestone = [50, 25, 10, 5].find(value => streak >= value) || 0;
   const todayEntry = program.schedule.find(entry => entry.day === weekdayForDayKey(today));
   return {
     hasSchedule: true,
     streak,
     consistencyPercent,
+    latestConsistencyPercent,
+    priorConsistencyPercent,
     completedSlots,
     resolvedSlots: recent.length,
     milestone,
-    restDayToday: Boolean(todayEntry?.rest)
+    restDayToday: Boolean(todayEntry?.rest),
+    activatedOn: startKey
   };
 }
 
@@ -3377,6 +3516,18 @@ function rankForScore(score, eligible) {
   return [...rankLadder].reverse().find(rank => score >= rank.minimum) || rankLadder[0];
 }
 
+function weightedOverallPercentage(workoutAverage, consistencyPercent) {
+  if (!Number.isFinite(workoutAverage)) return null;
+  const consistency = Number.isFinite(consistencyPercent) ? consistencyPercent : workoutAverage;
+  return clampGradeScore(workoutAverage * .80 + consistency * .20);
+}
+
+function gradeAverage(items) {
+  return items.length
+    ? items.reduce((total, item) => total + item.grade.percentage, 0) / items.length
+    : null;
+}
+
 function overallGrade(history = workoutHistory, schedule = scheduledWorkoutStats({ history })) {
   const graded = (Array.isArray(history) ? history : [])
     .map(session => ({ session, grade: sanitizeWorkoutGrade(session.grade) }))
@@ -3394,18 +3545,26 @@ function overallGrade(history = workoutHistory, schedule = scheduledWorkoutStats
       trend: null
     };
   }
-  const recentAverage = recent.reduce((total, item) => total + item.grade.percentage, 0) / recent.length;
+  const recentAverage = gradeAverage(recent);
   const consistencyPercent = Number.isFinite(schedule.consistencyPercent)
     ? schedule.consistencyPercent
     : recentAverage;
-  const percentage = clampGradeScore(recentAverage * .80 + consistencyPercent * .20);
+  const percentage = weightedOverallPercentage(recentAverage, consistencyPercent);
   const letter = workoutLetterForPercentage(percentage);
-  const latestFive = graded.slice(-5).map(item => item.grade.percentage);
-  const priorFive = graded.slice(-10, -5).map(item => item.grade.percentage);
-  const latestAverage = latestFive.reduce((total, value) => total + value, 0) / latestFive.length;
-  const priorAverage = priorFive.length
-    ? priorFive.reduce((total, value) => total + value, 0) / priorFive.length
-    : null;
+  const latestAverage = gradeAverage(graded.slice(-5));
+  const priorAverage = gradeAverage(graded.slice(-10, -5));
+  const latestConsistency = Number.isFinite(schedule.latestConsistencyPercent)
+    ? schedule.latestConsistencyPercent
+    : Number.isFinite(schedule.consistencyPercent)
+      ? schedule.consistencyPercent
+      : latestAverage;
+  const priorConsistency = Number.isFinite(schedule.priorConsistencyPercent)
+    ? schedule.priorConsistencyPercent
+    : Number.isFinite(schedule.consistencyPercent)
+      ? schedule.consistencyPercent
+      : priorAverage;
+  const latestOverall = weightedOverallPercentage(latestAverage, latestConsistency);
+  const priorOverall = weightedOverallPercentage(priorAverage, priorConsistency);
   return {
     percentage,
     letter,
@@ -3413,7 +3572,7 @@ function overallGrade(history = workoutHistory, schedule = scheduledWorkoutStats
     gradedWorkouts: recent.length,
     recentAverage,
     consistencyPercent,
-    trend: priorAverage === null ? null : Math.round(latestAverage - priorAverage)
+    trend: priorOverall === null ? null : Math.round(latestOverall - priorOverall)
   };
 }
 
@@ -3499,6 +3658,17 @@ function gradeBreakdownRow(label, component, weight) {
   </div>`;
 }
 
+function workoutGradeAnnouncement(grade) {
+  const planned = Math.max(0, Number(grade?.components?.setCompletion?.planned) || 0);
+  const completed = Math.max(0, Number(grade?.components?.setCompletion?.completed) || 0);
+  const completion = !completed
+    ? 'Incomplete workout recorded.'
+    : planned && completed < planned
+      ? 'Partial workout recorded.'
+      : 'Workout complete.';
+  return `${completion} Grade ${grade.letter}, ${grade.percentage} percent.`;
+}
+
 function renderWorkoutSummary(session, { reveal = true, navigate = true } = {}) {
   const grade = sanitizeWorkoutGrade(session?.grade);
   if (!session || !grade) return false;
@@ -3535,7 +3705,7 @@ function renderWorkoutSummary(session, { reveal = true, navigate = true } = {}) 
   card.classList.toggle('is-revealing', canAnimate);
   if (!canAnimate) {
     percentElement.textContent = `${grade.percentage}%`;
-    el('workoutGradeAnnouncement').textContent = `Workout complete. Grade ${grade.letter}, ${grade.percentage} percent.`;
+    el('workoutGradeAnnouncement').textContent = workoutGradeAnnouncement(grade);
   } else {
     const started = performance.now();
     const animate = now => {
@@ -3544,7 +3714,7 @@ function renderWorkoutSummary(session, { reveal = true, navigate = true } = {}) 
       if (progress < 1) requestAnimationFrame(animate);
       else {
         card.classList.remove('is-revealing');
-        el('workoutGradeAnnouncement').textContent = `Workout complete. Grade ${grade.letter}, ${grade.percentage} percent.`;
+        el('workoutGradeAnnouncement').textContent = workoutGradeAnnouncement(grade);
       }
     };
     requestAnimationFrame(animate);
@@ -3663,15 +3833,21 @@ async function finishWorkout() {
   if (!activePlan) return go('workout');
   const plan = activePlan;
   const totalSets = totalSetsFor(plan);
-  if (!logs.length && !confirm('No sets are saved. End this workout and record it as incomplete? It will receive a very low grade.')) return;
-  if (logs.length && logs.length < totalSets && !confirm(`You saved ${logs.length} of ${totalSets} sets. Unsaved sets will not be included. End and grade this partial workout?`)) return;
+  const workingLogs = workingGradeLogs(plan, logs);
+  const completedWorkingSets = completedWorkingSetCount(plan, workingLogs);
+  const warmupSets = logs.filter(log => sanitizeSetType(log.setType) === 'Warmup').length;
+  if (!completedWorkingSets) {
+    const warmupDetail = warmupSets ? `You saved ${warmupSets} warmup ${warmupSets === 1 ? 'set' : 'sets'}, but no working sets.` : 'No working sets are saved.';
+    if (!confirm(`${warmupDetail} End this workout and record it as incomplete? It will receive a very low grade.`)) return;
+  }
+  if (completedWorkingSets && completedWorkingSets < totalSets && !confirm(`You saved ${completedWorkingSets} of ${totalSets} working sets. Unsaved and warmup sets will not count toward completion. End and grade this partial workout?`)) return;
   const finishButton = el('finish');
   if (finishButton.dataset.saving === 'true') return;
   finishButton.dataset.saving = 'true';
   finishButton.disabled = true;
   finishButton.textContent = 'Saving workout...';
 
-  const muscles = [...new Set(logs.flatMap(log => log.muscleTargets || []))];
+  const muscles = [...new Set(workingLogs.flatMap(log => log.muscleTargets || []))];
   const completedAt = Date.now();
   const planSnapshot = planSnapshotForDraft(plan);
   const grade = calculateWorkoutGrade(planSnapshot || plan, logs, workoutHistory);
@@ -4002,7 +4178,8 @@ function bindAppControls() {
     const accountKey = globalThis.crypto?.subtle ? await accountKeyFor(email) : '';
     userProfile = { name, email, accountKey, provider: 'email-test' };
     saveUserProfile();
-    workoutHistory = localStorageReadArray(WORKOUT_HISTORY_KEY);
+    migrateLegacyLocalHistory();
+    workoutHistory = loadHistory();
     initializeProfile();
     renderHome();
     renderProfile();
