@@ -1,6 +1,6 @@
-const CACHE = 'level-up-fitness-a8f44c90e121';
+const CACHE = 'level-up-fitness-23e46e288f48';
 const CORE = [
-  './', './index.html', './app.css', './logo-cleanup.css', './app.js', './supabase-config.js', './manifest.webmanifest',
+  './', './index.html', './app.css', './app.js', './supabase-config.js', './manifest.webmanifest',
   './assets/app-icon-180.png', './assets/app-icon-192.png', './assets/app-icon-512.png',
   './assets/MaleBody.png', './assets/MaleBodyFront.png', './assets/MaleBodyBack.png',
   './assets/workouts/kettlebell.png', './assets/workouts/functional-trainer.png',
@@ -10,8 +10,8 @@ const CORE = [
   './assets/workouts/dumbbell.png', './assets/workouts/machine.png',
   './assets/workouts/treadmill.png', './assets/workouts/timer.png'
 ];
-const SHELL = CORE.slice(0, 7);
-const ASSETS = CORE.slice(7);
+const SHELL = CORE.slice(0, 6);
+const ASSETS = CORE.slice(6);
 const scopedUrl = path => new URL(path, self.registration.scope).href;
 
 async function cachePath(cache, path, requireImage = false) {
