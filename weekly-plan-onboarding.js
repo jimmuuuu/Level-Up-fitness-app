@@ -565,8 +565,6 @@
   }
 
   function closeWizard() {
-    window.clearTimeout(autoOpenTimer);
-    autoOpenTimer = 0;
     const overlay = ensureWizard();
     overlay.classList.add('hidden');
     overlay.innerHTML = '';
@@ -833,9 +831,6 @@
     } catch {}
     autoOpenTimer = window.setTimeout(() => {
       autoOpenTimer = 0;
-      try {
-        if (localStorage.getItem(seenKey()) === '1') return;
-      } catch {}
       const workout = document.getElementById('workout');
       if (workout && !workout.classList.contains('hidden') && !currentConfig && !hasBuiltInProgram()) openWizard();
     }, 700);
