@@ -31,7 +31,7 @@
     if (saving) return;
     const save = saveFunction();
     if (!save) {
-      setStatus('Photo save is not ready yet. Close and reopen Level Up, then try again.');
+      setStatus('Photo save is not ready yet. Close and reopen Start Now, then try again.');
       return;
     }
 

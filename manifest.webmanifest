@@ -1,6 +1,6 @@
 {
-  "name": "Level Up Fitness",
-  "short_name": "Level Up",
+  "name": "Start Now",
+  "short_name": "Start Now",
   "description": "Track workouts, personal records, progress, and muscle-group ranks.",
   "start_url": "./",
   "scope": "./",

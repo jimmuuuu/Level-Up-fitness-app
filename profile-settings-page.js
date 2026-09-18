@@ -179,8 +179,8 @@
 
   function storageCopy() {
     return accountId() === 'local'
-      ? 'These settings are saved on this device. Sign in to sync supported settings to your Level Up account.'
-      : 'These settings are saved to this device and synced to your Level Up account.';
+      ? 'These settings are saved on this device. Sign in to sync supported settings to your Start Now account.'
+      : 'These settings are saved to this device and synced to your Start Now account.';
   }
 
   function render() {

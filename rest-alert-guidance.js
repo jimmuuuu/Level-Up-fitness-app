@@ -16,7 +16,7 @@
   }
 
   function showInstallHelp() {
-    alert('For lock-screen rest alerts on iPhone, add Level Up to your Home Screen first. Open the site in Safari, tap Share, choose Add to Home Screen, then launch Level Up from the new icon and enable rest alerts again.');
+    alert('For lock-screen rest alerts on iPhone, add Start Now to your Home Screen first. Open the site in Safari, tap Share, choose Add to Home Screen, then launch Start Now from the new icon and enable rest alerts again.');
   }
 
   function update() {
@@ -31,7 +31,7 @@
         help.id = HELP_ID;
         help.type = 'button';
         help.className = 'rest-timer-v3-alerts';
-        help.textContent = 'Add Level Up to Home Screen for lock-screen alerts';
+        help.textContent = 'Add Start Now to Home Screen for lock-screen alerts';
         help.onclick = showInstallHelp;
         original.insertAdjacentElement('afterend', help);
       }

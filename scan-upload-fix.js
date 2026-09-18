@@ -236,7 +236,7 @@
     const strong = scan.querySelector('.scan-copy-card strong');
     const detail = scan.querySelector('.scan-copy-card span');
     if (strong) strong.textContent = 'Scan gym equipment';
-    if (detail) detail.textContent = 'Point your camera at any machine, dumbbell, barbell, bench, cable attachment, cardio machine, or other workout tool. Level Up will identify it and explain how it is commonly used.';
+    if (detail) detail.textContent = 'Point your camera at any machine, dumbbell, barbell, bench, cable attachment, cardio machine, or other workout tool. Start Now will identify it and explain how it is commonly used.';
 
     const loadingTitle = scan.querySelector('.scan-loading-card strong');
     const loadingText = scan.querySelector('.scan-loading-card p');

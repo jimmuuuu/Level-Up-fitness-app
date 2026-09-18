@@ -207,7 +207,7 @@
     if (hasSavedSets(index)) {
       content.innerHTML = `
         <div class="exercise-swap-heading">
-          <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">${esc(current.name)} already started</h2><p>You already saved a set for this exercise. Swapping it now would mix two exercises inside the same workout entry, so Level Up keeps it locked.</p></div>
+          <div><div class="over">SWAP EXERCISE</div><h2 id="exerciseSwapTitle">${esc(current.name)} already started</h2><p>You already saved a set for this exercise. Swapping it now would mix two exercises inside the same workout entry, so Start Now keeps it locked.</p></div>
           <button type="button" class="exercise-swap-close" data-swap-close aria-label="Close">×</button>
         </div>`;
       modal.classList.remove('hidden');

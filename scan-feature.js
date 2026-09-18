@@ -96,7 +96,7 @@
           <div class="scan-topbar">
             <div class="scan-copy-card">
               <strong>Scan gym equipment</strong>
-              <span>Point your camera at a machine. Level Up can identify it, show the muscles it trains, explain the movement, and add it to a workout.</span>
+              <span>Point your camera at a machine. Start Now can identify it, show the muscles it trains, explain the movement, and add it to a workout.</span>
             </div>
             <button id="scanAbout" class="scan-about-button" type="button" aria-label="About Scan">?</button>
           </div>
@@ -114,7 +114,7 @@
             <div class="scan-loading-card">
               <div class="scan-spinner" aria-hidden="true"></div>
               <strong>Identifying equipment</strong>
-              <p>Checking the machine and matching it to the Level Up exercise library.</p>
+              <p>Checking the machine and matching it to the Start Now exercise library.</p>
             </div>
           </div>
 
@@ -624,7 +624,7 @@
         <div><div class="over">ABOUT SCAN</div><h2>What Scan does</h2></div>
         <button class="scan-close-button" type="button" data-close>×</button>
       </div>
-      <p>Scan is built for those moments when you see a machine at the gym and do not know what it is. Take a clear photo of the equipment and Level Up will try to match it to an exercise in the app.</p>
+      <p>Scan is built for those moments when you see a machine at the gym and do not know what it is. Take a clear photo of the equipment and Start Now will try to match it to an exercise in the app.</p>
       <div class="scan-section-card">
         <h3>After a scan</h3>
         <p class="scan-safety">You can see the machine name, primary and assisting muscles, basic setup guidance, a form-video shortcut, and options to add the exercise to a workout.</p>

@@ -118,7 +118,7 @@
         <main class="weekly-slide-content">
           <span class="weekly-slide-kicker">GYM SETUP</span>
           <h2>Which gym do you train at?</h2>
-          <p>Level Up uses this to recommend workouts and exercise swaps that match equipment you actually have access to.</p>
+          <p>Start Now uses this to recommend workouts and exercise swaps that match equipment you actually have access to.</p>
           <div class="weekly-gym-fields">
             <label class="weekly-gym-field">
               <span>Gym name</span>

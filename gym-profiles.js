@@ -136,7 +136,7 @@
     const content = modal.querySelector('#gymProfileModalContent');
     content.innerHTML = `
       <div class="gym-profile-heading"><div><div class="over">GYM & EQUIPMENT</div><h2>${existing ? 'Edit your gym' : 'Add a gym'}</h2></div><button type="button" data-gym-close aria-label="Close">×</button></div>
-      <p class="gym-profiles-copy">Level Up uses this to keep workout and exercise-swap suggestions matched to equipment you actually have.</p>
+      <p class="gym-profiles-copy">Start Now uses this to keep workout and exercise-swap suggestions matched to equipment you actually have.</p>
       <label class="gym-profile-field"><span>Gym name</span><input id="gymProfileName" maxlength="60" value="${esc(existing?.name || '')}" placeholder="Example: Planet Fitness"></label>
       <div class="gym-profile-equipment"><span>Equipment available</span><div>${EQUIPMENT.map(item => `<label><input type="checkbox" value="${esc(item)}" ${existing?.equipment?.includes(item) ? 'checked' : ''}><span>${esc(item)}</span></label>`).join('')}</div></div>
       <label class="gym-profile-field"><span>Note</span><input id="gymProfileNote" maxlength="160" value="${esc(existing?.note || '')}" placeholder="Optional"></label>

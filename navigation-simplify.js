@@ -24,7 +24,7 @@
     panel.innerHTML = `
       <div class="over">SETTINGS</div>
       <h2 id="profileSettingsTitle">Account & app</h2>
-      <p class="profile-settings-copy">Manage account options here. More app settings can be added as Level Up grows.</p>
+      <p class="profile-settings-copy">Manage account options here. More app settings can be added as Start Now grows.</p>
     `;
 
     const note = profile.querySelector('.signout-note');

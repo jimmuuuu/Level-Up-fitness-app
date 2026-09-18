@@ -68,12 +68,12 @@
         <div>
           <div class="over">GYM ACCESS</div>
           <h2>Gym Passes</h2>
-          <p class="gym-passes-copy">Keep a physical membership card or a static digital pass inside Level Up for quick access.</p>
+          <p class="gym-passes-copy">Keep a physical membership card or a static digital pass inside Start Now for quick access.</p>
         </div>
         <button id="gymPassAdd" class="gym-pass-add" type="button">Add pass</button>
       </div>
       <div id="gymPassesList" class="gym-passes-list"></div>
-      <p class="gym-pass-security-note">Pass images are stored only on this device and are not uploaded to Level Up. Some gyms use changing or app-only codes, so a saved image may not work for every membership.</p>`;
+          <p class="gym-pass-security-note">Pass images are stored only on this device and are not uploaded to Start Now. Some gyms use changing or app-only codes, so a saved image may not work for every membership.</p>`;
 
     const settings = byId('profileSettingsPanel');
     if (settings) settings.insertAdjacentElement('beforebegin', section);
@@ -186,7 +186,7 @@
   function openCaptureForm() {
     const physical = draft?.source === 'physical';
     openModal(`${sheetShell(physical ? 'Scan your membership card' : 'Import your digital pass')}
-      <p>${physical ? 'Add clear photos of both sides. Level Up will try to detect a barcode or QR code automatically when your browser supports it.' : 'Choose a screenshot or image that clearly shows the membership barcode or QR code.'}</p>
+      <p>${physical ? 'Add clear photos of both sides. Start Now will try to detect a barcode or QR code automatically when your browser supports it.' : 'Choose a screenshot or image that clearly shows the membership barcode or QR code.'}</p>
       <div class="gym-pass-photo-grid">
         <div class="gym-pass-photo-slot">
           <div id="gymPassFrontPreview">${draft?.frontImage ? `<img src="${draft.frontImage}" alt="Front of membership">` : '<div class="gym-pass-photo-placeholder">No image yet</div>'}</div>

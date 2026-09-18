@@ -348,7 +348,7 @@
       exercise: exercises[0].name,
       done: benchmarkDone(progressLogs, exercises[0]),
       title: `Create a ${exercises[0].name} benchmark`,
-      detail: `Log all ${plannedSetCount(exercises[0])} planned sets so Level Up can build PR challenges from your real numbers.`
+      detail: `Log all ${plannedSetCount(exercises[0])} planned sets so Start Now can build PR challenges from your real numbers.`
     });
 
     return chosen.slice(0, 3);
